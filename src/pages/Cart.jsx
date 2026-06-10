@@ -17,6 +17,7 @@ import {
 } from "lucide-react";
 import { showCartRemovedToast, showSuccessToast } from "../utils/toast";
 
+
 const Cart = () => {
   const { cart, removeFromCart, updateQuantity, cartTotal } = useCart();
   const { isAuthenticated } = useAuth();
