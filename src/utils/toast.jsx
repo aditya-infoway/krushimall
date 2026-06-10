@@ -20,7 +20,6 @@ const ToastWrapper = ({ t, children, borderColor, closeColor }) => (
   </div>
 );
 
-
 const IconBox = ({ bg, icon, iconColor }) => (
   <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center`}>
     {icon}
