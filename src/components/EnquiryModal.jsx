@@ -203,7 +203,7 @@ const EnquiryModal = ({ isOpen: externalIsOpen, onClose }) => {
                 {/* Name Field */}
                 <div className="class-field-animate">
                   <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Full Name <span className="text-green-600">*</span>
+                    Full Name <span className="text-red-600">*</span>
                   </label>
                   <div className="relative group/input">
                     <User className={`absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 transition-colors duration-300 ${
@@ -226,7 +226,7 @@ const EnquiryModal = ({ isOpen: externalIsOpen, onClose }) => {
                 {/* Email Field */}
                 <div className="class-field-animate">
                   <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Email Address <span className="text-green-600">*</span>
+                    Email Address <span className="text-red-600">*</span>
                   </label>
                   <div className="relative group/input">
                     <Mail className={`absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 transition-colors duration-300 ${
@@ -249,7 +249,7 @@ const EnquiryModal = ({ isOpen: externalIsOpen, onClose }) => {
                 {/* Phone Field */}
                 <div className="class-field-animate">
                   <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Phone Number <span className="text-green-600">*</span>
+                    Phone Number <span className="text-red-600">*</span>
                   </label>
                   <div className="relative group/input">
                     <Phone className={`absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 transition-colors duration-300 ${
@@ -272,7 +272,7 @@ const EnquiryModal = ({ isOpen: externalIsOpen, onClose }) => {
                 {/* Tractor Type Selection */}
                 <div className="class-field-animate">
                   <label className="block text-xs font-semibold text-gray-700 mb-1">
-                    Interested In <span className="text-green-600">*</span>
+                    Interested In <span className="text-red-600">*</span>
                   </label>
                   <RadioGroup
                     value={formData.tractorType}

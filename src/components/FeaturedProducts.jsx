@@ -14,32 +14,31 @@ const FeaturedProducts = () => {
   const [addedToCart, setAddedToCart] = useState({});
   const [activeTab, setActiveTab] = useState("featured");
   const sliderRef = useRef(null);
- const [isScrolling, setIsScrolling] = useState(false);
-const scrollTimeoutRef = useRef(null);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeoutRef = useRef(null);
 
+  // Show arrows when scrolling on mobile
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider) return;
 
-// Show arrows when scrolling on mobile
-useEffect(() => {
-  const slider = sliderRef.current;
-  if (!slider) return;
+    const handleScroll = () => {
+      setIsScrolling(true);
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsScrolling(false);
+      }, 1500); // Hide after 1.5 seconds of no scroll
+    };
 
-  const handleScroll = () => {
-    setIsScrolling(true);
-    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-    scrollTimeoutRef.current = setTimeout(() => {
-      setIsScrolling(false);
-    }, 1500); // Hide after 1.5 seconds of no scroll
-  };
+    slider.addEventListener("scroll", handleScroll, { passive: true });
+    slider.addEventListener("touchstart", handleScroll, { passive: true });
 
-  slider.addEventListener("scroll", handleScroll, { passive: true });
-  slider.addEventListener("touchstart", handleScroll, { passive: true });
-
-  return () => {
-    slider.removeEventListener("scroll", handleScroll);
-    slider.removeEventListener("touchstart", handleScroll);
-    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-  };
-}, [activeTab]);
+    return () => {
+      slider.removeEventListener("scroll", handleScroll);
+      slider.removeEventListener("touchstart", handleScroll);
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    };
+  }, [activeTab]);
 
   const featuredProducts = [
     {
@@ -266,8 +265,6 @@ useEffect(() => {
     },
   ];
 
-  
-
   const addToCart = (productId, e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -290,21 +287,26 @@ useEffect(() => {
     }
   };
 
-const scrollSlider = (direction) => {
-  if (!sliderRef.current) return;
+  const scrollSlider = (direction) => {
+    if (!sliderRef.current) return;
 
-  const { scrollLeft, clientWidth } = sliderRef.current;
+    const { scrollLeft, clientWidth } = sliderRef.current;
 
-  sliderRef.current.scrollTo({
-    left:
-      direction === "left"
-        ? scrollLeft - clientWidth * 0.8
-        : scrollLeft + clientWidth * 0.8,
-    behavior: "smooth",
-  });
-};
+    sliderRef.current.scrollTo({
+      left:
+        direction === "left"
+          ? scrollLeft - clientWidth * 0.8
+          : scrollLeft + clientWidth * 0.8,
+      behavior: "smooth",
+    });
+  };
 
-
+  // Add this function
+  const resetScroll = () => {
+    if (sliderRef.current) {
+      sliderRef.current.scrollTo({ left: 0, behavior: "instant" });
+    }
+  };
 
   const ProductCard = ({ product }) => (
     <Link
@@ -369,7 +371,7 @@ const scrollSlider = (direction) => {
     </Link>
   );
 
-const activeProducts = getActiveProducts();
+  const activeProducts = getActiveProducts();
 
   return (
     <section className="bg-gradient-to-b from-gray-50 to-white w-full">
@@ -377,7 +379,6 @@ const activeProducts = getActiveProducts();
       <div className="px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
         {/* Inner container with bottom padding to match top spacing */}
         <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto ">
-          
           {/* UPDATED: Left-aligned header with title and description */}
           <div className="mb-10 md:mb-14">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
@@ -396,7 +397,10 @@ const activeProducts = getActiveProducts();
             {/* Tabs Container - Line indicator style */}
             <div className="flex items-center gap-0 overflow-x-auto w-full sm:w-auto scrollbar-hide">
               <button
-                onClick={() => setActiveTab("featured")}
+                onClick={() => {
+                  setActiveTab("featured");
+                  setTimeout(resetScroll, 0);
+                }}
                 className={`relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "featured"
                     ? "text-green-600"
@@ -410,7 +414,10 @@ const activeProducts = getActiveProducts();
                 )}
               </button>
               <button
-                onClick={() => setActiveTab("bestSeller")}
+                onClick={() => {
+                  setActiveTab("bestSeller");
+                  setTimeout(resetScroll, 0);
+                }}
                 className={`relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "bestSeller"
                     ? "text-green-600"
@@ -424,7 +431,10 @@ const activeProducts = getActiveProducts();
                 )}
               </button>
               <button
-                onClick={() => setActiveTab("topRated")}
+                onClick={() => {
+                  setActiveTab("topRated");
+                  setTimeout(resetScroll, 0);
+                }}
                 className={`relative flex items-center gap-1.5 sm:gap-2 px-3 sm:px-5 py-2.5 text-xs sm:text-sm font-semibold transition-all cursor-pointer whitespace-nowrap ${
                   activeTab === "topRated"
                     ? "text-green-600"
@@ -436,7 +446,7 @@ const activeProducts = getActiveProducts();
                 {activeTab === "topRated" && (
                   <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-green-600 rounded-full" />
                 )}
-              </button>
+              </button>{" "}
             </div>
             {/* Slider Controls - Hidden on mobile (we use different controls) */}
             <div className="hidden sm:flex items-center gap-2">
@@ -457,55 +467,53 @@ const activeProducts = getActiveProducts();
             </div>
           </div>
 
-        
-      {/* Carousel Zone - Arrows always visible on mobile, hover on desktop */}
-{/* Carousel Zone - Arrows appear on touch/scroll mobile, hover desktop */}
-<div className="relative group w-full">
-  {/* Left Arrow */}
-  <button
-    onClick={() => scrollSlider("left")}
-    className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-2 sm:-ml-4 z-20 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 border border-green-100 text-green-800 rounded-full bg-white shadow-md hover:bg-green-50 transition-all duration-300 ${
-      isScrolling 
-        ? "opacity-100 translate-x-0" 
-        : "opacity-0 -translate-x-2"
-    } sm:opacity-0 sm:group-hover:opacity-100 sm:translate-x-0 sm:group-hover:translate-x-0`}
-    aria-label="Scroll left"
-  >
-    <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
-  </button>
+          {/* Carousel Zone - Arrows appear on touch/scroll mobile, hover desktop */}
+          <div className="relative group w-full">
+            {/* Left Arrow */}
+            <button
+              onClick={() => scrollSlider("left")}
+              className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-2 sm:-ml-4 z-20 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 border border-green-100 text-green-800 rounded-full bg-white shadow-md hover:bg-green-50 transition-all duration-300 ${
+                isScrolling
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 -translate-x-2"
+              } sm:opacity-0 sm:group-hover:opacity-100 sm:translate-x-0 sm:group-hover:translate-x-0`}
+              aria-label="Scroll left"
+            >
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
 
-  {/* Product Rail */}
-  <div
-    ref={sliderRef}
-    className="flex overflow-x-auto gap-4 sm:gap-6 pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth px-1"
-    style={{
-      scrollbarWidth: "none",
-      msOverflowStyle: "none",
-    }}
-  >
-    {activeProducts.map((product) => (
-      <div
-        key={product.id}
-        className="snap-start w-[260px] sm:w-[320px] lg:w-[340px] flex-shrink-0"
-      >
-        <ProductCard product={product} />
-      </div>
-    ))}
-  </div>
+            {/* Product Rail */}
+            <div
+              ref={sliderRef}
+              className="flex overflow-x-auto gap-4 sm:gap-6 pb-4 scrollbar-hide snap-x snap-mandatory scroll-smooth px-1"
+              style={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              }}
+            >
+              {activeProducts.map((product) => (
+                <div
+                  key={product.id}
+                  className="snap-start w-[260px] sm:w-[320px] lg:w-[340px] flex-shrink-0"
+                >
+                  <ProductCard product={product} />
+                </div>
+              ))}
+            </div>
 
-  {/* Right Arrow */}
-  <button
-    onClick={() => scrollSlider("right")}
-    className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-2 sm:-mr-4 z-20 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 border border-green-100 text-green-800 rounded-full bg-white shadow-md hover:bg-green-50 transition-all duration-300 ${
-      isScrolling 
-        ? "opacity-100 translate-x-0" 
-        : "opacity-0 translate-x-2"
-    } sm:opacity-0 sm:group-hover:opacity-100 sm:translate-x-0 sm:group-hover:translate-x-0`}
-    aria-label="Scroll right"
-  >
-    <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
-  </button>
-</div>
+            {/* Right Arrow */}
+            <button
+              onClick={() => scrollSlider("right")}
+              className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-2 sm:-mr-4 z-20 flex items-center justify-center w-8 h-8 sm:w-10 sm:h-10 border border-green-100 text-green-800 rounded-full bg-white shadow-md hover:bg-green-50 transition-all duration-300 ${
+                isScrolling
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 translate-x-2"
+              } sm:opacity-0 sm:group-hover:opacity-100 sm:translate-x-0 sm:group-hover:translate-x-0`}
+              aria-label="Scroll right"
+            >
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+            </button>
+          </div>
         </div>
       </div>
 
