@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import { Listbox } from "@headlessui/react";
 import {
   Tractor,
@@ -156,6 +157,7 @@ const SUGGESTED_COMPARISONS = [
 ];
 
 export default function TractorCompare() {
+  const compareSectionRef = useRef(null);
   const [slots, setSlots] = useState([
     { model: "", variant: "" },
     { model: "", variant: "" },
@@ -201,12 +203,24 @@ export default function TractorCompare() {
     })
     .filter(Boolean);
 
+    const scrollToCompare = () => {
+  const y =
+    compareSectionRef.current.getBoundingClientRect().top +
+    window.pageYOffset -
+    100;
+
+  window.scrollTo({
+    top: y,
+    behavior: "smooth",
+  });
+};
+
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans antialiased">
       {/* MAIN CONTAINER */}
      <main className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 py-6">
         {/* TOP CONFIGURATOR WORKSPACE */}
-        <section className="bg-white border border-gray-200 rounded-xl mt-6 p-4 sm:p-6 shadow-sm mb-8">
+        <section  ref={compareSectionRef} className="bg-white border border-gray-200 rounded-xl mt-6 p-4 sm:p-6 shadow-sm mb-8">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-2.5">
             Compare  <span className="text-transparent bg-clip-text bg-green-600"> Tractors Side-by-Side </span>
           </h2>
@@ -592,9 +606,11 @@ export default function TractorCompare() {
                       {tractor.priceRange}
                     </span>
                   </div>
-                  <button className="bg-green-50 text-green-700 hover:bg-green-700 hover:text-white font-bold text-xs py-2 px-3 rounded-md transition duration-150">
+                  <Link to={`/tractor/${tractor.id}`}>
+                  <button className="bg-green-50 text-green-700 hover:bg-green-700 hover:text-white font-bold text-xs cursor-pointer py-2 px-3 rounded-md transition duration-150">
                     View Details
                   </button>
+                  </Link>
                 </div>
               </div>
             ))}
@@ -673,7 +689,9 @@ export default function TractorCompare() {
 
                 {/* Action comparison button wrapper */}
                 <div className="mt-1">
-                  <button className="w-full cursor-pointer border border-green-200 bg-white hover:bg-green-50 text-green-700 transition-colors duration-150 text-[10px] sm:text-xs font-semibold py-1.5 px-2 rounded-md text-center truncate">
+                  <button
+                   onClick={scrollToCompare}
+                  className="w-full cursor-pointer border border-green-200 bg-white hover:bg-green-50 text-green-700 transition-colors duration-150 text-[10px] sm:text-xs font-semibold py-1.5 px-2 rounded-md text-center truncate">
                     {pair.left.name.split(" ")[0]} {pair.left.name.split(" ")[1] || ""} vs {pair.right.name}
                   </button>
                 </div>

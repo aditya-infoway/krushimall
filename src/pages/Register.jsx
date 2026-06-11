@@ -139,7 +139,7 @@ const Register = () => {
           <div className="hidden lg:block order-2 lg:order-1">
             <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 md:p-12 text-white">
               <h2 className="text-2xl md:text-3xl font-bold mb-6">
-                Join PartMasters Today
+                Join KrushiMall Today
               </h2>
               <p className="text-gray-300 mb-8">
                 Create your account and get access to exclusive features and
@@ -184,7 +184,7 @@ const Register = () => {
                   to="/"
                   className="inline-block text-2xl font-bold text-green-600 tracking-tight mb-6"
                 >
-                  Part<span className="text-gray-900">Masters</span>
+                Krushi<span className="text-gray-900">Mall</span>
                 </Link>
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                   Create Account
@@ -227,7 +227,7 @@ const Register = () => {
                     {/* Full Name */}
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Full Name
+                        Full Name 
                       </label>
                       <div className="relative">
                         <User className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />

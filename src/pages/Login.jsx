@@ -77,7 +77,7 @@ const Login = () => {
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8">
               <div className="text-center mb-8">
                 <Link to="/" className="inline-block text-2xl font-bold text-green-600 tracking-tight mb-6">
-                  Part<span className="text-gray-900">Masters</span>
+                  Krushi<span className="text-gray-900">Mall</span>
                 </Link>
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                   Welcome Back 👋
@@ -216,7 +216,7 @@ const Login = () => {
                 Why Create an Account?
               </h2>
               <p className="text-gray-300 mb-8">
-                Join thousands of satisfied customers who trust PartMasters for their auto parts needs.
+                Join thousands of satisfied customers who trust KrushiMall for their auto parts needs.
               </p>
               
               <div className="space-y-6 mb-8">

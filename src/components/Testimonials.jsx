@@ -3,9 +3,11 @@ import { Star, ChevronLeft, ChevronRight, Quote, User } from "lucide-react";
 
 const Testimonials = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [mobileIndex, setMobileIndex] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const mobileScrollRef = useRef(null);
+const [isScrollingMobile, setIsScrollingMobile] = useState(false);
+const scrollTimeoutRef = useRef(null);
 
   const reviews = [
     {
@@ -92,22 +94,56 @@ const Testimonials = () => {
   ];
 
   const totalSlides = Math.ceil(reviews.length / 3);
-  const mobileTotalSlides = reviews.length;
 
-  useEffect(() => {
-    if (!isAutoPlaying) return;
 
-    const timer = setInterval(() => {
+useEffect(() => {
+  if (!isAutoPlaying) return;
+
+  const timer = setInterval(() => {
+    if (window.innerWidth >= 768) {
       setIsTransitioning(true);
       setTimeout(() => {
         setCurrentIndex((prev) => (prev + 1) % totalSlides);
-        setMobileIndex((prev) => (prev + 1) % mobileTotalSlides);
         setIsTransitioning(false);
       }, 200);
-    }, 4000);
+    }
+  }, 4000);
 
-    return () => clearInterval(timer);
-  }, [isAutoPlaying, totalSlides, mobileTotalSlides]);
+  return () => clearInterval(timer);
+}, [isAutoPlaying, totalSlides]);
+
+
+useEffect(() => {
+  const slider = mobileScrollRef.current;
+  if (!slider) return;
+
+  const handleScroll = () => {
+    setIsScrollingMobile(true);
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    scrollTimeoutRef.current = setTimeout(() => setIsScrollingMobile(false), 1500);
+  };
+
+  slider.addEventListener("scroll", handleScroll, { passive: true });
+  slider.addEventListener("touchstart", handleScroll, { passive: true });
+
+  return () => {
+    slider.removeEventListener("scroll", handleScroll);
+    slider.removeEventListener("touchstart", handleScroll);
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+  };
+}, []);
+
+
+
+const scrollMobile = (direction) => {
+  if (!mobileScrollRef.current) return;
+  const { scrollLeft, clientWidth } = mobileScrollRef.current;
+  mobileScrollRef.current.scrollTo({
+    left: direction === "left" ? scrollLeft - clientWidth * 0.8 : scrollLeft + clientWidth * 0.8,
+    behavior: "smooth",
+  });
+};
+
 
   const handleDesktopSlideChange = (getNewIndex) => {
     setIsTransitioning(true);
@@ -175,128 +211,75 @@ const Testimonials = () => {
           </div>
 
           {/* MOBILE VIEW - 1.5 cards */}
-          <div className="md:hidden relative">
-            <div className="relative overflow-hidden px-8">
-              <div 
-                className="flex transition-transform duration-300 ease-in-out"
-                style={{
-                  transform: `translateX(-${mobileIndex * (100 / 1.5)}%)`,
-                }}
-              >
-                {reviews.map((review, idx) => (
-                  <div
-                    key={idx}
-                    className="flex-shrink-0 px-2"
-                    style={{ width: `${100 / 1.5}%` }}
-                  >
-                    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 relative overflow-hidden flex flex-col justify-between min-h-[280px]">
-                      {/* Decorative Quote Mark */}
-                      <div className="absolute top-4 right-6 opacity-5 pointer-events-none">
-                        <Quote className="h-16 w-16 text-gray-900" />
-                      </div>
+         {/* MOBILE VIEW - Native scroll with arrows appearing on touch */}
+<div className="md:hidden relative">
+  {/* Left Arrow - Appears on scroll/touch */}
+  <button
+    onClick={() => scrollMobile("left")}
+    className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+      isScrollingMobile ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"
+    }`}
+  >
+    <ChevronLeft className="h-4 w-4" />
+  </button>
 
-                      {/* Top Section: Review Text */}
-                      <div className="mb-6">
-                        <blockquote className="text-sm text-gray-700 leading-relaxed italic">
-                          "{review.text}"
-                        </blockquote>
-                      </div>
-
-                      {/* Bottom Section: Combined User Profile & Information */}
-                      <div className="border-t border-gray-100 pt-4 mt-auto">
-                        <div className="flex items-center gap-3">
-                          {/* Rounded Image Avatar */}
-                          <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-green-500 shadow-sm flex-shrink-0 bg-gray-100">
-                            {review.avatar ? (
-                              <img
-                                src={review.avatar}
-                                alt={review.name}
-                                className="w-full h-full object-cover"
-                                onError={(e) => {
-                                  e.target.onerror = null;
-                                  e.target.src = "";
-                                }}
-                              />
-                            ) : (
-                              <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-200">
-                                <User className="h-6 w-6" />
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Metadata column */}
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center justify-between gap-2 mb-0.5">
-                              <p className="font-bold text-gray-900 text-sm truncate">
-                                {review.name}
-                              </p>
-                              <div className="flex gap-0.5 flex-shrink-0">
-                                {[...Array(5)].map((_, starIndex) => (
-                                  <Star
-                                    key={starIndex}
-                                    className={`h-3 w-3 ${
-                                      starIndex < review.rating
-                                        ? "fill-yellow-400 text-yellow-400"
-                                        : "text-gray-200"
-                                    }`}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-
-                            <div className="flex items-center justify-between text-[11px] text-gray-500 gap-1">
-                              <p className="truncate max-w-[60%]">{review.role}</p>
-                              <span className="font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded text-[10px] truncate max-w-[40%]">
-                                {review.tractor}
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+  {/* Scrollable Container */}
+  <div
+    ref={mobileScrollRef}
+    className="flex overflow-x-auto gap-3 pb-4 px-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
+    style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+  >
+    {reviews.map((review, idx) => (
+      <div key={idx} className="snap-start w-[80vw] flex-shrink-0">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 relative overflow-hidden flex flex-col justify-between min-h-[280px]">
+          <div className="absolute top-4 right-6 opacity-5 pointer-events-none">
+            <Quote className="h-16 w-16 text-gray-900" />
+          </div>
+          <div className="mb-6">
+            <blockquote className="text-sm text-gray-700 leading-relaxed italic">
+              "{review.text}"
+            </blockquote>
+          </div>
+          <div className="border-t border-gray-100 pt-4 mt-auto">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-green-500 shadow-sm flex-shrink-0 bg-gray-100">
+                {review.avatar ? (
+                  <img src={review.avatar} alt={review.name} className="w-full h-full object-cover" onError={(e) => { e.target.onerror = null; e.target.src = ""; }} />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-gray-400 bg-gray-200"><User className="h-6 w-6" /></div>
+                )}
               </div>
-
-              {/* Mobile Navigation Arrows */}
-              <button
-                onClick={goToPrevious}
-                className="absolute cursor-pointer left-0 top-1/2 -translate-y-1/2 bg-white text-gray-700 rounded-full p-1.5 shadow-lg transition-all z-10 border border-gray-200 w-8 h-8 flex items-center justify-center"
-                aria-label="Previous reviews"
-              >
-                <ChevronLeft className="h-4 w-4" />
-              </button>
-
-              <button
-                onClick={goToNext}
-                className="absolute cursor-pointer right-0 top-1/2 -translate-y-1/2 bg-white text-gray-700 rounded-full p-1.5 shadow-lg transition-all z-10 border border-gray-200 w-8 h-8 flex items-center justify-center"
-                aria-label="Next reviews"
-              >
-                <ChevronRight className="h-4 w-4" />
-              </button>
-            </div>
-
-            {/* Mobile Dots */}
-            <div className="flex justify-center items-center gap-3 mt-8">
-              {[...Array(mobileTotalSlides)].map((_, index) => (
-                <button
-                  key={index}
-                  onClick={() => goToMobileSlide(index)}
-                  className={`transition-all duration-300 rounded-full cursor-pointer ${
-                    mobileIndex === index
-                      ? "w-8 h-2.5 bg-green-600 shadow-lg"
-                      : "w-2.5 h-2.5 bg-gray-300 hover:bg-gray-400"
-                  }`}
-                  aria-label={`Go to slide ${index + 1}`}
-                />
-              ))}
-            </div>
-
-            {/* Mobile Counter */}
-            <div className="text-center mt-4 text-sm text-gray-400 font-medium">
-              {mobileIndex + 1} / {mobileTotalSlides}
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center justify-between gap-2 mb-0.5">
+                  <p className="font-bold text-gray-900 text-sm truncate">{review.name}</p>
+                  <div className="flex gap-0.5 flex-shrink-0">
+                    {[...Array(5)].map((_, starIndex) => (
+                      <Star key={starIndex} className={`h-3 w-3 ${starIndex < review.rating ? "fill-yellow-400 text-yellow-400" : "text-gray-200"}`} />
+                    ))}
+                  </div>
+                </div>
+                <div className="flex items-center justify-between text-[11px] text-gray-500 gap-1">
+                  <p className="truncate max-w-[60%]">{review.role}</p>
+                  <span className="font-semibold text-green-700 bg-green-50 px-1.5 py-0.5 rounded text-[10px] truncate max-w-[40%]">{review.tractor}</span>
+                </div>
+              </div>
             </div>
           </div>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  {/* Right Arrow - Appears on scroll/touch */}
+  <button
+    onClick={() => scrollMobile("right")}
+    className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+      isScrollingMobile ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
+    }`}
+  >
+    <ChevronRight className="h-4 w-4" />
+  </button>
+</div>
 
           {/* DESKTOP VIEW - Original 3 cards grid */}
           <div className="hidden md:block">

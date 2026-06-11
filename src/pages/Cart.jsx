@@ -193,13 +193,17 @@ const Cart = () => {
                         {/* Quantity */}
                         <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
                           <button
-                            onClick={() =>
-                              updateQuantity(item.id, item.quantity - 1)
-                            }
-                            className="p-2 cursor-pointer hover:bg-gray-50"
-                          >
-                            <Minus className="h-3 w-3" />
-                          </button>
+  onClick={() => {
+    if (item.quantity <= 1) {
+      handleRemoveItem(item.id, item.name);
+    } else {
+      updateQuantity(item.id, item.quantity - 1);
+    }
+  }}
+  className="p-2 cursor-pointer hover:bg-gray-50"
+>
+  <Minus className="h-3 w-3" />
+</button>
 
                           <span className="w-10 text-center text-sm font-medium">
                             {item.quantity}
@@ -221,7 +225,7 @@ const Cart = () => {
 
                         <button
                           onClick={() => handleRemoveItem(item.id, item.name)}
-                          className="cursor-pointer text-red-600 hover:text-red-700 text-sm flex px-2 items-center gap-1"
+                          className="cursor-pointer text-red-600 hover:text-red-700 text-sm flex px-1 py-1 items-center gap-1"
                           >
                           <Trash2 className="h-3.5 w-3.5" />
                           Remove

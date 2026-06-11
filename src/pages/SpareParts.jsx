@@ -1,5 +1,6 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { Listbox, Checkbox} from "@headlessui/react";
 import {
   Search,
   Car,
@@ -28,8 +29,9 @@ import {
   MapPin,
   Sparkles,
   Tractor,
+   Check,
 } from "lucide-react";
-import { Listbox } from "@headlessui/react";
+
 
 const SpareParts = () => {
   const navigate = useNavigate();
@@ -43,9 +45,67 @@ const SpareParts = () => {
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
-  const [featuredIndex, setFeaturedIndex] = useState(0);
-  const [bestSellerIndex, setBestSellerIndex] = useState(0);
-  const [categoryIndex, setCategoryIndex] = useState(0);
+  const categoriesScrollRef = useRef(null);
+  const featuredScrollRef = useRef(null);
+  const bestSellerScrollRef = useRef(null);
+  const [isScrollingCategories, setIsScrollingCategories] = useState(false);
+  const [isScrollingFeatured, setIsScrollingFeatured] = useState(false);
+  const [isScrollingBestSeller, setIsScrollingBestSeller] = useState(false);
+  const scrollTimeoutRef1 = useRef(null);
+  const scrollTimeoutRef2 = useRef(null);
+  const scrollTimeoutRef3 = useRef(null);
+  const [readyToDispatch, setReadyToDispatch] = useState(true);
+const [includeOutOfStock, setIncludeOutOfStock] = useState(false);
+const [oemPart, setOemPart] = useState(true);
+const [oesCertified, setOesCertified] = useState(true);
+
+  // Hook to detect scroll for showing arrows
+  const useScrollDetection = (ref, setIsScrolling, timeoutRef) => {
+    useEffect(() => {
+      const slider = ref.current;
+      if (!slider) return;
+      const handleScroll = () => {
+        setIsScrolling(true);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        timeoutRef.current = setTimeout(() => setIsScrolling(false), 1500);
+      };
+      slider.addEventListener("scroll", handleScroll, { passive: true });
+      slider.addEventListener("touchstart", handleScroll, { passive: true });
+      return () => {
+        slider.removeEventListener("scroll", handleScroll);
+        slider.removeEventListener("touchstart", handleScroll);
+        if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      };
+    }, []);
+  };
+
+  useScrollDetection(
+    categoriesScrollRef,
+    setIsScrollingCategories,
+    scrollTimeoutRef1,
+  );
+  useScrollDetection(
+    featuredScrollRef,
+    setIsScrollingFeatured,
+    scrollTimeoutRef2,
+  );
+  useScrollDetection(
+    bestSellerScrollRef,
+    setIsScrollingBestSeller,
+    scrollTimeoutRef3,
+  );
+
+  const scrollSlider = (ref, direction) => {
+    if (!ref.current) return;
+    const { scrollLeft, clientWidth } = ref.current;
+    ref.current.scrollTo({
+      left:
+        direction === "left"
+          ? scrollLeft - clientWidth * 0.8
+          : scrollLeft + clientWidth * 0.8,
+      behavior: "smooth",
+    });
+  };
 
   // New local states required for added section mechanics
   const [faqOpen, setFaqOpen] = useState(null);
@@ -657,131 +717,133 @@ const SpareParts = () => {
         </div>
       </section>
       {/* ========== SECTION 3: SEARCH BY CATEGORY ========== */}
-      <section
-        id="categories"
-        ref={categoriesRef}
-        className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20"
-      >
-        <div className="text-center mb-12">
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight flex items-center justify-center gap-3">
-            <Wrench className="h-8 w-8 text-green-600" />
-            Search{" "}
-            <span className="text-transparent bg-clip-text bg-green-600">
-              {" "}
-              by Category{" "}
-            </span>
-          </h2>
-          <p className="text-gray-600 mt-2">
-            Browse our extensive catalog of spare parts categories
-          </p>
-        </div>
+    {/* ========== SECTION 3: SEARCH BY CATEGORY ========== */}
+<section
+  id="categories"
+  ref={categoriesRef}
+  className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20"
+>
+  <div className="flex items-center justify-between mb-5 sm:mb-8">
+    <div>
+      <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
+        <Wrench className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
+        Search{" "}
+        <span className="text-transparent bg-clip-text bg-green-600">
+          by Category
+        </span>
+      </h2>
+      <p className="text-gray-600 text-sm mt-1">
+        Browse our extensive catalog of spare parts categories
+      </p>
+    </div>
+    <Link
+      to="/categories"
+      className="text-green-600 hover:text-green-700 font-semibold flex items-center gap-1 text-sm  hover:underline"
+    >
+      <span className="hidden sm:inline">View All</span>
+      <ArrowRight className="h-4 w-4" />
+    </Link>
+   
+  </div>
 
-        {/* MOBILE - 1.5 cards sliding */}
-        {/* MOBILE - 1.5 cards sliding */}
-        <div className="sm:hidden relative">
-          <div className="overflow-hidden px-8">
-            <div
-              className="flex transition-transform duration-500 ease-in-out"
-              style={{
-                transform: `translateX(-${categoryIndex * (100 / 1.5)}%)`,
-              }}
-            >
-              {[...categories, ...categories.slice(0, 2)].map(
-                (category, idx) => (
-                  <div
-                    key={`${category.id}-${idx}`}
-                    className="px-1.5"
-                    style={{ width: `${100 / 1.5}%`, flexShrink: 0 }}
-                  >
-                    <Link
-                      to={`/category/${category.slug}`}
-                      className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col h-full"
-                    >
-                      <div className="relative h-40 overflow-hidden bg-gray-100">
-                        <img
-                          src={category.image}
-                          alt={category.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                          loading="lazy"
-                          onError={(e) => {
-                            e.target.onerror = null;
-                            e.target.src =
-                              "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop";
-                          }}
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                        <div className="absolute bottom-3 left-3 text-white">
-                          <category.icon className="h-6 w-6 mb-1" />
-                          <h3 className="text-sm font-bold">{category.name}</h3>
-                        </div>
-                      </div>
-                      <div className="p-3 border-t border-gray-100 mt-auto">
-                        <span className="text-xs text-green-600 hover:text-green-700 font-medium flex items-center gap-1">
-                          View Subcategories{" "}
-                          <ChevronRight className="h-3 w-3" />
-                        </span>
-                      </div>
-                    </Link>
-                  </div>
-                ),
-              )}
+  {/* MOBILE - Native scroll with arrows on touch */}
+  <div className="sm:hidden relative">
+    <button
+      onClick={() => scrollSlider(categoriesScrollRef, "left")}
+      className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+        isScrollingCategories
+          ? "opacity-100 translate-x-0"
+          : "opacity-0 -translate-x-2"
+      }`}
+    >
+      <ChevronRight className="h-4 w-4 rotate-180" />
+    </button>
+    <div
+      ref={categoriesScrollRef}
+      className="flex overflow-x-auto gap-3 pb-4 px-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
+      style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+    >
+      {categories.map((category) => (
+        <div
+          key={category.id}
+          className="snap-start w-[75vw] flex-shrink-0"
+        >
+          <Link
+            to={`/category/${category.slug}`}
+            className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col h-full"
+          >
+            <div className="relative h-40 overflow-hidden bg-gray-100">
+              <img
+                src={category.image}
+                alt={category.name}
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                loading="lazy"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src =
+                    "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop";
+                }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+              <div className="absolute bottom-3 left-3 text-white">
+                <category.icon className="h-6 w-6 mb-1" />
+                <h3 className="text-sm font-bold">{category.name}</h3>
+              </div>
             </div>
-          </div>
-          <button
-            onClick={() =>
-              setCategoryIndex((prev) =>
-                prev <= 0 ? categories.length - 1 : prev - 1,
-              )
-            }
-            className="absolute cursor-pointer left-0 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white border-2 border-green-200 shadow-lg flex items-center justify-center"
-          >
-            <ChevronRight className="h-3.5 w-3.5 text-green-700 rotate-180" />
-          </button>
-          <button
-            onClick={() =>
-              setCategoryIndex((prev) =>
-                prev >= categories.length - 1 ? 0 : prev + 1,
-              )
-            }
-            className="absolute cursor-pointer right-0 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white border-2 border-green-200 shadow-lg flex items-center justify-center"
-          >
-            <ChevronRight className="h-3.5 w-3.5 text-green-700" />
-          </button>
+            <div className="p-3 border-t border-gray-100 mt-auto">
+              <span className="text-xs text-green-600 hover:text-green-700 font-medium flex items-center gap-1">
+                View Subcategories <ChevronRight className="h-3 w-3" />
+              </span>
+            </div>
+          </Link>
         </div>
-        {/* DESKTOP - Original grid unchanged */}
-        <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((category) => (
-            <Link
-              key={category.id}
-              to={`/category/${category.slug}`}
-              className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden"
-            >
-              <div className="relative h-48 overflow-hidden">
-                <img
-                  src={category.image}
-                  alt={category.name}
-                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                  onError={(e) => {
-                    e.target.src =
-                      "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop";
-                  }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-                <div className="absolute bottom-4 left-4 text-white">
-                  <category.icon className="h-8 w-8 mb-2" />
-                  <h3 className="text-lg font-bold">{category.name}</h3>
-                </div>
-              </div>
-              <div className="p-4 border-t border-gray-100">
-                <span className="text-sm text-green-600 hover:text-green-700 font-medium flex items-center gap-1">
-                  View Subcategories <ChevronRight className="h-4 w-4" />
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
-      </section>
+      ))}
+    </div>
+    <button
+      onClick={() => scrollSlider(categoriesScrollRef, "right")}
+      className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+        isScrollingCategories
+          ? "opacity-100 translate-x-0"
+          : "opacity-0 translate-x-2"
+      }`}
+    >
+      <ChevronRight className="h-4 w-4" />
+    </button>
+  </div>
 
+  {/* DESKTOP - Grid */}
+  <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+    {categories.map((category) => (
+      <Link
+        key={category.id}
+        to={`/category/${category.slug}`}
+        className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden"
+      >
+        <div className="relative h-48 overflow-hidden">
+          <img
+            src={category.image}
+            alt={category.name}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+            onError={(e) => {
+              e.target.src =
+                "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop";
+            }}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+          <div className="absolute bottom-4 left-4 text-white">
+            <category.icon className="h-8 w-8 mb-2" />
+            <h3 className="text-lg font-bold">{category.name}</h3>
+          </div>
+        </div>
+        <div className="p-4 border-t border-gray-100">
+          <span className="text-sm text-green-600 hover:text-green-700 font-medium flex items-center gap-1">
+            View Subcategories <ChevronRight className="h-4 w-4" />
+          </span>
+        </div>
+      </Link>
+    ))}
+  </div>
+</section>
       {/* ========== SECTION 4: FEATURED PRODUCTS ========== */}
       <section className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 border-t border-gray-100">
         <div className="flex justify-between items-end mb-8">
@@ -807,72 +869,67 @@ const SpareParts = () => {
           </Link>
         </div>
         {/* MOBILE - 1.5 cards sliding */}
+        {/* MOBILE - Native scroll with arrows on touch */}
         <div className="sm:hidden relative">
-          <div className="overflow-hidden px-8">
-            <div
-              className="flex transition-transform duration-500 ease-in-out"
-              style={{
-                transform: `translateX(-${featuredIndex * (100 / 1.5)}%)`,
-              }}
-            >
-              {[...featuredProducts, ...featuredProducts.slice(0, 2)].map(
-                (product, idx) => (
-                  <div
-                    key={`${product.id}-${idx}`}
-                    className="px-1.5"
-                    style={{ width: `${100 / 1.5}%`, flexShrink: 0 }}
-                  >
-                    <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between h-full">
-                      <div>
-                        <Link to={`/product/${product.id}`}>
-                          <img
-                            src={product.image}
-                            alt={product.name}
-                            className="w-full h-40 object-cover rounded-lg mb-3 cursor-pointer hover:opacity-90 transition-opacity"
-                          />
-                        </Link>
-                        <Link to={`/product/${product.id}`}>
-                          <h4 className="font-semibold text-gray-900 text-sm line-clamp-2 hover:text-green-600 transition-colors cursor-pointer">
-                            {product.name}
-                          </h4>
-                        </Link>
-                        <div className="flex items-center gap-1 text-green-600 text-xs mt-2 font-medium">
-                          <CheckCircle className="h-3 w-3" /> Guaranteed Fitment
-                        </div>
-                      </div>
-                      <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between">
-                        <span className="text-lg font-bold text-gray-900">
-                          {product.price}
-                        </span>
-                        <button className="cursor-pointer px-3 py-1.5 bg-green-700 hover:bg-green-800 text-white rounded-md text-xs font-semibold transition-colors">
-                          Add to Cart
-                        </button>
-                      </div>
+          <button
+            onClick={() => scrollSlider(featuredScrollRef, "left")}
+            className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+              isScrollingFeatured
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 -translate-x-2"
+            }`}
+          >
+            <ChevronRight className="h-4 w-4 rotate-180" />
+          </button>
+          <div
+            ref={featuredScrollRef}
+            className="flex overflow-x-auto gap-3 pb-4 px-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {featuredProducts.map((product) => (
+              <div
+                key={product.id}
+                className="snap-start w-[75vw] flex-shrink-0"
+              >
+                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between h-full">
+                  <div>
+                    <Link to={`/product/${product.id}`}>
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-40 object-cover rounded-lg mb-3 cursor-pointer hover:opacity-90 transition-opacity"
+                      />
+                    </Link>
+                    <Link to={`/product/${product.id}`}>
+                      <h4 className="font-semibold text-gray-900 text-sm line-clamp-2 hover:text-green-600 transition-colors cursor-pointer">
+                        {product.name}
+                      </h4>
+                    </Link>
+                    <div className="flex items-center gap-1 text-green-600 text-xs mt-2 font-medium">
+                      <CheckCircle className="h-3 w-3" /> Guaranteed Fitment
                     </div>
                   </div>
-                ),
-              )}
-            </div>
+                  <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between">
+                    <span className="text-lg font-bold text-gray-900">
+                      {product.price}
+                    </span>
+                    <button className="cursor-pointer px-3 py-1.5 bg-green-700 hover:bg-green-800 text-white rounded-md text-xs font-semibold transition-colors">
+                      Add to Cart
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
           <button
-            onClick={() =>
-              setFeaturedIndex((prev) =>
-                prev <= 0 ? featuredProducts.length - 1 : prev - 1,
-              )
-            }
-            className="absolute cursor-pointer left-0 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white border-2 border-green-200 shadow-lg flex items-center justify-center"
+            onClick={() => scrollSlider(featuredScrollRef, "right")}
+            className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+              isScrollingFeatured
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 translate-x-2"
+            }`}
           >
-            <ChevronRight className="h-3.5 w-3.5 text-green-700 rotate-180" />
-          </button>
-          <button
-            onClick={() =>
-              setFeaturedIndex((prev) =>
-                prev >= featuredProducts.length - 1 ? 0 : prev + 1,
-              )
-            }
-            className="absolute cursor-pointer right-0 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white border-2 border-green-200 shadow-lg flex items-center justify-center"
-          >
-            <ChevronRight className="h-3.5 w-3.5 text-green-700" />
+            <ChevronRight className="h-4 w-4" />
           </button>
         </div>
         {/* DESKTOP - Original grid unchanged */}
@@ -928,73 +985,64 @@ const SpareParts = () => {
         </div>
 
         {/* MOBILE - 1.5 cards sliding */}
+        {/* MOBILE - Native scroll with arrows on touch */}
         <div className="sm:hidden relative">
-          <div className="overflow-hidden px-8">
-            <div
-              className="flex transition-transform duration-500 ease-in-out"
-              style={{
-                transform: `translateX(-${bestSellerIndex * (100 / 1.5)}%)`,
-              }}
-            >
-              {[...bestSellers, ...bestSellers.slice(0, 2)].map((item, idx) => (
-                <div
-                  key={`${item.id}-${idx}`}
-                  className="px-1.5"
-                  style={{ width: `${100 / 1.5}%`, flexShrink: 0 }}
-                >
-                  <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between h-full">
-                    <div>
-                      <Link
-                        to={`/product/${item.id}`}
-                        className="relative block"
-                      >
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-full h-40 object-cover rounded-lg mb-3 cursor-pointer hover:opacity-90 transition-opacity"
-                        />
-                        <span className="absolute top-2 left-2 bg-green-700 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded">
-                          Top Seller
-                        </span>
-                      </Link>
-                      <Link to={`/product/${item.id}`}>
-                        <h4 className="font-semibold text-gray-900 text-sm line-clamp-2 hover:text-green-600 transition-colors cursor-pointer">
-                          {item.name}
-                        </h4>
-                      </Link>
-                    </div>
-                    <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between">
-                      <span className="text-lg font-bold text-gray-900">
-                        {item.price}
+          <button
+            onClick={() => scrollSlider(bestSellerScrollRef, "left")}
+            className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+              isScrollingBestSeller
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 -translate-x-2"
+            }`}
+          >
+            <ChevronRight className="h-4 w-4 rotate-180" />
+          </button>
+          <div
+            ref={bestSellerScrollRef}
+            className="flex overflow-x-auto gap-3 pb-4 px-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {bestSellers.map((item) => (
+              <div key={item.id} className="snap-start w-[75vw] flex-shrink-0">
+                <div className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between h-full">
+                  <div>
+                    <Link to={`/product/${item.id}`} className="relative block">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-full h-40 object-cover rounded-lg mb-3 cursor-pointer hover:opacity-90 transition-opacity"
+                      />
+                      <span className="absolute top-2 left-2 bg-green-700 text-white text-[10px] uppercase font-bold px-2 py-0.5 rounded">
+                        Top Seller
                       </span>
-                      <button className="p-1.5 rounded-md border border-gray-200 hover:bg-gray-50 text-gray-600 transition-colors">
-                        <Heart className="h-4 w-4" />
-                      </button>
-                    </div>
+                    </Link>
+                    <Link to={`/product/${item.id}`}>
+                      <h4 className="font-semibold text-gray-900 text-sm line-clamp-2 hover:text-green-600 transition-colors cursor-pointer">
+                        {item.name}
+                      </h4>
+                    </Link>
+                  </div>
+                  <div className="mt-4 pt-3 border-t border-gray-50 flex items-center justify-between">
+                    <span className="text-lg font-bold text-gray-900">
+                      {item.price}
+                    </span>
+                    <button className="p-1.5 rounded-md border border-gray-200 hover:bg-gray-50 text-gray-600 transition-colors">
+                      <Heart className="h-4 w-4" />
+                    </button>
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+            ))}
           </div>
           <button
-            onClick={() =>
-              setBestSellerIndex((prev) =>
-                prev <= 0 ? bestSellers.length - 1 : prev - 1,
-              )
-            }
-            className="absolute cursor-pointer left-0 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white border-2 border-green-200 shadow-lg flex items-center justify-center"
+            onClick={() => scrollSlider(bestSellerScrollRef, "right")}
+            className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+              isScrollingBestSeller
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 translate-x-2"
+            }`}
           >
-            <ChevronRight className="h-3.5 w-3.5 text-green-700 rotate-180" />
-          </button>
-          <button
-            onClick={() =>
-              setBestSellerIndex((prev) =>
-                prev >= bestSellers.length - 1 ? 0 : prev + 1,
-              )
-            }
-            className="absolute cursor-pointer right-0 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white border-2 border-green-200 shadow-lg flex items-center justify-center"
-          >
-            <ChevronRight className="h-3.5 w-3.5 text-green-700" />
+            <ChevronRight className="h-4 w-4" />
           </button>
         </div>
 
@@ -1141,141 +1189,164 @@ const SpareParts = () => {
       </section>
 
       {/* ========== SECTION 8: PRODUCT LISTING SECTION ========== */}
-      <section className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 bg-gray-50/50 border-t border-b border-gray-200/60">
-        <div className="grid lg:grid-cols-4 gap-8 my-4">
-          {/* Enhanced Filter Panel Sidebar */}
-          <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm h-fit space-y-6">
-            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-              <span className="font-bold text-gray-900 flex items-center gap-2 text-sm">
-                <Filter className="h-4 w-4 text-green-600" /> Refine Component
-                Results
-              </span>
-              <button className="text-xs text-green-600 font-bold hover:underline">
-                Reset
-              </button>
-            </div>
+    {/* ========== SECTION 8: PRODUCT LISTING SECTION ========== */}
+<section className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 bg-gray-50/50 border-t border-b border-gray-200/60">
+  <div className="grid lg:grid-cols-4 gap-8 my-4">
+   {/* Enhanced Filter Panel Sidebar */}
+<div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm h-fit space-y-6">
+  <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+    <span className="font-bold text-gray-900 flex items-center gap-2 text-sm">
+      <Filter className="h-4 w-4 text-green-600" /> Refine Component Results
+    </span>
+    <button className="text-xs text-green-600 font-bold hover:text-green-700 cursor-pointer" onClick={() => {
+      setReadyToDispatch(true);
+      setIncludeOutOfStock(false);
+      setOemPart(true);
+      setOesCertified(true);
+    }}>Reset</button>
+  </div>
 
-            <div>
-              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-3">
-                Stock Status
-              </label>
-              <div className="space-y-2.5 text-sm text-gray-600">
-                <label className="flex items-center gap-2.5 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    defaultChecked
-                    className="rounded text-green-700 focus:ring-green-500 border-gray-300 w-4 h-4"
-                  />
-                  <span className="group-hover:text-gray-900 transition-colors text-xs">
-                    Ready to Dispatch (24h)
-                  </span>
-                </label>
-                <label className="flex items-center gap-2.5 cursor-pointer group">
-                  <input
-                    type="checkbox"
-                    className="rounded text-green-700 focus:ring-green-500 border-gray-300 w-4 h-4"
-                  />
-                  <span className="group-hover:text-gray-900 transition-colors text-xs">
-                    Include Out of Stock
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            <div className="pt-4 border-t border-gray-100">
-              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-3">
-                Component Grade
-              </label>
-              <div className="space-y-2.5 text-sm text-gray-600">
-                <label className="flex items-center gap-2.5 cursor-pointer text-xs">
-                  <input
-                    type="checkbox"
-                    defaultChecked
-                    className="rounded text-green-700 focus:ring-green-500 border-gray-300 w-4 h-4"
-                  />
-                  <span>OEM Original Part</span>
-                </label>
-                <label className="flex items-center gap-2.5 cursor-pointer text-xs">
-                  <input
-                    type="checkbox"
-                    defaultChecked
-                    className="rounded text-green-700 focus:ring-green-500 border-gray-300 w-4 h-4"
-                  />
-                  <span>OES Certified Alternative</span>
-                </label>
-              </div>
-            </div>
-          </div>
-
-          {/* Active Product Grid View */}
-          <div className="lg:col-span-3 space-y-4">
-            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-white p-4 border border-gray-200 rounded-xl shadow-sm">
-              <span className="text-xs font-medium text-gray-500">
-                Showing <span className="text-gray-900 font-bold">1-3</span> of
-                184 calibrated assemblies for your selection
-              </span>
-              <div className="flex items-center gap-2 text-xs">
-                <span className="text-gray-400 font-medium">Order By:</span>
-                <span className="text-gray-900 font-bold bg-gray-50 px-2 py-1 rounded border border-gray-200">
-                  Relevance
-                </span>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {[
-                {
-                  name: "Synthetic Micro-Fiber Air Filter",
-                  price: "₹580",
-                  brand: "Purolator OES",
-                  img: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
-                },
-                {
-                  name: "High-Friction Front Brake Pad Set",
-                  price: "₹1,850",
-                  brand: "Bosch Premium",
-                  img: "https://images.unsplash.com/photo-1600712242805-5f78671b24da?w=400&h=300&fit=crop",
-                },
-                {
-                  name: "Laser Iridium Power Spark Core",
-                  price: "₹1,200",
-                  brand: "NGK Technology",
-                  img: "https://images.unsplash.com/photo-1617650728468-8581e439c864?w=400&h=300&fit=crop",
-                },
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all duration-300 hover:border-green-600 flex flex-col justify-between group"
-                >
-                  <div>
-                    <div className="overflow-hidden rounded-lg mb-3 bg-gray-50 h-36 border border-gray-100">
-                      <img
-                        src={item.img}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        alt={item.name}
-                      />
-                    </div>
-                    <span className="text-[9px] font-extrabold text-green-600 uppercase tracking-wider bg-green-50 px-2 py-0.5 rounded border border-green-100/50">
-                      {item.brand}
-                    </span>
-                    <h5 className="font-bold text-gray-900 text-sm line-clamp-2 mt-2 leading-snug">
-                      {item.name}
-                    </h5>
-                  </div>
-                  <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-100">
-                    <span className="font-extrabold text-base text-gray-900">
-                      {item.price}
-                    </span>
-                    <span className="text-xs font-bold text-green-600 cursor-pointer group-hover:text-green-700 flex items-center gap-0.5">
-                      Verify Fitment <ChevronRight className="h-3.5 w-3.5" />
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+  {/* Stock Status - Headless UI Checkbox */}
+  <div>
+    <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-3">
+      Stock Status
+    </label>
+    <div className="space-y-2">
+      <Checkbox
+        checked={readyToDispatch}
+        onChange={setReadyToDispatch}
+        className="group flex items-center gap-3 text-xs text-gray-600 cursor-pointer hover:text-gray-900 transition-colors"
+      >
+        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+          readyToDispatch ? "bg-green-600 border-green-600" : "border-gray-300 group-hover:border-green-400"
+        }`}>
+          {readyToDispatch && <Check className="h-3 w-3 text-white" />}
         </div>
-      </section>
+        Ready to Dispatch (24h)
+      </Checkbox>
+
+      <Checkbox
+        checked={includeOutOfStock}
+        onChange={setIncludeOutOfStock}
+        className="group flex items-center gap-3 text-xs text-gray-600 cursor-pointer hover:text-gray-900 transition-colors"
+      >
+        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+          includeOutOfStock ? "bg-green-600 border-green-600" : "border-gray-300 group-hover:border-green-400"
+        }`}>
+          {includeOutOfStock && <Check className="h-3 w-3 text-white" />}
+        </div>
+        Include Out of Stock
+      </Checkbox>
+    </div>
+  </div>
+
+  {/* Component Grade - Headless UI Checkbox */}
+  <div className="pt-4 border-t border-gray-100">
+    <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-3">
+      Component Grade
+    </label>
+    <div className="space-y-2">
+      <Checkbox
+        checked={oemPart}
+        onChange={setOemPart}
+        className="group flex items-center gap-3 text-xs text-gray-600 cursor-pointer hover:text-gray-900 transition-colors"
+      >
+        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+          oemPart ? "bg-green-600 border-green-600" : "border-gray-300 group-hover:border-green-400"
+        }`}>
+          {oemPart && <Check className="h-3 w-3 text-white" />}
+        </div>
+        OEM Original Part
+      </Checkbox>
+
+      <Checkbox
+        checked={oesCertified}
+        onChange={setOesCertified}
+        className="group flex items-center gap-3 text-xs text-gray-600 cursor-pointer hover:text-gray-900 transition-colors"
+      >
+        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+          oesCertified ? "bg-green-600 border-green-600" : "border-gray-300 group-hover:border-green-400"
+        }`}>
+          {oesCertified && <Check className="h-3 w-3 text-white" />}
+        </div>
+        OES Certified Alternative
+      </Checkbox>
+    </div>
+  </div>
+</div>
+
+    {/* Active Product Grid View */}
+    <div className="lg:col-span-3 space-y-4">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-white p-4 border border-gray-200 rounded-xl shadow-sm">
+        <span className="text-xs font-medium text-gray-500">
+          Showing <span className="text-gray-900 font-bold">1-3</span> of 184 calibrated assemblies for your selection
+        </span>
+        <div className="flex items-center gap-2 text-xs">
+          <span className="text-gray-400 font-medium">Order By:</span>
+          <span className="text-gray-900 font-bold bg-gray-50 px-2 py-1 rounded border border-gray-200">Relevance</span>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {[
+          {
+            id: 1,
+            name: "Synthetic Micro-Fiber Air Filter",
+            price: "₹580",
+            brand: "Purolator OES",
+            img: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
+          },
+          {
+            id: 2,
+            name: "High-Friction Front Brake Pad Set",
+            price: "₹1,850",
+            brand: "Bosch Premium",
+            img: "https://images.unsplash.com/photo-1600712242805-5f78671b24da?w=400&h=300&fit=crop",
+          },
+          {
+            id: 3,
+            name: "Laser Iridium Power Spark Core",
+            price: "₹1,200",
+            brand: "NGK Technology",
+            img: "https://images.unsplash.com/photo-1617650728468-8581e439c864?w=400&h=300&fit=crop",
+          },
+        ].map((item, idx) => (
+          <div
+            key={idx}
+            className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all duration-300 hover:border-green-600 flex flex-col justify-between group"
+          >
+            <div>
+              <Link to={`/product/${item.id}`} className="overflow-hidden rounded-lg mb-3 bg-gray-50 h-36 border border-gray-100 block">
+                <img
+                  src={item.img}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  alt={item.name}
+                />
+              </Link>
+              <span className="text-[9px] font-extrabold text-green-600 uppercase tracking-wider bg-green-50 px-2 py-0.5 rounded border border-green-100/50">
+                {item.brand}
+              </span>
+              <Link to={`/product/${item.id}`}>
+                <h5 className="font-bold text-gray-900 text-sm line-clamp-2 mt-2 leading-snug hover:text-green-600 transition-colors">
+                  {item.name}
+                </h5>
+              </Link>
+            </div>
+            <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-100">
+              <span className="font-extrabold text-base text-gray-900">{item.price}</span>
+              <Link
+                to={`/product/${item.id}`}
+                className="text-xs font-bold text-green-600 hover:text-green-700 flex items-center gap-0.5"
+              >
+                View Details <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* ========== SECTION 9: PRODUCT DETAIL IN-DEPTH BREAKDOWN ========== */}
       <section className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-14">

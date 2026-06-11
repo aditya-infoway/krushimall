@@ -29,6 +29,7 @@ import ProductTracking from "./pages/ProductTracking";
 import TractorList from "./pages/TractorList";
 import BookingService from "./pages/BookingService";
 import Profile from "./pages/Profile";
+import BookingHistory from "./pages/BookingHistory";
 import { Toaster } from 'react-hot-toast';
 
 function App() {
@@ -62,6 +63,7 @@ function App() {
                   <Route path="/register" element={<Register />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/help" element={<Help />} />
+                  <Route path="/booking-history" element={<BookingHistory />} />
                   <Route path="/tractorcompare" element={<TractorCompare />} />
                   <Route path="/orders" element={<Orders />} />
                   <Route
