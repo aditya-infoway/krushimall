@@ -350,29 +350,17 @@ const TractorShowcase = () => {
   }, []);
 
   // Auto-slide for mobile
+  // Auto-slide for DESKTOP ONLY
   useEffect(() => {
-    const slideNextMobile = (setIndex, length) => {
-      setIndex((prev) => {
-        const next = prev + 1;
-        if (next >= length) {
-          // When reaching the cloned first card, reset to beginning
-          setTimeout(() => {
-            setIsTransitioning(true);
-            setIndex(0);
-            setTimeout(() => setIsTransitioning(false), 50);
-          }, 500);
-        }
-        return next;
-      });
-    };
-
     intervalRef.current = setInterval(() => {
-      if (window.innerWidth < 640) {
-        slideNextMobile(setNewIndex, allNewTractors.length);
-        slideNextMobile(setUsedIndex, allUsedTractors.length);
-      } else {
-        setNewIndex((prev) => (prev + 1) % Math.ceil(allNewTractors.length / cardsToShow));
-        setUsedIndex((prev) => (prev + 1) % Math.ceil(allUsedTractors.length / cardsToShow));
+      if (window.innerWidth >= 640) {
+        setNewIndex(
+          (prev) => (prev + 1) % Math.ceil(allNewTractors.length / cardsToShow),
+        );
+        setUsedIndex(
+          (prev) =>
+            (prev + 1) % Math.ceil(allUsedTractors.length / cardsToShow),
+        );
       }
     }, 3000);
     return () => clearInterval(intervalRef.current);
@@ -398,7 +386,6 @@ const TractorShowcase = () => {
       }
       return next;
     });
-    resetAutoSlide();
   };
 
   const slidePrev = (setIndex, length) => {
@@ -408,40 +395,6 @@ const TractorShowcase = () => {
       }
       return prev - 1;
     });
-    resetAutoSlide();
-  };
-
-  const resetAutoSlide = () => {
-    clearInterval(intervalRef.current);
-    intervalRef.current = setInterval(() => {
-      if (window.innerWidth < 640) {
-        setNewIndex((prev) => {
-          const next = prev + 1;
-          if (next >= allNewTractors.length) {
-            setTimeout(() => {
-              setIsTransitioning(true);
-              setNewIndex(0);
-              setTimeout(() => setIsTransitioning(false), 50);
-            }, 500);
-          }
-          return next;
-        });
-        setUsedIndex((prev) => {
-          const next = prev + 1;
-          if (next >= allUsedTractors.length) {
-            setTimeout(() => {
-              setIsTransitioning(true);
-              setUsedIndex(0);
-              setTimeout(() => setIsTransitioning(false), 50);
-            }, 500);
-          }
-          return next;
-        });
-      } else {
-        setNewIndex((prev) => (prev + 1) % Math.ceil(allNewTractors.length / cardsToShow));
-        setUsedIndex((prev) => (prev + 1) % Math.ceil(allUsedTractors.length / cardsToShow));
-      }
-    }, 3000);
   };
 
   const TractorCard = ({ tractor, isUsed = false, className = "" }) => (
@@ -548,8 +501,8 @@ const TractorShowcase = () => {
         {/* Price & Action - Always at bottom */}
         <div className="mt-auto pt-2 sm:pt-3 border-t-2 border-gray-100">
           <div className="flex items-center justify-between gap-2">
-            <div className="min-w-0">
-              <p className="text-sm sm:text-lg font-black text-gray-900 group-hover:text-green-700 transition-colors truncate">
+            <div className="min-w-0 flex-1">
+              <p className="text-sm sm:text-lg font-black text-gray-900 group-hover:text-green-700 transition-colors ">
                 {tractor.price}
               </p>
               {isUsed && (
@@ -571,7 +524,7 @@ const TractorShowcase = () => {
       </div>
     </Link>
   );
-  
+
   const SliderSection = ({
     title,
     icon: Icon,
@@ -582,9 +535,45 @@ const TractorShowcase = () => {
     isUsed,
     linkTo,
   }) => {
-    // Clone first 2 cards at the end for smooth infinite loop
-    const extendedTractors = [...tractors, ...tractors.slice(0, 2)];
-    
+    const sliderRef = useRef(null);
+    const [isScrolling, setIsScrolling] = useState(false);
+    const scrollTimeoutRef = useRef(null);
+
+    // Show arrows when scrolling/touching on mobile
+    useEffect(() => {
+      const slider = sliderRef.current;
+      if (!slider) return;
+
+      const handleScroll = () => {
+        setIsScrolling(true);
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        scrollTimeoutRef.current = setTimeout(() => {
+          setIsScrolling(false);
+        }, 1500);
+      };
+
+      slider.addEventListener("scroll", handleScroll, { passive: true });
+      slider.addEventListener("touchstart", handleScroll, { passive: true });
+
+      return () => {
+        slider.removeEventListener("scroll", handleScroll);
+        slider.removeEventListener("touchstart", handleScroll);
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      };
+    }, []);
+
+    const scrollSlider = (direction) => {
+      if (!sliderRef.current) return;
+      const { scrollLeft, clientWidth } = sliderRef.current;
+      sliderRef.current.scrollTo({
+        left:
+          direction === "left"
+            ? scrollLeft - clientWidth * 0.8
+            : scrollLeft + clientWidth * 0.8,
+        behavior: "smooth",
+      });
+    };
+
     return (
       <div className="mb-20 md:mb-28 lg:mb-0 lg:py-10">
         <div className="flex items-center justify-between mb-5 px-4 sm:px-10">
@@ -604,43 +593,46 @@ const TractorShowcase = () => {
           </Link>
         </div>
 
-        {/* Mobile View - 1.5 cards sliding with infinite loop */}
+        {/* Mobile View - Native scroll with arrows appearing on touch */}
         <div className="sm:hidden relative">
-          <div className="overflow-hidden px-8">
-            <div 
-              className={`flex transition-transform ${isTransitioning ? 'duration-0' : 'duration-500'} ease-in-out`}
-              style={{
-                transform: `translateX(-${index * (100 / 1.5)}%)`,
-              }}
-            >
-              {extendedTractors.map((tractor, idx) => (
-                <div 
-                  key={`${tractor.id}-${idx}`} 
-                  className="px-1.5"
-                  style={{ 
-                    width: `${100 / 1.5}%`, 
-                    flexShrink: 0 
-                  }}
-                >
-                  <TractorCard tractor={tractor} isUsed={isUsed} />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Mobile Arrows */}
+          {/* Left Arrow */}
           <button
-            onClick={() => slidePrev(setIndex, tractors.length)}
-            className="absolute cursor-pointer left-0 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white border-2 border-green-200 shadow-lg flex items-center justify-center transition-all hover:bg-green-50"
+            onClick={() => scrollSlider("left")}
+            className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+              isScrolling
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 -translate-x-2"
+            }`}
           >
-            <ChevronLeft className="h-3.5 w-3.5 text-green-700" />
+            <ChevronLeft className="w-4 h-4" />
           </button>
 
-          <button
-            onClick={() => slideNext(setIndex, tractors.length)}
-            className="absolute cursor-pointer right-0 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white border-2 border-green-200 shadow-lg flex items-center justify-center transition-all hover:bg-green-50"
+          {/* Scrollable Container */}
+          <div
+            ref={sliderRef}
+            className="flex overflow-x-auto gap-3 pb-4 px-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
-            <ChevronRight className="h-3.5 w-3.5 text-green-700" />
+            {tractors.map((tractor) => (
+              <div
+                key={tractor.id}
+                className="snap-start w-[75vw] flex-shrink-0"
+              >
+                <TractorCard tractor={tractor} isUsed={isUsed} />
+              </div>
+            ))}
+          </div>
+
+          {/* Right Arrow */}
+          <button
+            onClick={() => scrollSlider("right")}
+            className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+              isScrolling
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 translate-x-2"
+            }`}
+          >
+            <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
@@ -648,7 +640,9 @@ const TractorShowcase = () => {
         <div className="hidden sm:block relative px-8 sm:px-10 lg:px-10">
           {/* Left Arrow */}
           <button
-            onClick={() => slidePrev(setIndex, Math.ceil(tractors.length / cardsToShow))}
+            onClick={() =>
+              slidePrev(setIndex, Math.ceil(tractors.length / cardsToShow))
+            }
             className="absolute cursor-pointer left-0 sm:left-1 md:-left-2 lg:-left-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border-2 border-green-200 shadow-lg hover:shadow-xl flex items-center justify-center transition-all hover:bg-green-50 hover:border-green-400"
           >
             <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 text-green-700" />
@@ -657,7 +651,10 @@ const TractorShowcase = () => {
           {/* Cards */}
           <div className="overflow-hidden">
             <div className="flex gap-3 sm:gap-4 transition-transform duration-500 ease-in-out">
-              {getVisibleTractors(tractors, index * (window.innerWidth < 1024 ? 1 : 1)).map((tractor) => (
+              {getVisibleTractors(
+                tractors,
+                index * (window.innerWidth < 1024 ? 1 : 1),
+              ).map((tractor) => (
                 <TractorCard
                   key={`${tractor.id}-${index}`}
                   tractor={tractor}
@@ -670,7 +667,9 @@ const TractorShowcase = () => {
 
           {/* Right Arrow */}
           <button
-            onClick={() => slideNext(setIndex, Math.ceil(tractors.length / cardsToShow))}
+            onClick={() =>
+              slideNext(setIndex, Math.ceil(tractors.length / cardsToShow))
+            }
             className="absolute cursor-pointer right-0 sm:right-1 md:-right-2 lg:-right-2 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border-2 border-green-200 shadow-lg hover:shadow-xl flex items-center justify-center transition-all hover:bg-green-50 hover:border-green-400"
           >
             <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-green-700" />
@@ -686,7 +685,6 @@ const TractorShowcase = () => {
       <div className="px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
         {/* Inner container with bottom padding to match top spacing */}
         <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto">
-          
           {/* UPDATED: Left-aligned main title with description below */}
           <div className="mb-10 md:mb-14">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
@@ -725,7 +723,6 @@ const TractorShowcase = () => {
             isUsed={true}
             linkTo="/old-tractors"
           />
-          
         </div>
       </div>
 
@@ -733,7 +730,6 @@ const TractorShowcase = () => {
       <div className=" border-gray-200 w-full">
         <div className="px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
           <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto">
-            
             {/* Comparison Header */}
             <div className="mb-8">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
@@ -817,17 +813,22 @@ const TractorShowcase = () => {
                     <Link to="/tractorcompare">
                       <button className="w-full cursor-pointer border border-green-200 bg-white hover:bg-green-50 text-green-700 transition-colors duration-150 text-[10px] sm:text-xs font-semibold py-1.5 px-2 rounded-md text-center truncate">
                         {pair.left.name.split(" ")[0]}{" "}
-                        {pair.left.name.split(" ")[1] || ""} vs {pair.right.name}
+                        {pair.left.name.split(" ")[1] || ""} vs{" "}
+                        {pair.right.name}
                       </button>
                     </Link>
                   </div>
                 </div>
               ))}
             </div>
-            
           </div>
         </div>
       </div>
+      <style>{`
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+`}</style>
     </section>
   );
 };

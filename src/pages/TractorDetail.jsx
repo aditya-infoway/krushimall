@@ -20,6 +20,9 @@ const TractorDetail = () => {
   const [relatedIndex, setRelatedIndex] = useState(0);
   const intervalRef = useRef(null);
   const [showEnquiryModal, setShowEnquiryModal] = useState(false);
+  const relatedScrollRef = useRef(null);
+const [isScrollingRelated, setIsScrollingRelated] = useState(false);
+const scrollTimeoutRef = useRef(null);
 
   const tractor = {
     name: "Swaraj 744 FE Good tractor",
@@ -88,12 +91,14 @@ const TractorDetail = () => {
   };
 
   // Auto-slide for related products
-  useEffect(() => {
-    intervalRef.current = setInterval(() => {
+ useEffect(() => {
+  intervalRef.current = setInterval(() => {
+    if (window.innerWidth >= 640) {
       setRelatedIndex((prev) => (prev + 1) % tractor.relatedProducts.length);
-    }, 3000);
-    return () => clearInterval(intervalRef.current);
-  }, []);
+    }
+  }, 3000);
+  return () => clearInterval(intervalRef.current);
+}, []);
 
   const cardsToShow = 4;
 
@@ -124,6 +129,36 @@ const TractorDetail = () => {
       setRelatedIndex((prev) => (prev + 1) % tractor.relatedProducts.length);
     }, 3000);
   };
+
+  useEffect(() => {
+  const slider = relatedScrollRef.current;
+  if (!slider) return;
+
+  const handleScroll = () => {
+    setIsScrollingRelated(true);
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    scrollTimeoutRef.current = setTimeout(() => setIsScrollingRelated(false), 1500);
+  };
+
+  slider.addEventListener("scroll", handleScroll, { passive: true });
+  slider.addEventListener("touchstart", handleScroll, { passive: true });
+
+  return () => {
+    slider.removeEventListener("scroll", handleScroll);
+    slider.removeEventListener("touchstart", handleScroll);
+    if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+  };
+}, []);
+
+
+const scrollRelated = (direction) => {
+  if (!relatedScrollRef.current) return;
+  const { scrollLeft, clientWidth } = relatedScrollRef.current;
+  relatedScrollRef.current.scrollTo({
+    left: direction === "left" ? scrollLeft - clientWidth * 0.8 : scrollLeft + clientWidth * 0.8,
+    behavior: "smooth",
+  });
+};
 
   return (
     <div className="bg-gray-100 min-h-screen">
@@ -423,74 +458,116 @@ const TractorDetail = () => {
         </div>
 
         {/* Related Products Slider */}
+{/* Related Products Slider */}
+<div className="mt-10">
+  <h2 className="text-2xl font-bold text-gray-900 mb-2">
+    Related Products <span className="text-transparent bg-clip-text bg-green-600"> - Tractor </span>
+  </h2>
+  <p className="text-gray-500 text-sm mb-6">
+    Short Details About Tractor
+  </p>
 
-        <div className="mt-10">
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
-            Related Products  <span className="text-transparent bg-clip-text bg-green-600"> - Tractor </span>
-          </h2>
-          <p className="text-gray-500 text-sm mb-6">
-            Short Details About Tractor
-          </p>
+  {/* MOBILE - Native scroll with arrows on touch */}
+  <div className="sm:hidden relative">
+    <button
+      onClick={() => scrollRelated("left")}
+      className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+        isScrollingRelated ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"
+      }`}
+    >
+      <ChevronLeft className="h-4 w-4" />
+    </button>
 
-          <div className="relative px-8 sm:px-10 lg:px-12">
-            <button
-              onClick={() => slideRelated("prev")}
-              className="absolute left-0 sm:left-1 lg:left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white border border-gray-200 cursor-pointer rounded-full shadow-md flex items-center justify-center hover:bg-green-50 hover:border-green-300 transition-all"
-            >
-              <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
-            </button>
-
-            <div className="overflow-hidden">
-              <div className="flex gap-3 sm:gap-4 transition-transform duration-500 ease-in-out">
-                {getVisibleRelated().map((product, idx) => (
-                  <div
-                    key={`${product.id}-${relatedIndex}-${idx}`}
-                    className="flex-shrink-0 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-lg transition-all w-full sm:w-[calc(50%-6px)] lg:w-[calc(25%-12px)]"
-                  >
-                    <div className="bg-gray-100 h-36 sm:h-40">
-                      <img
-                        src={product.image}
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="p-3">
-                      <div className="text-xs bg-green-600 text-white inline-block px-2 py-0.5 rounded-full mb-2">
-                        Tractor
-                      </div>
-                      <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1">
-                        {product.name}
-                      </h4>
-                      <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
-                        <MapPin className="h-3 w-3" />
-                        <span>{product.location}</span>
-                      </div>
-                      <p className="text-base font-bold text-gray-900">
-                        {product.price}
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+    <div
+      ref={relatedScrollRef}
+      className="flex overflow-x-auto gap-3 pb-4 px-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
+      style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+    >
+      {tractor.relatedProducts.map((product) => (
+        <Link
+          key={product.id}
+          to={`/tractor/${product.id}`}
+          className="snap-start w-[75vw] flex-shrink-0"
+        >
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-lg transition-all">
+            <div className="bg-gray-100 h-36 sm:h-40">
+              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
             </div>
-
-            <button
-              onClick={() => slideRelated("next")}
-              className="absolute right-0 sm:right-1 lg:right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 cursor-pointer bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-green-50 hover:border-green-300 transition-all"
-            >
-              <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
-            </button>
+            <div className="p-3">
+              <div className="text-xs bg-green-600 text-white inline-block px-2 py-0.5 rounded-full mb-2">Tractor</div>
+              <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1">{product.name}</h4>
+              <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                <MapPin className="h-3 w-3" />
+                <span>{product.location}</span>
+              </div>
+              <p className="text-base font-bold text-gray-900">{product.price}</p>
+            </div>
           </div>
+        </Link>
+      ))}
+    </div>
 
-          <div className="text-center mt-8">
-            <Link
-              to="/tractors"
-              className="inline-block cursor-pointer bg-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
-            >
-              View All
-            </Link>
-          </div>
-        </div>
+    <button
+      onClick={() => scrollRelated("right")}
+      className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+        isScrollingRelated ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
+      }`}
+    >
+      <ChevronRight className="h-4 w-4" />
+    </button>
+  </div>
+
+  {/* DESKTOP - Original slider unchanged */}
+  <div className="hidden sm:block relative px-8 sm:px-10 lg:px-12">
+    <button
+      onClick={() => slideRelated("prev")}
+      className="absolute left-0 sm:left-1 lg:left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 bg-white border border-gray-200 cursor-pointer rounded-full shadow-md flex items-center justify-center hover:bg-green-50 hover:border-green-300 transition-all"
+    >
+      <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
+    </button>
+
+    <div className="overflow-hidden">
+      <div className="flex gap-3 sm:gap-4 transition-transform duration-500 ease-in-out">
+        {getVisibleRelated().map((product, idx) => (
+          <Link
+            key={`${product.id}-${relatedIndex}-${idx}`}
+            to={`/tractor/${product.id}`}
+            className="flex-shrink-0 bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-lg transition-all w-full sm:w-[calc(50%-6px)] lg:w-[calc(25%-12px)]"
+          >
+            <div className="bg-gray-100 h-36 sm:h-40">
+              <img src={product.image} alt={product.name} className="w-full h-full object-cover" />
+            </div>
+            <div className="p-3">
+              <div className="text-xs bg-green-600 text-white inline-block px-2 py-0.5 rounded-full mb-2">Tractor</div>
+              <h4 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-1">{product.name}</h4>
+              <div className="flex items-center gap-1 text-xs text-gray-500 mb-1">
+                <MapPin className="h-3 w-3" />
+                <span>{product.location}</span>
+              </div>
+              <p className="text-base font-bold text-gray-900">{product.price}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+    </div>
+
+    <button
+      onClick={() => slideRelated("next")}
+      className="absolute right-0 sm:right-1 lg:right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 cursor-pointer bg-white border border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-green-50 hover:border-green-300 transition-all"
+    >
+      <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
+    </button>
+  </div>
+
+  <div className="text-center mt-8">
+    <Link
+      to="/tractors"
+      className="inline-block cursor-pointer bg-green-600 text-white px-8 py-3 rounded-xl font-semibold hover:shadow-lg transition-all"
+    >
+      View All
+    </Link>
+  </div>
+</div>
       </div>
       {/* Enquiry Modal */}
       <EnquiryModal

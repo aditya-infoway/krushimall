@@ -122,6 +122,13 @@ const Profile = () => {
       link: "/wishlist",
       count: wishlistItems.length,
     },
+
+    {
+      id: "Booked Services",
+      label: "Booked Services",
+      icon: Heart,
+      link: "/booking-history",
+    },
     { id: "settings", label: "Settings", icon: Settings },
   ];
 

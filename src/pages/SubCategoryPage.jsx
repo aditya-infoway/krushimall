@@ -28,7 +28,7 @@ import {
 
 const SubCategoryPage = () => {
   const { categoryName, subCategoryName } = useParams();
-  const { addToCart, cart, updateQuantity } = useCart();
+  const { addToCart, cart, updateQuantity, removeFromCart } = useCart();
   const { isAuthenticated } = useAuth();
   const { isInWishlist, toggleWishlist } = useWishlist();
   const navigate = useNavigate();
@@ -54,16 +54,16 @@ const SubCategoryPage = () => {
     addToCart(product, 1);
   };
 
-  const handleDecreaseQuantity = (e, product) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const currentQty = getCartQuantity(product.id);
-    if (currentQty <= 1) {
-      updateQuantity(product.id, 0);
-    } else {
-      updateQuantity(product.id, currentQty - 1);
-    }
-  };
+ const handleDecreaseQuantity = (e, product) => {
+  e.preventDefault();
+  e.stopPropagation();
+  const currentQty = getCartQuantity(product.id);
+  if (currentQty <= 1) {
+    removeFromCart(product.id);
+  } else {
+    updateQuantity(product.id, currentQty - 1);
+  }
+};
 
   const handleAddToCart = (e, product) => {
     e.preventDefault();

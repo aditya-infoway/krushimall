@@ -35,6 +35,7 @@ import {
   Tractor,
   GitCompare,
   Scale,
+  CalendarCheck,
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -397,6 +398,13 @@ const Navbar = () => {
                         >
                           <Heart className="h-4 w-4" /> Wishlist
                         </Link>
+                        <Link
+                          to="/booking-history"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                        >
+                          <CalendarCheck className="h-4 w-4" /> Booked Services
+                        </Link>
                       </div>
                       <div className="border-t border-gray-100 pt-2">
                         <button
@@ -740,6 +748,18 @@ const Navbar = () => {
                   </div>
                   <span className="font-semibold flex-1">Wishlist</span>
                 </Link>
+
+                <Link
+                  to="/booking-history"
+                  onClick={() => setUserMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group hover:bg-green-700 hover:text-white hover:shadow-xl hover:shadow-green-700/20 hover:scale-[1.02] transform mb-1"
+                >
+                  <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors duration-300">
+                    <CalendarCheck className="h-5 w-5 text-green-600 group-hover:text-white" />
+                  </div>
+
+                  <span className="font-semibold flex-1">Booked Services</span>
+                </Link>
               </div>
             )}
 
@@ -770,7 +790,6 @@ const Navbar = () => {
                 <span className="font-semibold flex-1">Help Center</span>
                 <ChevronRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
               </Link>
-             
             </div>
 
             {/* Contact Info */}

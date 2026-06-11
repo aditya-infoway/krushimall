@@ -501,14 +501,16 @@ const NewTractors = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  useEffect(() => {
-    intervalRef.current = setInterval(() => {
+ useEffect(() => {
+  intervalRef.current = setInterval(() => {
+    if (window.innerWidth >= 640) {
       setPopularIndex((prev) => (prev + 1) % popularTractors.length);
       setLatestIndex((prev) => (prev + 1) % latestTractors.length);
       setUpcomingIndex((prev) => (prev + 1) % upcomingTractors.length);
-    }, 3000);
-    return () => clearInterval(intervalRef.current);
-  }, []);
+    }
+  }, 3000);
+  return () => clearInterval(intervalRef.current);
+}, []);
 
   const getVisibleTractors = (tractors, startIndex) => {
     const visible = [];
@@ -604,85 +606,118 @@ const NewTractors = () => {
     </div>
   </div>
 );
-  const SliderSection = ({
-    title,
-    subtitle,
-    tractors,
-    index,
-    setIndex,
-    linkTo,
-    badgeColor,
-  }) => {
-    // Clone first 2 cards for smooth infinite loop on mobile
-    const extendedTractors = [...tractors, ...tractors.slice(0, 2)];
-    
-    return (
-      <div className="">
-        {/* Title Layout Spacing Fixed */}
-        <div className="flex items-center justify-between mb-5">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className={`w-1.5 h-6 rounded-full ${badgeColor}`}></div>
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-                {title}
-              </h3>
-            </div>
-            {subtitle && (
-              <p className="text-sm text-gray-500 ml-3.5">{subtitle}</p>
-            )}
+ const SliderSection = ({
+  title,
+  subtitle,
+  tractors,
+  index,
+  setIndex,
+  linkTo,
+  badgeColor,
+}) => {
+  const sliderRef = useRef(null);
+  const [isScrolling, setIsScrolling] = useState(false);
+  const scrollTimeoutRef = useRef(null);
+
+  // Show arrows when scrolling/touching on mobile
+  useEffect(() => {
+    const slider = sliderRef.current;
+    if (!slider) return;
+
+    const handleScroll = () => {
+      setIsScrolling(true);
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      scrollTimeoutRef.current = setTimeout(() => {
+        setIsScrolling(false);
+      }, 1500);
+    };
+
+    slider.addEventListener("scroll", handleScroll, { passive: true });
+    slider.addEventListener("touchstart", handleScroll, { passive: true });
+
+    return () => {
+      slider.removeEventListener("scroll", handleScroll);
+      slider.removeEventListener("touchstart", handleScroll);
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    };
+  }, []);
+
+  const scrollSlider = (direction) => {
+    if (!sliderRef.current) return;
+    const { scrollLeft, clientWidth } = sliderRef.current;
+    sliderRef.current.scrollTo({
+      left: direction === "left" 
+        ? scrollLeft - clientWidth * 0.8 
+        : scrollLeft + clientWidth * 0.8,
+      behavior: "smooth",
+    });
+  };
+
+  return (
+    <div className="">
+      {/* Title Layout */}
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <div className="flex items-center gap-2 mb-1">
+            <div className={`w-1.5 h-6 rounded-full ${badgeColor}`}></div>
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+              {title}
+            </h3>
           </div>
-          <Link
-            to={linkTo}
-            className="text-green-600 hover:text-green-700 font-semibold text-sm flex items-center gap-1"
-          >
-            View All <ArrowRight className="h-4 w-4" />
-          </Link>
+          {subtitle && (
+            <p className="text-sm text-gray-500 ml-3.5">{subtitle}</p>
+          )}
+        </div>
+        <Link
+          to={linkTo}
+          className="text-green-600 hover:text-green-700 font-semibold text-sm flex items-center gap-1"
+        >
+          View All <ArrowRight className="h-4 w-4" />
+        </Link>
+      </div>
+
+      {/* MOBILE ONLY - Native scroll with arrows appearing on touch */}
+      <div className="sm:hidden relative">
+        {/* Left Arrow */}
+        <button
+          onClick={() => scrollSlider("left")}
+          className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+            isScrolling ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"
+          }`}
+        >
+          <ChevronLeft className="w-4 h-4" />
+        </button>
+
+        {/* Scrollable Container */}
+        <div
+          ref={sliderRef}
+          className="flex overflow-x-auto gap-3 pb-4 px-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+        >
+          {tractors.map((tractor) => (
+            <div key={tractor.id} className="snap-start w-[75vw] flex-shrink-0">
+              <TractorCard tractor={tractor} />
+            </div>
+          ))}
         </div>
 
-        {/* MOBILE ONLY - 1.5 cards sliding */}
-        <div className="sm:hidden relative">
-          <div className="overflow-hidden px-8">
-            <div 
-              className="flex transition-transform duration-500 ease-in-out"
-              style={{
-                transform: `translateX(-${index * (100 / 1.5)}%)`,
-              }}
-            >
-              {extendedTractors.map((tractor, idx) => (
-                <div 
-                  key={`${tractor.id}-${idx}`} 
-                  className="px-1.5"
-                  style={{ 
-                    width: `${100 / 1.5}%`, 
-                    flexShrink: 0 
-                  }}
-                >
-                  <TractorCard tractor={tractor} />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <button
-            onClick={() => slidePrev(setIndex, tractors.length)}
-            className="absolute cursor-pointer left-0 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white border-2 border-green-200 shadow-lg flex items-center justify-center transition-all hover:bg-green-50"
-          >
-            <ChevronLeft className="h-3.5 w-3.5 text-green-700" />
-          </button>
-
-          <button
-            onClick={() => slideNext(setIndex, tractors.length)}
-            className="absolute cursor-pointer right-0 top-1/2 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-white border-2 border-green-200 shadow-lg flex items-center justify-center transition-all hover:bg-green-50"
-          >
-            <ChevronRight className="h-3.5 w-3.5 text-green-700" />
-          </button>
-        </div>
+        {/* Right Arrow */}
+        <button
+          onClick={() => scrollSlider("right")}
+          className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+            isScrolling ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
+          }`}
+        >
+          <ChevronRight className="w-4 h-4" />
+        </button>
+      </div>
+        
 
         {/* DESKTOP - Original code completely unchanged */}
         <div className="hidden sm:block relative px-8 sm:px-8 lg:px-10">
           <button
             onClick={() => slidePrev(setIndex, tractors.length)}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center hover:bg-green-50 hover:border-green-300 transition-all"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center cursor-pointer hover:bg-green-50 hover:border-green-300 transition-all"
           >
             <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
           </button>
@@ -695,7 +730,7 @@ const NewTractors = () => {
           </div>
           <button
             onClick={() => slideNext(setIndex, tractors.length)}
-            className="absolute right-0  top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center hover:bg-green-50 hover:border-green-300 transition-all"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white border border-gray-200 shadow-md flex items-center justify-center cursor-pointer hover:bg-green-50 hover:border-green-300 transition-all"
           >
             <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-gray-700" />
           </button>
@@ -1670,7 +1705,7 @@ const NewTractors = () => {
                       {/* Name Field */}
                       <div>
                         <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                          Full Name <span className="text-green-600">*</span>
+                          Full Name <span className="text-red-600">*</span>
                         </label>
                         <div className="relative">
                           <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -1689,7 +1724,7 @@ const NewTractors = () => {
                       {/* Phone Field */}
                       <div>
                         <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                          Phone Number <span className="text-green-600">*</span>
+                          Phone Number <span className="text-red-600">*</span>
                         </label>
                         <div className="relative">
                           <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -1709,7 +1744,7 @@ const NewTractors = () => {
                     {/* Email Field */}
                     <div>
                       <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                        Email Address <span className="text-green-600">*</span>
+                        Email Address <span className="text-red-600">*</span>
                       </label>
                       <div className="relative">
                         <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -1730,7 +1765,7 @@ const NewTractors = () => {
                     {/* Tractor Type Radio - Headless UI */}
                     <div>
                       <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                        Interested In <span className="text-green-600">*</span>
+                        Interested In <span className="text-red-600">*</span>
                       </label>
                       <RadioGroup
                         value={formData.tractorType}

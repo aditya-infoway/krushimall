@@ -142,7 +142,7 @@ const BookingService = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 antialiased">
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-12 md:pb-16 lg:pb-20">
+      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-6 md:pt-8 lg:pt-10 pb-4">
         {/* Navigation Back Link */}
         <button
           type="button"

@@ -23,12 +23,16 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useWishlist } from "../context/WishlistContext";
 import { Listbox } from "@headlessui/react";
-import { showCartAddedToast, showWishlistAddedToast, showWishlistRemovedToast, showLoginRequiredToast } from '../utils/toast.jsx';
-
+import {
+  showCartAddedToast,
+  showWishlistAddedToast,
+  showWishlistRemovedToast,
+  showLoginRequiredToast,
+} from "../utils/toast.jsx";
 
 const ProductDetail = () => {
   const { id } = useParams();
-  const { addToCart, cart, updateQuantity } = useCart();
+  const { addToCart, cart, updateQuantity, removeFromCart } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const { isInWishlist, toggleWishlist } = useWishlist();
@@ -38,10 +42,15 @@ const ProductDetail = () => {
   const [activeTab, setActiveTab] = useState("description");
   const [selectedVehicle, setSelectedVehicle] = useState("");
   const [isCompatible, setIsCompatible] = useState(null);
+  const containerRef = useRef(null);
+  const [zoomStyle, setZoomStyle] = useState({ display: "none", x: 50, y: 50 });
 
+  const handleMouseLeave = () => {
+    setZoomStyle({ display: "none", x: 50, y: 50 });
+  };
 
-    const getCartQuantity = (productId) => {
-    const cartItem = cart.find(item => item.id === productId);
+  const getCartQuantity = (productId) => {
+    const cartItem = cart.find((item) => item.id === productId);
     return cartItem ? cartItem.quantity : 0;
   };
 
@@ -52,161 +61,11 @@ const ProductDetail = () => {
   const handleDecreaseQuantity = () => {
     const currentQty = getCartQuantity(product.id);
     if (currentQty <= 1) {
-      updateQuantity(product.id, 0);
+      removeFromCart(product.id);
       setQuantity(1);
     } else {
       updateQuantity(product.id, currentQty - 1);
     }
-  };
-
-const modalImageRef = useRef(null);
-  // Image Modal States
-  const [isImageModalOpen, setIsImageModalOpen] = useState(false);
-  const [modalZoom, setModalZoom] = useState(1);
-  const [modalPosition, setModalPosition] = useState({ x: 0, y: 0 });
-  const [isDragging, setIsDragging] = useState(false);
-  const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
-  const [modalSelectedImage, setModalSelectedImage] = useState(0);
-  const lastTapRef = useRef(null);
-  const imageContainerRef = useRef(null);
-
-    const zoomIn = () => setModalZoom(prev => Math.min(prev + 0.1, 2));
-  const zoomOut = () => setModalZoom(prev => Math.max(prev - 0.1, 0.2));
-
-  const openImageModal = (index) => {
-    setModalSelectedImage(index !== undefined ? index : selectedImage);
-    setIsImageModalOpen(true);
-    setModalZoom(1);
-    setModalPosition({ x: 0, y: 0 });
-    document.body.style.overflow = 'hidden';
-  };
-
-  const closeImageModal = () => {
-    setIsImageModalOpen(false);
-    document.body.style.overflow = '';
-  };
-
-  // Mouse wheel zoom
-   const wheelTimeoutRef = useRef(null);
-
-  const handleWheel = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // Accumulate delta for touchpad
-    if (wheelTimeoutRef.current) {
-      clearTimeout(wheelTimeoutRef.current);
-    }
-    
-    const rect = imageContainerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
-    
-    // Reduce sensitivity for touchpad - use smaller delta
-    const delta = e.deltaY < 0 ? 0.05 : -0.05;
-    const newZoom = Math.min(Math.max(0.5, modalZoom + delta), 4);
-    
-    if (newZoom === modalZoom) return;
-    
-    const scale = newZoom / modalZoom;
-    const newX = mouseX - scale * (mouseX - modalPosition.x);
-    const newY = mouseY - scale * (mouseY - modalPosition.y);
-    
-    setModalZoom(newZoom);
-    setModalPosition({ x: newX, y: newY });
-    
-    // Reset timeout
-    wheelTimeoutRef.current = setTimeout(() => {
-      wheelTimeoutRef.current = null;
-    }, 50);
-  };
-
-  // Double tap zoom on mobile
-  const handleDoubleTap = (e) => {
-    const now = Date.now();
-    const lastTap = lastTapRef.current;
-    lastTapRef.current = now;
-    
-    if (lastTap && now - lastTap < 300) {
-      e.preventDefault();
-      if (modalZoom > 1) {
-        setModalZoom(1);
-        setModalPosition({ x: 0, y: 0 });
-      } else {
-        setModalZoom(2.5);
-        const rect = imageContainerRef.current?.getBoundingClientRect();
-        if (rect) {
-          setModalPosition({
-            x: (rect.width / 2 - e.clientX + rect.left) * 1.5,
-            y: (rect.height / 2 - e.clientY + rect.top) * 1.5,
-          });
-        }
-      }
-    }
-  };
-
-  // Drag handlers
-  const handleDragStart = (e) => {
-    if (modalZoom <= 1) return;
-    e.preventDefault();
-    setIsDragging(true);
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    setDragStart({ x: clientX - modalPosition.x, y: clientY - modalPosition.y });
-  };
-
-  const handleDragMove = (e) => {
-    if (!isDragging || modalZoom <= 1) return;
-    const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-    const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-    setModalPosition({ x: clientX - dragStart.x, y: clientY - dragStart.y });
-  };
-
-  const handleDragEnd = () => {
-    setIsDragging(false);
-  };
-
-  // Pinch zoom on mobile
-  const initialPinchDistance = useRef(null);
-  const initialZoom = useRef(1);
-  
-  const handleTouchStart = (e) => {
-    if (e.touches.length === 2) {
-      initialPinchDistance.current = Math.hypot(
-        e.touches[1].clientX - e.touches[0].clientX,
-        e.touches[1].clientY - e.touches[0].clientY
-      );
-      initialZoom.current = modalZoom;
-    } else if (e.touches.length === 1) {
-      handleDragStart(e);
-    }
-  };
-
-  const handleTouchMoveModal = (e) => {
-    if (e.touches.length === 2 && initialPinchDistance.current) {
-      e.preventDefault();
-      const currentDistance = Math.hypot(
-        e.touches[1].clientX - e.touches[0].clientX,
-        e.touches[1].clientY - e.touches[0].clientY
-      );
-      const scale = currentDistance / initialPinchDistance.current;
-      setModalZoom(Math.min(Math.max(0.5, initialZoom.current * scale), 4));
-    } else {
-      handleDragMove(e);
-    }
-  };
-
-  const navigateImage = (direction) => {
-    setModalSelectedImage(prev => {
-      if (direction === 'next') {
-        return (prev + 1) % product.images.length;
-      }
-      return (prev - 1 + product.images.length) % product.images.length;
-    });
-    setModalZoom(1);
-    setModalPosition({ x: 0, y: 0 });
   };
 
   const scrollRef = useRef(null);
@@ -217,7 +76,6 @@ const modalImageRef = useRef(null);
       return;
     }
     addToCart(product, quantity);
-  
   };
 
   const handleBuyNow = () => {
@@ -233,12 +91,12 @@ const modalImageRef = useRef(null);
     window.scrollTo(0, 0);
   }, [id]);
 
-const handleWishlist = () => {
+  const handleWishlist = () => {
     if (!isAuthenticated) {
       navigate("/login?redirect=/product/" + product.id);
       return;
     }
-    
+
     // Check current state before toggling to determine correct toast
     if (isInWishlist(product.id)) {
       toggleWishlist(product);
@@ -260,20 +118,18 @@ const handleWishlist = () => {
     }
   };
 
+  const handleMouseMove = (e) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
 
-    // Handle browser back button when modal is open
-  useEffect(() => {
-    if (isImageModalOpen) {
-      window.history.pushState({ modalOpen: true }, '', window.location.href);
-      
-      const handlePopState = () => {
-        closeImageModal();
-      };
-      
-      window.addEventListener('popstate', handlePopState);
-      return () => window.removeEventListener('popstate', handlePopState);
-    }
-  }, [isImageModalOpen]);
+    setZoomStyle({
+      display: "block",
+      x: x,
+      y: y,
+    });
+  };
 
   // Sample product data
   const product = {
@@ -435,28 +291,32 @@ const handleWishlist = () => {
         {/* Product Page Layout */}
         <div className="grid lg:grid-cols-3 gap-8 mb-12">
           {/* Column 1: Gallery Design */}
+          {/* Column 1: Gallery - Hover Zoom on Image */}
           <div className="lg:col-span-1">
-                       <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
-              <div 
-                className="p-4 aspect-square flex items-center justify-center relative cursor-pointer group"
-                onClick={() => openImageModal(selectedImage)}
+            <div className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm">
+              <div
+                ref={containerRef}
+                className="relative aspect-square overflow-hidden bg-gray-100 cursor-zoom-in"
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
               >
                 <img
                   src={product.images[selectedImage]}
                   alt={product.name}
-                  className="max-w-full max-h-full object-contain group-hover:opacity-90 transition-opacity"
+                  className="w-full h-full transition-transform duration-200"
+                  style={{
+                    transform:
+                      zoomStyle.display === "block" ? "scale(2)" : "scale(1)",
+                    transformOrigin: `${zoomStyle.x || 50}% ${zoomStyle.y || 50}%`,
+                  }}
                 />
-                {/* Hover overlay */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/5 transition-colors flex items-center justify-center">
-                  <span className="opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 text-gray-700 text-xs font-medium px-3 py-1.5 rounded-full shadow">
-                    Click to zoom
-                  </span>
-                </div>
-                <span className="absolute top-4 left-4 bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg pointer-events-none">
+
+                <span className="absolute top-4 left-4 bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-lg shadow-md z-20 pointer-events-none">
                   -{product.discount}%
                 </span>
               </div>
-              <div className="flex gap-2 justify-center p-3 border-t border-gray-100 bg-gray-50/50">
+
+              <div className="flex gap-2 justify-center p-3 border-t border-gray-100 bg-white overflow-x-auto">
                 {product.images.map((img, index) => (
                   <button
                     key={index}
@@ -464,11 +324,7 @@ const handleWishlist = () => {
                       e.stopPropagation();
                       setSelectedImage(index);
                     }}
-                    className={`w-16 h-16 border-2 rounded-lg p-1 bg-white flex items-center justify-center transition-all cursor-pointer ${
-                      selectedImage === index
-                        ? "border-green-600 shadow-sm"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
+                    className={`w-16 h-16 border-2 rounded-lg p-1 bg-gray-50 flex items-center justify-center transition-all cursor-pointer flex-shrink-0 overflow-hidden ${selectedImage === index ? "border-green-600 shadow-sm" : "border-gray-200 hover:border-gray-400"}`}
                   >
                     <img
                       src={img}
@@ -480,7 +336,6 @@ const handleWishlist = () => {
               </div>
             </div>
           </div>
-
           {/* Column 2: Product Info & Features */}
           <div className="lg:col-span-1">
             <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm h-full flex flex-col">
@@ -523,7 +378,7 @@ const handleWishlist = () => {
               </div>
 
               {/* Compatibility Icons */}
-                           {/* Compatibility Icons */}
+              {/* Compatibility Icons */}
               <div className="mt-auto pt-4 border-t border-gray-100">
                 <div className="flex flex-col gap-2 text-xs text-gray-500">
                   <div className="flex items-center gap-2">
@@ -598,7 +453,7 @@ const handleWishlist = () => {
               </div>
 
               {/* Action Controls Group */}
-                           {/* Action Controls Group */}
+              {/* Action Controls Group */}
               <div className="space-y-3">
                 {getCartQuantity(product.id) > 0 ? (
                   <>
@@ -952,101 +807,6 @@ const handleWishlist = () => {
           </div>
         </div>
       </div>
-                 {/* Fullscreen Image Modal */}
-      {isImageModalOpen && (
-        <div 
-          className="fixed inset-0 z-[100] bg-white flex flex-col mt-20 lg:mt-24" 
-          onClick={(e) => e.stopPropagation()}
-        >
-          {/* Top Bar */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 flex-shrink-0 bg-white">
-            <button onClick={closeImageModal} className="p-2 hover:bg-gray-100 rounded-full cursor-pointer">
-              <svg className="h-6 w-6 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-            <span className="text-sm font-medium text-gray-700">
-              {modalSelectedImage + 1} / {product.images.length}
-            </span>
-            <div className="w-10"></div>
-          </div>
-
-          {/* Image Area */}
-                   <div 
-            ref={imageContainerRef}
-            className="flex-1 flex items-center justify-center overflow-hidden relative bg-gray-100"
-            onWheel={handleWheel}
-            onMouseDown={handleDragStart}
-            onMouseMove={handleDragMove}
-            onMouseUp={handleDragEnd}
-            onMouseLeave={handleDragEnd}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMoveModal}
-            onTouchEnd={handleDragEnd}
-            onClick={handleDoubleTap}
-          >
-            {/* Left Arrow */}
-            <button
-              onClick={(e) => { e.stopPropagation(); navigateImage('prev'); }}
-              className="absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 sm:w-12 sm:h-12 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all"
-            >
-              <ChevronLeft className="h-5 w-5 sm:h-6 sm:w-6 text-gray-700" />
-            </button>
-
-            <img
-              src={product.images[modalSelectedImage]}
-              alt={product.name}
-              className="max-w-full max-h-full object-contain select-none pointer-events-none py-2"
-              style={{
-                transform: `translate(${modalPosition.x}px, ${modalPosition.y}px) scale(${modalZoom})`,
-                transition: isDragging ? 'none' : 'transform 0.3s ease-out',
-                cursor: modalZoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default'
-              }}
-              draggable={false}
-            />
-
-            {/* Right Arrow */}
-            <button
-              onClick={(e) => { e.stopPropagation(); navigateImage('next'); }}
-              className="absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 z-10 w-10 h-10 sm:w-12 sm:h-12 bg-white/90 hover:bg-white rounded-full shadow-lg flex items-center justify-center cursor-pointer transition-all"
-            >
-              <ChevronRight className="h-5 w-5 sm:h-6 sm:w-6 text-gray-700" />
-            </button>
-
-            {/* Zoom controls */}
-            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex items-center gap-3 bg-white/90 backdrop-blur-sm rounded-full px-4 py-2 shadow-lg z-10">
-              <button onClick={(e) => { e.stopPropagation(); zoomOut(); }} className="p-1 hover:bg-gray-100 rounded-full cursor-pointer">
-                <Minus className="h-5 w-5 text-gray-700" />
-              </button>
-              <span className="text-sm font-medium text-gray-700 min-w-[40px] text-center">
-                {Math.round(modalZoom * 100)}%
-              </span>
-              <button onClick={(e) => { e.stopPropagation(); zoomIn(); }} className="p-1 hover:bg-gray-100 rounded-full cursor-pointer">
-                <Plus className="h-5 w-5 text-gray-700" />
-              </button>
-            </div>
-          </div>
-
-          {/* Bottom Thumbnails */}
-          <div className="flex justify-center gap-2 p-4 border-t border-gray-200 bg-white flex-shrink-0 overflow-x-auto">
-            {product.images.map((img, index) => (
-              <button
-                key={index}
-                onClick={() => {
-                  setModalSelectedImage(index);
-                  setModalZoom(1);
-                  setModalPosition({ x: 0, y: 0 });
-                }}
-                className={`w-14 h-14 sm:w-16 sm:h-16 border-2 rounded-lg overflow-hidden flex-shrink-0 transition-all cursor-pointer ${
-                  modalSelectedImage === index ? "border-green-600" : "border-gray-200 hover:border-gray-400"
-                }`}
-              >
-                <img src={img} alt="" className="w-full h-full object-contain p-1" />
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 };
