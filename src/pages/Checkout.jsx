@@ -212,7 +212,7 @@ const Checkout = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-4 sm:py-8  md:pt-20 lg:pt-28">
+    <div className="min-h-screen bg-gray-50 py-4 sm:py-8  md:pt-16 pt-12 lg:pt-20">
       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-gray-500 mb-4 sm:mb-6 overflow-x-auto whitespace-nowrap">
@@ -295,7 +295,7 @@ const Checkout = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Full Name *
+                        Full Name <span className="text-red-600">*</span>
                       </label>
 
                       <input
@@ -315,7 +315,7 @@ const Checkout = () => {
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Phone Number *
+                        Phone Number <span className="text-red-600">*</span>
                       </label>
 
                       <div className="relative">
@@ -341,7 +341,7 @@ const Checkout = () => {
                   {/* Email */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Email *
+                      Email <span className="text-red-600">*</span>
                     </label>
 
                     <div className="relative">
@@ -366,7 +366,7 @@ const Checkout = () => {
                   {/* Address */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Address *
+                      Address <span className="text-red-600">*</span>
                     </label>
 
                     <textarea
@@ -388,7 +388,7 @@ const Checkout = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        State *
+                        State <span className="text-red-600">*</span>
                       </label>
 
                       <Listbox
@@ -435,7 +435,7 @@ const Checkout = () => {
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        City *
+                        City <span className="text-red-600">*</span>
                       </label>
 
                       <input
@@ -458,7 +458,7 @@ const Checkout = () => {
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
-                        Pincode *
+                        Pincode <span className="text-red-600">*</span>
                       </label>
 
                       <input

@@ -23,6 +23,8 @@ const TractorDetail = () => {
   const relatedScrollRef = useRef(null);
 const [isScrollingRelated, setIsScrollingRelated] = useState(false);
 const scrollTimeoutRef = useRef(null);
+const containerRef = useRef(null);
+const [zoomStyle, setZoomStyle] = useState({ display: "none", x: 50, y: 50 });
 
   const tractor = {
     name: "Swaraj 744 FE Good tractor",
@@ -160,6 +162,23 @@ const scrollRelated = (direction) => {
   });
 };
 
+const handleMouseMove = (e) => {
+  if (!containerRef.current) return;
+  const rect = containerRef.current.getBoundingClientRect();
+  const x = ((e.clientX - rect.left) / rect.width) * 100;
+  const y = ((e.clientY - rect.top) / rect.height) * 100;
+
+  setZoomStyle({
+    display: "block",
+    x: x,
+    y: y,
+  });
+};
+
+const handleMouseLeave = () => {
+  setZoomStyle({ display: "none", x: 50, y: 50 });
+};
+
   return (
     <div className="bg-gray-100 min-h-screen">
       {/* Breadcrumb */}
@@ -186,12 +205,22 @@ const scrollRelated = (direction) => {
           {/* LEFT IMAGE SECTION */}
           <div className="lg:col-span-5">
             <div className="bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
-              <div className="relative aspect-[1/1] bg-gray-100">
-                <img
-                  src={tractor.images[currentImage]}
-                  alt=""
-                  className="w-full h-full object-cover"
-                />
+             <div
+  ref={containerRef}
+  className="relative aspect-[1/1] bg-gray-100 overflow-hidden cursor-zoom-in"
+  onMouseMove={handleMouseMove}
+  onMouseLeave={handleMouseLeave}
+>
+  <img
+    src={tractor.images[currentImage]}
+    alt=""
+    className="w-full h-full transition-transform duration-200"
+    style={{
+      transform:
+        zoomStyle.display === "block" ? "scale(2)" : "scale(1)",
+      transformOrigin: `${zoomStyle.x || 50}% ${zoomStyle.y || 50}%`,
+    }}
+  />
                 <button
                   onClick={() =>
                     setCurrentImage((prev) =>
@@ -214,25 +243,26 @@ const scrollRelated = (direction) => {
                 </button>
 
                 {/* Slide counter */}
-                <div className="absolute top-3 left-3 bg-black/60 text-white text-xs px-3 py-1 rounded-full">
-                  slide {currentImage + 1} of {tractor.images.length}
-                </div>
+                <div className="absolute top-3 left-3 bg-black/60 text-white text-xs px-3 py-1 rounded-full z-20">
+    slide {currentImage + 1} of {tractor.images.length}
+  </div>
 
-                <div className="absolute top-3 right-3 flex gap-2">
-                  <button
-                    onClick={() => setWishlist(!wishlist)}
-                    className="w-10 h-10 cursor-pointer bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all"
-                  >
-                    <Heart
-                      size={18}
-                      className={`${wishlist ? "fill-green-500 text-green-500" : "text-gray-500"}`}
-                    />
-                  </button>
-                  <button className="w-10 h-10 cursor-pointer bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all">
-                    <Share2 size={18} className="text-gray-500" />
-                  </button>
-                </div>
-              </div>
+  <div className="absolute top-3 right-3 flex gap-2 z-20">
+    <button
+      onClick={() => setWishlist(!wishlist)}
+      className="w-10 h-10 cursor-pointer bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all"
+    >
+      <Heart
+        size={18}
+        className={`${wishlist ? "fill-green-500 text-green-500" : "text-gray-500"}`}
+      />
+    </button>
+    <button className="w-10 h-10 cursor-pointer bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all">
+      <Share2 size={18} className="text-gray-500" />
+    </button>
+  </div>
+</div>
+
 
               <div className="flex gap-2 p-3 overflow-x-auto">
                 {tractor.images.map((img, index) => (

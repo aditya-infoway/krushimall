@@ -1,6 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import sonalika from "../assets/sonalika.png";
+import eicher from "../assets/eicher.png";
+import escorts from "../assets/escorts.png";
+import force from "../assets/force.png";
+import indo from "../assets/indo.png";
+import kubota from "../assets/kubota.png";
+import massey from "../assets/massey.png";
+import newinfo from "../assets/new.png";
+import swalogo from "../assets/swarajlogo.png";
+import tafe from "../assets/tafe.png"
 
 const BrandsMakers = () => {
   const navigate = useNavigate();
@@ -33,7 +43,7 @@ const BrandsMakers = () => {
     },
     {
       name: "Swaraj",
-      logo: "https://www.swarajtractors.com/assets/images/logo.svg",
+      logo: swalogo,
       slug: "swaraj",
     },
     {
@@ -43,47 +53,47 @@ const BrandsMakers = () => {
     },
     {
       name: "TAFE",
-      logo: "https://www.tafe.com/assets/images/tafe-logo.svg",
+      logo: tafe,
       slug: "tafe",
     },
     {
       name: "New Holland",
-      logo: "https://www.simpleicons.org/newholland/FFD700",
+      logo: newinfo,
       slug: "new-holland",
     },
     {
       name: "Sonalika",
-      logo: "https://www.sonalika.com/assets/images/sonalika-logo.svg",
+      logo: sonalika,
       slug: "sonalika",
     },
     {
       name: "Escorts",
-      logo: "https://cdn.escortsgroup.com/assets/images/logo.svg",
+      logo: escorts,
       slug: "escorts",
     },
     {
       name: "Eicher",
-      logo: "https://www.simpleicons.org/eicher/000000",
+      logo: eicher,
       slug: "eicher",
     },
     {
       name: "Kubota",
-      logo: "https://www.simpleicons.org/kubota/F7921E",
+      logo: kubota,
       slug: "kubota",
     },
     {
       name: "Massey Ferguson",
-      logo: "https://www.simpleicons.org/masseyferguson/CC0000",
+      logo: massey,
       slug: "massey-ferguson",
     },
     {
       name: "Force Motors",
-      logo: "https://www.forcemotors.com/assets/images/logo.svg",
+      logo: force,
       slug: "force-motors",
     },
     {
       name: "Indo Farm",
-      logo: "https://www.indofarm.in/assets/images/logo.png",
+      logo: indo,
       slug: "indo-farm",
     },
   ];

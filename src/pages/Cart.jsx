@@ -17,7 +17,6 @@ import {
 } from "lucide-react";
 import { showCartRemovedToast, showSuccessToast } from "../utils/toast";
 
-
 const Cart = () => {
   const { cart, removeFromCart, updateQuantity, cartTotal } = useCart();
   const { isAuthenticated } = useAuth();
@@ -95,7 +94,6 @@ const Cart = () => {
 
   const handleRemoveItem = (id, name) => {
     removeFromCart(id);
-    
   };
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
@@ -140,7 +138,7 @@ const Cart = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-6 sm:py-8 pt-4 md:pt-8 lg:pt-10">
+    <div className="min-h-screen bg-gray-50 py-6 sm:py-8 pt-12 md:pt-16 lg:pt-20">
       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-gray-500 mb-4 sm:mb-6 overflow-x-auto">
@@ -193,17 +191,17 @@ const Cart = () => {
                         {/* Quantity */}
                         <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
                           <button
-  onClick={() => {
-    if (item.quantity <= 1) {
-      handleRemoveItem(item.id, item.name);
-    } else {
-      updateQuantity(item.id, item.quantity - 1);
-    }
-  }}
-  className="p-2 cursor-pointer hover:bg-gray-50"
->
-  <Minus className="h-3 w-3" />
-</button>
+                            onClick={() => {
+                              if (item.quantity <= 1) {
+                                handleRemoveItem(item.id, item.name);
+                              } else {
+                                updateQuantity(item.id, item.quantity - 1);
+                              }
+                            }}
+                            className="p-2 cursor-pointer hover:bg-gray-50"
+                          >
+                            <Minus className="h-3 w-3" />
+                          </button>
 
                           <span className="w-10 text-center text-sm font-medium">
                             {item.quantity}
@@ -219,18 +217,16 @@ const Cart = () => {
                           </button>
                         </div>
 
-                       
                         {/* Remove */}
                         <div className="border border-red-600 rounded-lg ">
-
-                        <button
-                          onClick={() => handleRemoveItem(item.id, item.name)}
-                          className="cursor-pointer text-red-600 hover:text-red-700 text-sm flex px-1 py-1 items-center gap-1"
+                          <button
+                            onClick={() => handleRemoveItem(item.id, item.name)}
+                            className="cursor-pointer text-red-600 hover:text-red-700 text-sm flex px-1 py-1 items-center gap-1"
                           >
-                          <Trash2 className="h-3.5 w-3.5" />
-                          Remove
-                        </button>
-                          </div>
+                            <Trash2 className="h-3.5 w-3.5" />
+                            Remove
+                          </button>
+                        </div>
                       </div>
                     </div>
 

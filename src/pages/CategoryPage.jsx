@@ -1,4 +1,4 @@
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useLocation } from "react-router-dom";
 import { ChevronRight, Home } from "lucide-react";
 
 const CategoryPage = () => {
@@ -35,7 +35,14 @@ const CategoryPage = () => {
     // Add other categories...
   };
 
-  const categoryData = subCategories[categoryName] || [];
+  const location = useLocation();
+
+const backTo = location.state?.from === "all-categories" ? "/categories" : "/spare-parts";
+const backLabel = location.state?.from === "all-categories" ? "All Categories" : "Spare Parts";
+
+
+
+  const categoryData = subCategories[categoryName] || subCategories["engine-parts"];
   const categoryTitle = categoryName?.replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
 
   return (
@@ -48,8 +55,8 @@ const CategoryPage = () => {
               <Home className="h-4 w-4" />
             </Link>
             <ChevronRight className="h-4 w-4" />
-            <Link to="/spare-parts" className="hover:text-green-600">
-              Spare Parts
+            <Link  to={backTo} className="hover:text-green-600">
+                {backLabel}
             </Link>
             <ChevronRight className="h-4 w-4" />
             <span className="text-gray-900 font-medium">{categoryTitle}</span>
@@ -85,10 +92,10 @@ const CategoryPage = () => {
           <div className="text-center py-16">
             <p className="text-gray-500 text-lg">No sub-categories found for {categoryTitle}</p>
             <Link 
-              to="/spare-parts"
+                to={backTo} 
               className="mt-4 inline-block text-green-600 hover:text-green-700 font-medium"
             >
-              ← Back to Spare Parts
+             ← Back to {backLabel}
             </Link>
           </div>
         )}
