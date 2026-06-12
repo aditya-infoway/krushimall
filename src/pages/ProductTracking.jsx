@@ -249,10 +249,10 @@ const ProductTracking = () => {
   };
 
   return (
-    <div className="min-h-screen lg:mt-4 bg-gray-50">
+    <div className="min-h-screen  bg-gray-50">
       {/* Header */}
-      <div className="bg-white border-b border-gray-300 sticky top-0 z-10">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-10">
+      <div className="bg-white sticky top-0 z-10">
+        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
           <div className="flex items-center gap-4">
             <Link
               to="/orders"

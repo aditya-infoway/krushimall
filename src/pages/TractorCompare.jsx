@@ -11,7 +11,7 @@ import {
   Star,
   ArrowRight,
   Check,
-   ChevronDown, 
+  ChevronDown,
 } from "lucide-react";
 import mah from "../assets/mahindra.png";
 import john from "../assets/johndeere.png";
@@ -203,29 +203,37 @@ export default function TractorCompare() {
     })
     .filter(Boolean);
 
-    const scrollToCompare = () => {
-  const y =
-    compareSectionRef.current.getBoundingClientRect().top +
-    window.pageYOffset -
-    100;
+  const scrollToCompare = () => {
+    const y =
+      compareSectionRef.current.getBoundingClientRect().top +
+      window.pageYOffset -
+      100;
 
-  window.scrollTo({
-    top: y,
-    behavior: "smooth",
-  });
-};
+    window.scrollTo({
+      top: y,
+      behavior: "smooth",
+    });
+  };
 
   return (
+    // TractorCompare - wrapper div
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans antialiased">
-      {/* MAIN CONTAINER */}
-     <main className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 py-6">
+      <main className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-6 lg:pb-10">
         {/* TOP CONFIGURATOR WORKSPACE */}
-        <section  ref={compareSectionRef} className="bg-white border border-gray-200 rounded-xl mt-6 p-4 sm:p-6 shadow-sm mb-8">
+        <section
+          ref={compareSectionRef}
+          className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm "
+        >
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-2.5">
-            Compare  <span className="text-transparent bg-clip-text bg-green-600"> Tractors Side-by-Side </span>
+            Compare{" "}
+            <span className="text-transparent bg-clip-text bg-green-600">
+              {" "}
+              Tractors Side-by-Side{" "}
+            </span>
           </h2>
           <p className="text-xs sm:text-sm text-gray-600 mb-6 leading-relaxed">
-            Select models to compare below. The layout adapts seamlessly to your chosen items.
+            Select models to compare below. The layout adapts seamlessly to your
+            chosen items.
           </p>
 
           {/* FIXED RESPONSIVE GRID: grid-cols-2 forces 2 inputs side by side on mobile devices */}
@@ -256,83 +264,111 @@ export default function TractorCompare() {
                       <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     </button>
                   )}
-<div className="space-y-3 sm:space-y-4">
-  {/* Tractor Model - Headless UI Listbox */}
-  <div>
-    <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
-      Tractor Model
-    </label>
-    <Listbox value={slot.model} onChange={(value) => handleModelChange(index, value)}>
-      <div className="relative">
-        <Listbox.Button className="w-full p-2 bg-white border border-gray-300 rounded text-xs sm:text-sm text-left focus:border-green-500 outline-none transition flex items-center justify-between">
-          <span className={slot.model ? "text-gray-800" : "text-gray-400"}>
-            {slot.model || "+ Add Tractor"}
-          </span>
-          <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
-        </Listbox.Button>
-        <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-auto py-1 text-xs sm:text-sm">
-          {Object.keys(TRACTOR_DATABASE).map((modelName) => (
-            <Listbox.Option
-              key={modelName}
-              value={modelName}
-              className={({ active, selected }) =>
-                `cursor-pointer px-3 py-2 flex items-center justify-between ${
-                  active ? "bg-green-50 text-green-700" : "text-gray-700"
-                } ${selected ? "bg-green-100 font-medium" : ""}`
-              }
-            >
-              {({ selected }) => (
-                <>
-                  <span>{modelName}</span>
-                  {selected && <Check className="h-3.5 w-3.5 text-green-600" />}
-                </>
-              )}
-            </Listbox.Option>
-          ))}
-        </Listbox.Options>
-      </div>
-    </Listbox>
-  </div>
+                  <div className="space-y-3 sm:space-y-4">
+                    {/* Tractor Model - Headless UI Listbox */}
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+                        Tractor Model
+                      </label>
+                      <Listbox
+                        value={slot.model}
+                        onChange={(value) => handleModelChange(index, value)}
+                      >
+                        <div className="relative">
+                          <Listbox.Button className="w-full p-2 bg-white border border-gray-300 rounded text-xs sm:text-sm text-left focus:border-green-500 outline-none transition flex items-center justify-between">
+                            <span
+                              className={
+                                slot.model ? "text-gray-800" : "text-gray-400"
+                              }
+                            >
+                              {slot.model || "+ Add Tractor"}
+                            </span>
+                            <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+                          </Listbox.Button>
+                          <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-auto py-1 text-xs sm:text-sm">
+                            {Object.keys(TRACTOR_DATABASE).map((modelName) => (
+                              <Listbox.Option
+                                key={modelName}
+                                value={modelName}
+                                className={({ active, selected }) =>
+                                  `cursor-pointer px-3 py-2 flex items-center justify-between ${
+                                    active
+                                      ? "bg-green-50 text-green-700"
+                                      : "text-gray-700"
+                                  } ${selected ? "bg-green-100 font-medium" : ""}`
+                                }
+                              >
+                                {({ selected }) => (
+                                  <>
+                                    <span>{modelName}</span>
+                                    {selected && (
+                                      <Check className="h-3.5 w-3.5 text-green-600" />
+                                    )}
+                                  </>
+                                )}
+                              </Listbox.Option>
+                            ))}
+                          </Listbox.Options>
+                        </div>
+                      </Listbox>
+                    </div>
 
-  {/* Variant Select - Headless UI Listbox */}
-  {modelSelected && (
-    <div className="animate-fadeIn">
-      <label className="block text-[10px] font-bold uppercase tracking-wider text-green-700 mb-1">
-        Select Variant *
-      </label>
-      <Listbox value={slot.variant} onChange={(value) => handleVariantChange(index, value)}>
-        <div className="relative">
-          <Listbox.Button className="w-full p-2 bg-white border border-green-300 rounded text-xs sm:text-sm text-left focus:border-green-500 outline-none transition font-semibold flex items-center justify-between">
-            <span className={slot.variant ? "text-gray-800" : "text-gray-400"}>
-              {slot.variant || "-- Variant --"}
-            </span>
-            <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
-          </Listbox.Button>
-          <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-auto py-1 text-xs sm:text-sm">
-            {Object.keys(TRACTOR_DATABASE[slot.model].variants).map((vName) => (
-              <Listbox.Option
-                key={vName}
-                value={vName}
-                className={({ active, selected }) =>
-                  `cursor-pointer px-3 py-2 flex items-center justify-between ${
-                    active ? "bg-green-50 text-green-700" : "text-gray-700"
-                  } ${selected ? "bg-green-100 font-medium" : ""}`
-                }
-              >
-                {({ selected }) => (
-                  <>
-                    <span>{vName}</span>
-                    {selected && <Check className="h-3.5 w-3.5 text-green-600" />}
-                  </>
-                )}
-              </Listbox.Option>
-            ))}
-          </Listbox.Options>
-        </div>
-      </Listbox>
-    </div>
-  )}
-</div>
+                    {/* Variant Select - Headless UI Listbox */}
+                    {modelSelected && (
+                      <div className="animate-fadeIn">
+                        <label className="block text-[10px] font-bold uppercase tracking-wider text-green-700 mb-1">
+                          Select Variant *
+                        </label>
+                        <Listbox
+                          value={slot.variant}
+                          onChange={(value) =>
+                            handleVariantChange(index, value)
+                          }
+                        >
+                          <div className="relative">
+                            <Listbox.Button className="w-full p-2 bg-white border border-green-300 rounded text-xs sm:text-sm text-left focus:border-green-500 outline-none transition font-semibold flex items-center justify-between">
+                              <span
+                                className={
+                                  slot.variant
+                                    ? "text-gray-800"
+                                    : "text-gray-400"
+                                }
+                              >
+                                {slot.variant || "-- Variant --"}
+                              </span>
+                              <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+                            </Listbox.Button>
+                            <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-auto py-1 text-xs sm:text-sm">
+                              {Object.keys(
+                                TRACTOR_DATABASE[slot.model].variants,
+                              ).map((vName) => (
+                                <Listbox.Option
+                                  key={vName}
+                                  value={vName}
+                                  className={({ active, selected }) =>
+                                    `cursor-pointer px-3 py-2 flex items-center justify-between ${
+                                      active
+                                        ? "bg-green-50 text-green-700"
+                                        : "text-gray-700"
+                                    } ${selected ? "bg-green-100 font-medium" : ""}`
+                                  }
+                                >
+                                  {({ selected }) => (
+                                    <>
+                                      <span>{vName}</span>
+                                      {selected && (
+                                        <Check className="h-3.5 w-3.5 text-green-600" />
+                                      )}
+                                    </>
+                                  )}
+                                </Listbox.Option>
+                              ))}
+                            </Listbox.Options>
+                          </div>
+                        </Listbox>
+                      </div>
+                    )}
+                  </div>
                   <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col items-center justify-center min-h-[70px] sm:min-h-[90px]">
                     {tractorDetails ? (
                       <div className="w-full text-center">
@@ -557,10 +593,13 @@ export default function TractorCompare() {
         )}
 
         {/* SHOWCASE REPLACEMENT GALLERY AREA */}
-        <section className="mt-12  pt-8">
+        <section className="mt-12">
           <div className="mb-6">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-2.5">
-              Trending  <span className="text-transparent bg-clip-text bg-green-600">Tractor Showcase </span>
+              Trending{" "}
+              <span className="text-transparent bg-clip-text bg-green-600">
+                Tractor Showcase
+              </span>
             </h2>
             <p className="text-xs text-gray-600">
               Quickly browse these catalog options. Use them to configure
@@ -568,60 +607,63 @@ export default function TractorCompare() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
             {SHOWCASE_TRACTORS.map((tractor, index) => (
               <div
                 key={index}
-                className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm hover:shadow-md transition duration-200 flex flex-col justify-between"
+                className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-5 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
               >
                 <div>
-                  <div className="relative bg-gray-50 rounded-lg mb-3 flex items-center justify-center">
+                  <div className="relative bg-gray-50 rounded-lg sm:rounded-xl mb-3 flex items-center justify-center overflow-hidden aspect-[4/3] sm:aspect-square lg:aspect-[4/3]">
                     <img
                       src={tractor.image}
                       alt={tractor.name}
-                      className="h-45 w-full object-fill "
+                      className="w-full h-full object-contain p-2 sm:p-3 lg:p-4 group-hover:scale-105 transition-transform duration-500"
                     />
-                    <span className="absolute top-2 right-2 bg-white/90 backdrop-blur-xs text-green-700 px-2 py-0.5 rounded text-xs font-bold flex items-center gap-0.5 shadow-xs">
-                      <Star className="w-3 h-3 fill-green-700 text-green-700" />{" "}
+                    <span className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-white/95 backdrop-blur-sm text-green-700 px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-bold flex items-center gap-0.5 sm:gap-1 shadow-sm border border-white/50">
+                      <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-green-700 text-green-700" />
                       {tractor.rating}
                     </span>
                   </div>
 
-                  <h3 className="font-bold text-gray-900 text-sm truncate">
+                  <h3 className="font-bold text-gray-900 text-xs sm:text-sm lg:text-base truncate mb-1.5 sm:mb-2">
                     {tractor.name}
                   </h3>
-                  <div className="flex items-center gap-2 mt-1 mb-3">
-                    <span className="text-[11px] font-semibold bg-gray-100 text-gray-600 px-2 py-0.5 rounded">
+                  <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                    <span className="text-[9px] sm:text-[10px] lg:text-[11px] font-semibold bg-gray-100 text-gray-600 px-1.5 sm:px-2 py-0.5 rounded-md">
                       {tractor.hp} Engine
                     </span>
                   </div>
                 </div>
 
-                <div className="pt-3 border-t border-gray-100 flex items-center justify-between gap-2">
-                  <div>
-                    <span className="text-[10px] text-gray-400 block uppercase font-semibold">
+                <div className="pt-2 sm:pt-3 border-t border-gray-100 flex items-center justify-between gap-1.5 sm:gap-2">
+                  <div className="min-w-0">
+                    <span className="text-[9px] sm:text-[10px] text-gray-400 block uppercase font-semibold tracking-wider">
                       Est. Range
                     </span>
-                    <span className="text-sm font-bold text-green-700">
+                    <span className="text-xs sm:text-sm lg:text-base font-bold text-green-700 truncate block">
                       {tractor.priceRange}
                     </span>
                   </div>
-                  <Link to={`/tractor/${tractor.id}`}>
-                  <button className="bg-green-50 text-green-700 hover:bg-green-700 hover:text-white font-bold text-xs cursor-pointer py-2 px-3 rounded-md transition duration-150">
-                    View Details
-                  </button>
+                  <Link to={`/tractor/${tractor.id}`} className="flex-shrink-0">
+                    <button className="bg-green-50 text-green-700 hover:bg-green-700 hover:text-white font-bold text-[10px] sm:text-xs lg:text-sm cursor-pointer py-1.5 sm:py-2 px-2 sm:px-3 lg:px-4 rounded-md sm:rounded-lg transition-all duration-200 hover:shadow-md whitespace-nowrap">
+                      View Details
+                    </button>
                   </Link>
                 </div>
               </div>
             ))}
           </div>
         </section>
-
         {/* --- POPULAR COMPARISON HANDPICKS --- */}
-        <section className="mt-12  pt-8 mb-12">
+        <section className="mt-12   mb-12">
           <div className="mb-6">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-              Compare to buy  <span className="text-transparent bg-clip-text bg-green-600"> the right tractor </span>
+              Compare to buy{" "}
+              <span className="text-transparent bg-clip-text bg-green-600">
+                {" "}
+                the right tractor{" "}
+              </span>
             </h2>
             <div className="mt-2 border-b border-gray-200">
               <span className="inline-block text-sm font-semibold text-green-700 border-b-2 border-green-700 pb-2 px-1">
@@ -640,7 +682,6 @@ export default function TractorCompare() {
                   {/* Edge-to-edge split layout container */}
                   <div className="relative border border-gray-200 rounded-lg overflow-hidden mb-3 w-full h-24 sm:h-36">
                     <div className="grid grid-cols-2 gap-0 h-full w-full relative">
-                      
                       {/* Left Side */}
                       <div className="w-full h-full flex items-center justify-center bg-cover bg-center">
                         <img
@@ -673,7 +714,10 @@ export default function TractorCompare() {
                         {pair.left.name}
                       </p>
                       <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5 sm:mt-1">
-                        From <span className="font-semibold text-gray-700">{pair.left.price}</span>
+                        From{" "}
+                        <span className="font-semibold text-gray-700">
+                          {pair.left.price}
+                        </span>
                       </p>
                     </div>
                     <div className="text-right">
@@ -681,7 +725,10 @@ export default function TractorCompare() {
                         {pair.right.name}
                       </p>
                       <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5 sm:mt-1">
-                        From <span className="font-semibold text-gray-700">{pair.right.price}</span>
+                        From{" "}
+                        <span className="font-semibold text-gray-700">
+                          {pair.right.price}
+                        </span>
                       </p>
                     </div>
                   </div>
@@ -690,9 +737,11 @@ export default function TractorCompare() {
                 {/* Action comparison button wrapper */}
                 <div className="mt-1">
                   <button
-                   onClick={scrollToCompare}
-                  className="w-full cursor-pointer border border-green-200 bg-white hover:bg-green-50 text-green-700 transition-colors duration-150 text-[10px] sm:text-xs font-semibold py-1.5 px-2 rounded-md text-center truncate">
-                    {pair.left.name.split(" ")[0]} {pair.left.name.split(" ")[1] || ""} vs {pair.right.name}
+                    onClick={scrollToCompare}
+                    className="w-full cursor-pointer border border-green-200 bg-white hover:bg-green-50 text-green-700 transition-colors duration-150 text-[10px] sm:text-xs font-semibold py-1.5 px-2 rounded-md text-center truncate"
+                  >
+                    {pair.left.name.split(" ")[0]}{" "}
+                    {pair.left.name.split(" ")[1] || ""} vs {pair.right.name}
                   </button>
                 </div>
               </div>

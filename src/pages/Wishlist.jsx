@@ -54,7 +54,7 @@ const Wishlist = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-2 lg:py-8  md:pt-20 lg:pt-28 ">
+    <div className=" bg-gray-50  pb-8 pt-12 md:pt-16 lg:pt-20 ">
       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
         <div className="flex items-center justify-between mb-8">
           <div>

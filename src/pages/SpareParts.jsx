@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Listbox, Checkbox} from "@headlessui/react";
+import { Listbox, Checkbox } from "@headlessui/react";
 import {
   Search,
   Car,
@@ -29,9 +29,8 @@ import {
   MapPin,
   Sparkles,
   Tractor,
-   Check,
+  Check,
 } from "lucide-react";
-
 
 const SpareParts = () => {
   const navigate = useNavigate();
@@ -55,9 +54,18 @@ const SpareParts = () => {
   const scrollTimeoutRef2 = useRef(null);
   const scrollTimeoutRef3 = useRef(null);
   const [readyToDispatch, setReadyToDispatch] = useState(true);
-const [includeOutOfStock, setIncludeOutOfStock] = useState(false);
-const [oemPart, setOemPart] = useState(true);
-const [oesCertified, setOesCertified] = useState(true);
+  const [includeOutOfStock, setIncludeOutOfStock] = useState(false);
+  const [oemPart, setOemPart] = useState(true);
+  const [oesCertified, setOesCertified] = useState(true);
+  const [selectedGalleryImage, setSelectedGalleryImage] = useState(0);
+
+
+  const galleryImages = [
+  "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=600&h=400&fit=crop",
+ "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&h=400&fit=crop",
+  "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=600&h=400&fit=crop",
+];
 
   // Hook to detect scroll for showing arrows
   const useScrollDetection = (ref, setIsScrolling, timeoutRef) => {
@@ -164,7 +172,7 @@ const [oesCertified, setOesCertified] = useState(true);
       name: "Brakes & Suspension",
       icon: Gauge,
       image:
-        "https://images.unsplash.com/photo-1600712242805-5f78671b24da?w=400&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
       slug: "brakes-suspension",
     },
     {
@@ -188,7 +196,7 @@ const [oesCertified, setOesCertified] = useState(true);
       name: "Cooling System",
       icon: Thermometer,
       image:
-        "https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=400&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop",
       slug: "cooling-system",
     },
     {
@@ -196,7 +204,7 @@ const [oesCertified, setOesCertified] = useState(true);
       name: "Exhaust System",
       icon: Wind,
       image:
-        "https://images.unsplash.com/photo-1625049245087-93a0a5c2a0a8?w=400&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
       slug: "exhaust-system",
     },
     {
@@ -212,7 +220,7 @@ const [oesCertified, setOesCertified] = useState(true);
       name: "Body Parts",
       icon: Car,
       image:
-        "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
       slug: "body-parts",
     },
   ];
@@ -225,7 +233,7 @@ const [oesCertified, setOesCertified] = useState(true);
       price: "₹1,850",
       rating: 4.8,
       image:
-        "https://images.unsplash.com/photo-1600712242805-5f78671b24da?w=400&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop",
     },
     {
       id: 102,
@@ -260,7 +268,7 @@ const [oesCertified, setOesCertified] = useState(true);
       price: "₹299",
       rating: 4.9,
       image:
-        "https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=400&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop",
     },
     {
       id: 202,
@@ -276,7 +284,7 @@ const [oesCertified, setOesCertified] = useState(true);
       price: "₹180",
       rating: 4.7,
       image:
-        "https://images.unsplash.com/photo-1565043589221-1a6fd9ae45c7?w=400&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop",
     },
     {
       id: 204,
@@ -284,7 +292,7 @@ const [oesCertified, setOesCertified] = useState(true);
       price: "₹350",
       rating: 4.6,
       image:
-        "https://images.unsplash.com/photo-1616788494707-ec28f08d05a1?w=400&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
     },
   ];
 
@@ -320,14 +328,14 @@ const [oesCertified, setOesCertified] = useState(true);
       name: "Radiator Cooling Fan Assembly",
       price: "₹2,450",
       image:
-        "https://images.unsplash.com/photo-1489824904134-891ab64532f1?w=400&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
     },
     {
       id: 502,
       name: "High-Pressure Exhaust Muffler",
       price: "₹4,800",
       image:
-        "https://images.unsplash.com/photo-1617814076367-b759c7d7e738?w=400&h=300&fit=crop",
+        "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop",
     },
   ];
 
@@ -355,7 +363,7 @@ const [oesCertified, setOesCertified] = useState(true);
   return (
     <div className="bg-gray-50 min-h-screen ">
       {/* ========== HERO SECTION ========== */}
-      <section className="relative bg-gray-900 text-white min-h-[550px] flex items-center overflow-hidden">
+      <section className="relative bg-gray-900 text-white min-h-[550px] flex items-center">
         {/* Background Image Container */}
         <div className="absolute inset-0 z-0">
           <img
@@ -366,7 +374,7 @@ const [oesCertified, setOesCertified] = useState(true);
           <div className="absolute inset-0 bg-gradient-to-r from-gray-950/85 via-gray-900/50 to-black/20" />
         </div>
 
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-16 lg:py-24 relative z-10 w-full">
+        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-8 relative z-10 ">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
             <div>
@@ -439,7 +447,7 @@ const [oesCertified, setOesCertified] = useState(true);
             </div>
 
             {/* Right Side - Filter Widget */}
-            <div className="lg:block">
+            <div className="lg:block relative z-30">
               <div className="bg-gray-900/85 backdrop-blur-md rounded-2xl p-6 border border-gray-500/20 shadow-2xl">
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-10 h-10 rounded-xl bg-green-700/30 flex items-center justify-center">
@@ -603,19 +611,19 @@ const [oesCertified, setOesCertified] = useState(true);
                     <Listbox value={selectedState} onChange={setSelectedState}>
                       <div className="relative">
                         <Listbox.Button className="w-full px-4 py-3 rounded-lg text-gray-900 bg-white text-left flex items-center justify-between hover:shadow-md transition-shadow duration-200 border border-gray-200 focus:ring-2 focus:ring-green-600">
-                          <div className="flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-gray-400" />
+                          <div className="flex items-center gap-2 min-w-0 flex-1">
+                            <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
                             <span
-                              className={
+                              className={`truncate ${
                                 selectedState
                                   ? "text-gray-900 font-medium"
                                   : "text-gray-400"
-                              }
+                              }`}
                             >
                               {selectedState || "State"}
                             </span>
                           </div>
-                          <ChevronDown className="h-4 w-4 text-gray-400" />
+                          <ChevronDown className="h-4 w-4 text-gray-400 flex-shrink-0" />
                         </Listbox.Button>
                         <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto py-1 text-sm">
                           {[
@@ -717,133 +725,131 @@ const [oesCertified, setOesCertified] = useState(true);
         </div>
       </section>
       {/* ========== SECTION 3: SEARCH BY CATEGORY ========== */}
-    {/* ========== SECTION 3: SEARCH BY CATEGORY ========== */}
-<section
-  id="categories"
-  ref={categoriesRef}
-  className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20"
->
-  <div className="flex items-center justify-between mb-5 sm:mb-8">
-    <div>
-      <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
-        <Wrench className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
-        Search{" "}
-        <span className="text-transparent bg-clip-text bg-green-600">
-          by Category
-        </span>
-      </h2>
-      <p className="text-gray-600 text-sm mt-1">
-        Browse our extensive catalog of spare parts categories
-      </p>
-    </div>
-    <Link
-      to="/categories"
-      className="text-green-600 hover:text-green-700 font-semibold flex items-center gap-1 text-sm  hover:underline"
-    >
-      <span className="hidden sm:inline">View All</span>
-      <ArrowRight className="h-4 w-4" />
-    </Link>
-   
-  </div>
-
-  {/* MOBILE - Native scroll with arrows on touch */}
-  <div className="sm:hidden relative">
-    <button
-      onClick={() => scrollSlider(categoriesScrollRef, "left")}
-      className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
-        isScrollingCategories
-          ? "opacity-100 translate-x-0"
-          : "opacity-0 -translate-x-2"
-      }`}
-    >
-      <ChevronRight className="h-4 w-4 rotate-180" />
-    </button>
-    <div
-      ref={categoriesScrollRef}
-      className="flex overflow-x-auto gap-3 pb-4 px-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
-      style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-    >
-      {categories.map((category) => (
-        <div
-          key={category.id}
-          className="snap-start w-[75vw] flex-shrink-0"
-        >
-          <Link
-            to={`/category/${category.slug}`}
-            className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col h-full"
-          >
-            <div className="relative h-40 overflow-hidden bg-gray-100">
-              <img
-                src={category.image}
-                alt={category.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                loading="lazy"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src =
-                    "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop";
-                }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-              <div className="absolute bottom-3 left-3 text-white">
-                <category.icon className="h-6 w-6 mb-1" />
-                <h3 className="text-sm font-bold">{category.name}</h3>
-              </div>
-            </div>
-            <div className="p-3 border-t border-gray-100 mt-auto">
-              <span className="text-xs text-green-600 hover:text-green-700 font-medium flex items-center gap-1">
-                View Subcategories <ChevronRight className="h-3 w-3" />
+      <section
+        id="categories"
+        ref={categoriesRef}
+        className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20"
+      >
+        <div className="flex items-center justify-between mb-5 sm:mb-8">
+          <div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
+              <Wrench className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
+              Search{" "}
+              <span className="text-transparent bg-clip-text bg-green-600">
+                by Category
               </span>
-            </div>
+            </h2>
+            <p className="text-gray-600 text-sm mt-1">
+              Browse our extensive catalog of spare parts categories
+            </p>
+          </div>
+          <Link
+            to="/categories"
+            className="text-green-600 hover:text-green-700 font-semibold flex items-center gap-1 text-sm  hover:underline"
+          >
+            <span className="hidden sm:inline">View All</span>
+            <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
-      ))}
-    </div>
-    <button
-      onClick={() => scrollSlider(categoriesScrollRef, "right")}
-      className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
-        isScrollingCategories
-          ? "opacity-100 translate-x-0"
-          : "opacity-0 translate-x-2"
-      }`}
-    >
-      <ChevronRight className="h-4 w-4" />
-    </button>
-  </div>
 
-  {/* DESKTOP - Grid */}
-  <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-    {categories.map((category) => (
-      <Link
-        key={category.id}
-        to={`/category/${category.slug}`}
-        className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden"
-      >
-        <div className="relative h-48 overflow-hidden">
-          <img
-            src={category.image}
-            alt={category.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-            onError={(e) => {
-              e.target.src =
-                "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop";
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-          <div className="absolute bottom-4 left-4 text-white">
-            <category.icon className="h-8 w-8 mb-2" />
-            <h3 className="text-lg font-bold">{category.name}</h3>
+        {/* MOBILE - Native scroll with arrows on touch */}
+        <div className="sm:hidden relative">
+          <button
+            onClick={() => scrollSlider(categoriesScrollRef, "left")}
+            className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+              isScrollingCategories
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 -translate-x-2"
+            }`}
+          >
+            <ChevronRight className="h-4 w-4 rotate-180" />
+          </button>
+          <div
+            ref={categoriesScrollRef}
+            className="flex overflow-x-auto gap-3 pb-4 px-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {categories.map((category) => (
+              <div
+                key={category.id}
+                className="snap-start w-[75vw] flex-shrink-0"
+              >
+                <Link
+                  to={`/category/${category.slug}`}
+                  className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col h-full"
+                >
+                  <div className="relative h-40 overflow-hidden bg-gray-100">
+                    <img
+                      src={category.image}
+                      alt={category.name}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                      loading="lazy"
+                      onError={(e) => {
+                        e.target.onerror = null;
+                        e.target.src =
+                          "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop";
+                      }}
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                    <div className="absolute bottom-3 left-3 text-white">
+                      <category.icon className="h-6 w-6 mb-1" />
+                      <h3 className="text-sm font-bold">{category.name}</h3>
+                    </div>
+                  </div>
+                  <div className="p-3 border-t border-gray-100 mt-auto">
+                    <span className="text-xs text-green-600 hover:text-green-700 font-medium flex items-center gap-1">
+                      View Subcategories <ChevronRight className="h-3 w-3" />
+                    </span>
+                  </div>
+                </Link>
+              </div>
+            ))}
           </div>
+          <button
+            onClick={() => scrollSlider(categoriesScrollRef, "right")}
+            className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+              isScrollingCategories
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 translate-x-2"
+            }`}
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
         </div>
-        <div className="p-4 border-t border-gray-100">
-          <span className="text-sm text-green-600 hover:text-green-700 font-medium flex items-center gap-1">
-            View Subcategories <ChevronRight className="h-4 w-4" />
-          </span>
+
+        {/* DESKTOP - Grid */}
+        <div className="hidden sm:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {categories.map((category) => (
+            <Link
+              key={category.id}
+              to={`/category/${category.slug}`}
+              className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden"
+            >
+              <div className="relative h-48 overflow-hidden">
+                <img
+                  src={category.image}
+                  alt={category.name}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  onError={(e) => {
+                    e.target.src =
+                      "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop";
+                  }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+                <div className="absolute bottom-4 left-4 text-white">
+                  <category.icon className="h-8 w-8 mb-2" />
+                  <h3 className="text-lg font-bold">{category.name}</h3>
+                </div>
+              </div>
+              <div className="p-4 border-t border-gray-100">
+                <span className="text-sm text-green-600 hover:text-green-700 font-medium flex items-center gap-1">
+                  View Subcategories <ChevronRight className="h-4 w-4" />
+                </span>
+              </div>
+            </Link>
+          ))}
         </div>
-      </Link>
-    ))}
-  </div>
-</section>
+      </section>
       {/* ========== SECTION 4: FEATURED PRODUCTS ========== */}
       <section className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 border-t border-gray-100">
         <div className="flex justify-between items-end mb-8">
@@ -1151,7 +1157,7 @@ const [oesCertified, setOesCertified] = useState(true);
             </p>
           </div>
           <Link
-            onClick={scrollToCategories}
+            to={`/categories`}
             className="inline-flex items-center gap-1.5 text-xs font-bold text-green-600 hover:text-green-700 bg-green-50 px-3 py-2 rounded-lg border border-green-100 transition-colors group self-start md:self-auto"
           >
             All Categories{" "}
@@ -1189,268 +1195,294 @@ const [oesCertified, setOesCertified] = useState(true);
       </section>
 
       {/* ========== SECTION 8: PRODUCT LISTING SECTION ========== */}
-    {/* ========== SECTION 8: PRODUCT LISTING SECTION ========== */}
-<section className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 bg-gray-50/50 border-t border-b border-gray-200/60">
-  <div className="grid lg:grid-cols-4 gap-8 my-4">
-   {/* Enhanced Filter Panel Sidebar */}
-<div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm h-fit space-y-6">
-  <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-    <span className="font-bold text-gray-900 flex items-center gap-2 text-sm">
-      <Filter className="h-4 w-4 text-green-600" /> Refine Component Results
-    </span>
-    <button className="text-xs text-green-600 font-bold hover:text-green-700 cursor-pointer" onClick={() => {
-      setReadyToDispatch(true);
-      setIncludeOutOfStock(false);
-      setOemPart(true);
-      setOesCertified(true);
-    }}>Reset</button>
-  </div>
-
-  {/* Stock Status - Headless UI Checkbox */}
-  <div>
-    <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-3">
-      Stock Status
-    </label>
-    <div className="space-y-2">
-      <Checkbox
-        checked={readyToDispatch}
-        onChange={setReadyToDispatch}
-        className="group flex items-center gap-3 text-xs text-gray-600 cursor-pointer hover:text-gray-900 transition-colors"
-      >
-        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-          readyToDispatch ? "bg-green-600 border-green-600" : "border-gray-300 group-hover:border-green-400"
-        }`}>
-          {readyToDispatch && <Check className="h-3 w-3 text-white" />}
-        </div>
-        Ready to Dispatch (24h)
-      </Checkbox>
-
-      <Checkbox
-        checked={includeOutOfStock}
-        onChange={setIncludeOutOfStock}
-        className="group flex items-center gap-3 text-xs text-gray-600 cursor-pointer hover:text-gray-900 transition-colors"
-      >
-        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-          includeOutOfStock ? "bg-green-600 border-green-600" : "border-gray-300 group-hover:border-green-400"
-        }`}>
-          {includeOutOfStock && <Check className="h-3 w-3 text-white" />}
-        </div>
-        Include Out of Stock
-      </Checkbox>
-    </div>
-  </div>
-
-  {/* Component Grade - Headless UI Checkbox */}
-  <div className="pt-4 border-t border-gray-100">
-    <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-3">
-      Component Grade
-    </label>
-    <div className="space-y-2">
-      <Checkbox
-        checked={oemPart}
-        onChange={setOemPart}
-        className="group flex items-center gap-3 text-xs text-gray-600 cursor-pointer hover:text-gray-900 transition-colors"
-      >
-        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-          oemPart ? "bg-green-600 border-green-600" : "border-gray-300 group-hover:border-green-400"
-        }`}>
-          {oemPart && <Check className="h-3 w-3 text-white" />}
-        </div>
-        OEM Original Part
-      </Checkbox>
-
-      <Checkbox
-        checked={oesCertified}
-        onChange={setOesCertified}
-        className="group flex items-center gap-3 text-xs text-gray-600 cursor-pointer hover:text-gray-900 transition-colors"
-      >
-        <div className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
-          oesCertified ? "bg-green-600 border-green-600" : "border-gray-300 group-hover:border-green-400"
-        }`}>
-          {oesCertified && <Check className="h-3 w-3 text-white" />}
-        </div>
-        OES Certified Alternative
-      </Checkbox>
-    </div>
-  </div>
-</div>
-
-    {/* Active Product Grid View */}
-    <div className="lg:col-span-3 space-y-4">
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-white p-4 border border-gray-200 rounded-xl shadow-sm">
-        <span className="text-xs font-medium text-gray-500">
-          Showing <span className="text-gray-900 font-bold">1-3</span> of 184 calibrated assemblies for your selection
-        </span>
-        <div className="flex items-center gap-2 text-xs">
-          <span className="text-gray-400 font-medium">Order By:</span>
-          <span className="text-gray-900 font-bold bg-gray-50 px-2 py-1 rounded border border-gray-200">Relevance</span>
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {[
-          {
-            id: 1,
-            name: "Synthetic Micro-Fiber Air Filter",
-            price: "₹580",
-            brand: "Purolator OES",
-            img: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
-          },
-          {
-            id: 2,
-            name: "High-Friction Front Brake Pad Set",
-            price: "₹1,850",
-            brand: "Bosch Premium",
-            img: "https://images.unsplash.com/photo-1600712242805-5f78671b24da?w=400&h=300&fit=crop",
-          },
-          {
-            id: 3,
-            name: "Laser Iridium Power Spark Core",
-            price: "₹1,200",
-            brand: "NGK Technology",
-            img: "https://images.unsplash.com/photo-1617650728468-8581e439c864?w=400&h=300&fit=crop",
-          },
-        ].map((item, idx) => (
-          <div
-            key={idx}
-            className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all duration-300 hover:border-green-600 flex flex-col justify-between group"
-          >
-            <div>
-              <Link to={`/product/${item.id}`} className="overflow-hidden rounded-lg mb-3 bg-gray-50 h-36 border border-gray-100 block">
-                <img
-                  src={item.img}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                  alt={item.name}
-                />
-              </Link>
-              <span className="text-[9px] font-extrabold text-green-600 uppercase tracking-wider bg-green-50 px-2 py-0.5 rounded border border-green-100/50">
-                {item.brand}
+      {/* ========== SECTION 8: PRODUCT LISTING SECTION ========== */}
+      <section className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 bg-gray-50/50 border-t border-b border-gray-200/60">
+        <div className="grid lg:grid-cols-4 gap-8 my-4">
+          {/* Enhanced Filter Panel Sidebar */}
+          <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm h-fit space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-gray-100">
+              <span className="font-bold text-gray-900 flex items-center gap-2 text-sm">
+                <Filter className="h-4 w-4 text-green-600" /> Refine Component
+                Results
               </span>
-              <Link to={`/product/${item.id}`}>
-                <h5 className="font-bold text-gray-900 text-sm line-clamp-2 mt-2 leading-snug hover:text-green-600 transition-colors">
-                  {item.name}
-                </h5>
-              </Link>
-            </div>
-            <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-100">
-              <span className="font-extrabold text-base text-gray-900">{item.price}</span>
-              <Link
-                to={`/product/${item.id}`}
-                className="text-xs font-bold text-green-600 hover:text-green-700 flex items-center gap-0.5"
+              <button
+                className="text-xs text-green-600 font-bold hover:text-green-700 cursor-pointer"
+                onClick={() => {
+                  setReadyToDispatch(true);
+                  setIncludeOutOfStock(false);
+                  setOemPart(true);
+                  setOesCertified(true);
+                }}
               >
-                View Details <ChevronRight className="h-3.5 w-3.5" />
-              </Link>
+                Reset
+              </button>
+            </div>
+
+            {/* Stock Status - Headless UI Checkbox */}
+            <div>
+              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-3">
+                Stock Status
+              </label>
+              <div className="space-y-2">
+                <Checkbox
+                  checked={readyToDispatch}
+                  onChange={setReadyToDispatch}
+                  className="group flex items-center gap-3 text-xs text-gray-600 cursor-pointer hover:text-gray-900 transition-colors"
+                >
+                  <div
+                    className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                      readyToDispatch
+                        ? "bg-green-600 border-green-600"
+                        : "border-gray-300 group-hover:border-green-400"
+                    }`}
+                  >
+                    {readyToDispatch && (
+                      <Check className="h-3 w-3 text-white" />
+                    )}
+                  </div>
+                  Ready to Dispatch (24h)
+                </Checkbox>
+
+                <Checkbox
+                  checked={includeOutOfStock}
+                  onChange={setIncludeOutOfStock}
+                  className="group flex items-center gap-3 text-xs text-gray-600 cursor-pointer hover:text-gray-900 transition-colors"
+                >
+                  <div
+                    className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                      includeOutOfStock
+                        ? "bg-green-600 border-green-600"
+                        : "border-gray-300 group-hover:border-green-400"
+                    }`}
+                  >
+                    {includeOutOfStock && (
+                      <Check className="h-3 w-3 text-white" />
+                    )}
+                  </div>
+                  Include Out of Stock
+                </Checkbox>
+              </div>
+            </div>
+
+            {/* Component Grade - Headless UI Checkbox */}
+            <div className="pt-4 border-t border-gray-100">
+              <label className="text-[11px] font-bold uppercase tracking-wider text-gray-400 block mb-3">
+                Component Grade
+              </label>
+              <div className="space-y-2">
+                <Checkbox
+                  checked={oemPart}
+                  onChange={setOemPart}
+                  className="group flex items-center gap-3 text-xs text-gray-600 cursor-pointer hover:text-gray-900 transition-colors"
+                >
+                  <div
+                    className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                      oemPart
+                        ? "bg-green-600 border-green-600"
+                        : "border-gray-300 group-hover:border-green-400"
+                    }`}
+                  >
+                    {oemPart && <Check className="h-3 w-3 text-white" />}
+                  </div>
+                  OEM Original Part
+                </Checkbox>
+
+                <Checkbox
+                  checked={oesCertified}
+                  onChange={setOesCertified}
+                  className="group flex items-center gap-3 text-xs text-gray-600 cursor-pointer hover:text-gray-900 transition-colors"
+                >
+                  <div
+                    className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 transition-colors ${
+                      oesCertified
+                        ? "bg-green-600 border-green-600"
+                        : "border-gray-300 group-hover:border-green-400"
+                    }`}
+                  >
+                    {oesCertified && <Check className="h-3 w-3 text-white" />}
+                  </div>
+                  OES Certified Alternative
+                </Checkbox>
+              </div>
             </div>
           </div>
-        ))}
-      </div>
-    </div>
-  </div>
-</section>
 
-      {/* ========== SECTION 9: PRODUCT DETAIL IN-DEPTH BREAKDOWN ========== */}
-      <section className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-14">
-        <div className="bg-white rounded-2xl border border-gray-200 p-6 lg:p-8 shadow-sm">
-          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            {/* Gallery Component layout */}
-            <div className="lg:col-span-5 space-y-3">
-              <div className="bg-gray-50 rounded-xl overflow-hidden border border-gray-200/60 h-64 shadow-inner relative group">
-                <img
-                  src="https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&h=400&fit=crop"
-                  className="w-full h-full object-cover"
-                  alt="Main Component Breakdown"
-                />
-                <span className="absolute bottom-3 right-3 text-[10px] font-bold text-gray-700 bg-white/90 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
-                  Interactive Preview
+          {/* Active Product Grid View */}
+          <div className="lg:col-span-3 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3 bg-white p-4 border border-gray-200 rounded-xl shadow-sm">
+              <span className="text-xs font-medium text-gray-500">
+                Showing <span className="text-gray-900 font-bold">1-3</span> of
+                184 calibrated assemblies for your selection
+              </span>
+              <div className="flex items-center gap-2 text-xs">
+                <span className="text-gray-400 font-medium">Order By:</span>
+                <span className="text-gray-900 font-bold bg-gray-50 px-2 py-1 rounded border border-gray-200">
+                  Relevance
                 </span>
-              </div>
-              <div className="grid grid-cols-4 gap-2">
-                <div className="h-14 rounded-lg border-2 border-green-700 overflow-hidden cursor-pointer">
-                  <img
-                    src="https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=100"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="h-14 rounded-lg border border-gray-200 overflow-hidden opacity-60 hover:opacity-100 transition-opacity cursor-pointer">
-                  <img
-                    src="https://images.unsplash.com/photo-1600712242805-5f78671b24da?w=100"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="h-14 rounded-lg border border-gray-200 overflow-hidden opacity-60 hover:opacity-100 transition-opacity cursor-pointer">
-                  <img
-                    src="https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=100"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="h-14 rounded-lg border border-gray-200 overflow-hidden opacity-60 hover:opacity-100 transition-opacity cursor-pointer">
-                  <img
-                    src="https://images.unsplash.com/photo-1617650728468-8581e439c864?w=100"
-                    className="w-full h-full object-cover"
-                    alt="Component Thumbnail"
-                  />
-                </div>
               </div>
             </div>
 
-            {/* Specs / Content Details layout */}
-            <div className="lg:col-span-7 space-y-4">
-              <div>
-                <span className="bg-green-100 text-green-700 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider inline-block border border-green-200/50">
-                  Component Spotlight
-                </span>
-                <h3 className="text-xl sm:text-2xl font-extrabold text-gray-900 mt-2.5 tracking-tight">
-                  High-Output Engine Ignition Control Assembly Block
-                </h3>
-              </div>
-
-              <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
-                Engineered specifically with high-density internal coil windings
-                to optimize secondary voltage output profiles. Dramatically
-                reduces thermal resistance degradation and eliminates cylinder
-                cold-start misfires under highly humid conditions or abrupt
-                temperature changes.
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200/60 text-xs text-gray-600">
-                <div className="flex items-center justify-between border-b border-gray-200/40 pb-1.5 sm:border-none sm:pb-0">
-                  <span className="text-gray-400 font-medium">
-                    Core Alloys:
-                  </span>
-                  <span className="font-bold text-gray-900">
-                    Reinforced Ceramic / Pure Copper
-                  </span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {[
+                {
+                  id: 1,
+                  name: "Synthetic Micro-Fiber Air Filter",
+                  price: "₹580",
+                  brand: "Purolator OES",
+                  img: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
+                },
+                {
+                  id: 2,
+                  name: "High-Friction Front Brake Pad Set",
+                  price: "₹1,850",
+                  brand: "Bosch Premium",
+                  img: "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop",
+                },
+                {
+                  id: 3,
+                  name: "Laser Iridium Power Spark Core",
+                  price: "₹1,200",
+                  brand: "NGK Technology",
+                  img: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
+                },
+              ].map((item, idx) => (
+                <div
+                  key={idx}
+                  className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-all duration-300 hover:border-green-600 flex flex-col justify-between group"
+                >
+                  <div>
+                    <Link
+                      to={`/product/${item.id}`}
+                      className="overflow-hidden rounded-lg mb-3 bg-gray-50 h-36 border border-gray-100 block"
+                    >
+                      <img
+                        src={item.img}
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                        alt={item.name}
+                      />
+                    </Link>
+                    <span className="text-[9px] font-extrabold text-green-600 uppercase tracking-wider bg-green-50 px-2 py-0.5 rounded border border-green-100/50">
+                      {item.brand}
+                    </span>
+                    <Link to={`/product/${item.id}`}>
+                      <h5 className="font-bold text-gray-900 text-sm line-clamp-2 mt-2 leading-snug hover:text-green-600 transition-colors">
+                        {item.name}
+                      </h5>
+                    </Link>
+                  </div>
+                  <div className="flex justify-between items-center mt-4 pt-3 border-t border-gray-100">
+                    <span className="font-extrabold text-base text-gray-900">
+                      {item.price}
+                    </span>
+                    <Link
+                      to={`/product/${item.id}`}
+                      className="text-xs font-bold text-green-600 hover:text-green-700 flex items-center gap-0.5"
+                    >
+                      View Details <ChevronRight className="h-3.5 w-3.5" />
+                    </Link>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between border-b border-gray-200/40 pb-1.5 sm:border-none sm:pb-0">
-                  <span className="text-gray-400 font-medium">
-                    Standard Compliance:
-                  </span>
-                  <span className="font-bold text-gray-900">
-                    ISO 9001 / ARAI Calibrated
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-400 font-medium">
-                    Factory Warranty:
-                  </span>
-                  <span className="font-bold text-gray-900">
-                    12 Months Product Cover
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-gray-400 font-medium">
-                    Compatibility Guard:
-                  </span>
-                  <span className="font-bold text-green-700 flex items-center gap-1">
-                    <CheckCircle className="h-3.5 w-3.5 fill-green-100" /> 100%
-                    Fit Confirmed
-                  </span>
-                </div>
-              </div>
+              ))}
             </div>
           </div>
         </div>
       </section>
+
+      {/* ========== SECTION 9: PRODUCT DETAIL IN-DEPTH BREAKDOWN ========== */}
+     <section className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-14">
+  <div className="bg-white rounded-2xl border border-gray-200 p-6 lg:p-8 shadow-sm">
+    <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+      {/* Gallery Component layout */}
+      <div className="lg:col-span-5 space-y-3">
+        <div className="bg-gray-50 rounded-xl overflow-hidden border border-gray-200/60 h-64 shadow-inner relative group">
+          <img
+            src={galleryImages[selectedGalleryImage]}
+            className="w-full h-full object-cover transition-all duration-300"
+            alt="Main Component Breakdown"
+          />
+          <span className="absolute bottom-3 right-3 text-[10px] font-bold text-gray-700 bg-white/90 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
+            Interactive Preview
+          </span>
+        </div>
+        <div className="grid grid-cols-4 gap-2">
+          {galleryImages.map((img, index) => (
+            <div
+              key={index}
+              onClick={() => setSelectedGalleryImage(index)}
+              className={`h-14 rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${
+                selectedGalleryImage === index
+                  ? "border-2 border-green-700 opacity-100"
+                  : "border border-gray-200 opacity-60 hover:opacity-100"
+              }`}
+            >
+              <img
+                src={img}
+                className="w-full h-full object-cover"
+                alt={`Thumbnail ${index + 1}`}
+              />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Specs / Content Details layout */}
+      <div className="lg:col-span-7 space-y-4">
+        <div>
+          <span className="bg-green-100 text-green-700 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider inline-block border border-green-200/50">
+            Component Spotlight
+          </span>
+          <h3 className="text-xl sm:text-2xl font-extrabold text-gray-900 mt-2.5 tracking-tight">
+            High-Output Engine Ignition Control Assembly Block
+          </h3>
+        </div>
+
+        <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
+          Engineered specifically with high-density internal coil windings
+          to optimize secondary voltage output profiles. Dramatically
+          reduces thermal resistance degradation and eliminates cylinder
+          cold-start misfires under highly humid conditions or abrupt
+          temperature changes.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200/60 text-xs text-gray-600">
+          <div className="flex items-center justify-between border-b border-gray-200/40 pb-1.5 sm:border-none sm:pb-0">
+            <span className="text-gray-400 font-medium">
+              Core Alloys:
+            </span>
+            <span className="font-bold text-gray-900">
+              Reinforced Ceramic / Pure Copper
+            </span>
+          </div>
+          <div className="flex items-center justify-between border-b border-gray-200/40 pb-1.5 sm:border-none sm:pb-0">
+            <span className="text-gray-400 font-medium">
+              Standard Compliance:
+            </span>
+            <span className="font-bold text-gray-900">
+              ISO 9001 / ARAI Calibrated
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-gray-400 font-medium">
+              Factory Warranty:
+            </span>
+            <span className="font-bold text-gray-900">
+              12 Months Product Cover
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span className="text-gray-400 font-medium">
+              Compatibility Guard:
+            </span>
+            <span className="font-bold text-green-700 flex items-center gap-1">
+              <CheckCircle className="h-3.5 w-3.5 fill-green-100" /> 100%
+              Fit Confirmed
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
       {/* ========== SECTION 10: OFFERS & DEALS ========== */}
       <section
@@ -1522,30 +1554,31 @@ const [oesCertified, setOesCertified] = useState(true);
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {recentlyViewed.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white border border-gray-200 rounded-xl p-3 flex items-center gap-3 shadow-sm hover:shadow-md transition-all duration-200 group cursor-pointer hover:border-green-600"
-            >
-              <div className="w-14 h-14 rounded-lg bg-gray-50 overflow-hidden flex-shrink-0 border border-gray-100">
-                <img
-                  src={item.image}
-                  alt={item.name}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h5 className="text-xs font-bold text-gray-800 line-clamp-1 group-hover:text-green-700 transition-colors">
-                  {item.name}
-                </h5>
-                <p className="text-xs text-gray-900 font-extrabold mt-1">
-                  {item.price}
-                </p>
-              </div>
-              <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all" />
-            </div>
-          ))}
-        </div>
+  {recentlyViewed.map((item) => (
+    <Link
+      key={item.id}
+      to={`/categories`}
+      className="bg-white border border-gray-200 rounded-xl p-3 flex items-center gap-3 shadow-sm hover:shadow-md transition-all duration-200 group cursor-pointer hover:border-green-600"
+    >
+      <div className="w-14 h-14 rounded-lg bg-gray-50 overflow-hidden flex-shrink-0 border border-gray-100">
+        <img
+          src={item.image}
+          alt={item.name}
+          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+        />
+      </div>
+      <div className="min-w-0 flex-1">
+        <h5 className="text-xs font-bold text-gray-800 line-clamp-1 group-hover:text-green-700 transition-colors">
+          {item.name}
+        </h5>
+        <p className="text-xs text-gray-900 font-extrabold mt-1">
+          {item.price}
+        </p>
+      </div>
+      <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all" />
+    </Link>
+  ))}
+</div>
       </section>
 
       {/* ========== SECTION 12: FREQUENTLY ANSWERED QUERIES (FAQ) ========== */}

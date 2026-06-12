@@ -179,12 +179,12 @@ const Navbar = () => {
       icon: Tag,
       color: "from-green-600 to-green-700",
     },
-    {
-      label: "Contact",
-      href: "/contact",
-      icon: Phone,
-      color: "from-green-600 to-green-700",
-    },
+    // {
+    //   label: "Contact",
+    //   href: "/contact",
+    //   icon: Phone,
+    //   color: "from-green-600 to-green-700",
+    // },
   ];
 
   const handleMobileDropdownToggle = (label) => {
@@ -300,7 +300,7 @@ const Navbar = () => {
                         </div>
                         <div className="border-t border-gray-100 p-4 bg-gray-50 rounded-b-xl">
                           <Link
-                            to="/spare-parts"
+                            to="/categories"
                             className="text-sm font-semibold text-green-600 hover:text-green-700 flex items-center justify-center gap-2"
                           >
                             View All Spare Parts
@@ -751,7 +751,7 @@ const Navbar = () => {
 
                 <Link
                   to="/booking-history"
-                  onClick={() => setUserMenuOpen(false)}
+                   onClick={() => setMobileMenuOpen(false)} 
                   className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group hover:bg-green-700 hover:text-white hover:shadow-xl hover:shadow-green-700/20 hover:scale-[1.02] transform mb-1"
                 >
                   <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors duration-300">
@@ -819,22 +819,24 @@ const Navbar = () => {
                 </a>
               </div>
             </div>
-
-            {isAuthenticated && (
+          </div>
+          {/* Logout Button - Fixed at Bottom */}
+          {isAuthenticated && (
+            <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4 py-4">
               <button
                 onClick={() => {
                   logout();
                   setMobileMenuOpen(false);
                 }}
-                className="w-full mt-4 px-4 py-3.5 rounded-xl transition-all duration-300 group hover:bg-green-700 hover:text-white hover:shadow-xl hover:shadow-green-700/20 flex items-center gap-3"
+                className="w-full px-4 py-3.5 rounded-xl transition-all duration-300 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 flex items-center gap-3 group"
               >
-                <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors">
-                  <LogOut className="h-5 w-5 text-green-600 group-hover:text-white" />
+                <div className="p-1.5 rounded-lg bg-red-100 group-hover:bg-red-200 transition-colors">
+                  <LogOut className="h-5 w-5" />
                 </div>
                 <span className="font-semibold">Logout</span>
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
     </nav>

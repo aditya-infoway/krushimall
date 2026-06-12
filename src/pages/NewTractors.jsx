@@ -37,6 +37,16 @@ import mah from "../assets/mahindra.png";
 import john from "../assets/johndeere.png";
 import swara from "../assets/swaraj.png";
 import logo from "../assets/johnlogo.png";
+import sonalika from "../assets/sonalika.png";
+import eicher from "../assets/eicher.png";
+import escorts from "../assets/escorts.png";
+import force from "../assets/force.png";
+import indo from "../assets/indo.png";
+import kubota from "../assets/kubota.png";
+import massey from "../assets/massey.png";
+import newinfo from "../assets/new.png";
+import swalogo from "../assets/swarajlogo.png";
+import tafe from "../assets/tafe.png";
 
 const NewTractors = () => {
   const [popularIndex, setPopularIndex] = useState(0);
@@ -84,20 +94,20 @@ const NewTractors = () => {
     });
   };
 
-  const popularBrands = [
-    { name: "Mahindra", logo: logo },
-    { name: "John Deere", logo: logo },
-    { name: "Swaraj", logo: logo },
-    { name: "TAFE", logo: logo },
-    { name: "New Holland", logo: logo },
-    { name: "Sonalika", logo: logo },
-    { name: "Escorts", logo: logo },
-    { name: "Farmtrac", logo: logo },
-    { name: "Eicher", logo: logo },
-    { name: "Kubota", logo: logo },
-    { name: "Preet", logo: logo },
-    { name: "Indo Farm", logo: logo },
-  ];
+ const popularBrands = [
+  { name: "Mahindra", logo: "https://cdn.simpleicons.org/mahindra/FF0000" },
+  { name: "John Deere", logo: "https://cdn.simpleicons.org/johndeere/367C2B" },
+  { name: "Swaraj", logo: swalogo },
+  { name: "TAFE", logo: tafe },
+  { name: "New Holland", logo: newinfo },
+  { name: "Sonalika", logo: sonalika },
+  { name: "Escorts", logo: escorts },
+  { name: "Eicher", logo: eicher },
+  { name: "Kubota", logo: kubota },
+  { name: "Massey Ferguson", logo: massey },
+  { name: "Force Motors", logo: force },
+  { name: "Indo Farm", logo: indo },
+];
 
   const [formData, setFormData] = useState({
     name: "",
@@ -469,7 +479,7 @@ const NewTractors = () => {
     "Synchronous",
     "Constant Mesh",
   ];
-  const categoryOptions = ["All Categories", "Small", "Medium", "Big"];
+  const categoryOptions = ["All Categories", "Small", "Medium", "Big",];
   const maxPrice = 1000000;
 
   const clearFilters = () => {
@@ -742,7 +752,7 @@ const NewTractors = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="relative text-white min-h-[600px] md:min-h-[650px] flex items-center overflow-hidden">
+      <div className="relative text-white min-h-[600px] md:min-h-[650px] flex items-center ">
         {/* Full Section Background Image */}
         <div className="absolute inset-0 z-0">
           <img
@@ -754,7 +764,7 @@ const NewTractors = () => {
           <div className="absolute inset-0 bg-gradient-to-r from-gray-900/70 via-gray-900/40 to-gray-900/20" />
         </div>
 
-        <div className="max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-16 md:py-20 lg:py-24 relative z-10 w-full">
+        <div className="max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-8 relative z-10 w-full">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm mb-6">
             <Link
@@ -804,8 +814,8 @@ const NewTractors = () => {
               </div>
             </div>
             {/* Right side - Filter Panel */}
-            <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
-              <div className="bg-green-700 px-6 py-4">
+            <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 ">
+              <div className="bg-green-700 px-6 py-4 rounded-t-2xl">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Filter className="h-5 w-5 text-white" />
@@ -916,7 +926,7 @@ const NewTractors = () => {
                           </span>
                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         </Listbox.Button>
-                        <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
                           <Listbox.Option
                             value=""
                             className={({ active }) =>
@@ -971,7 +981,7 @@ const NewTractors = () => {
                           </span>
                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         </Listbox.Button>
-                        <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
                           <Listbox.Option
                             value=""
                             className={({ active }) =>
@@ -1029,7 +1039,7 @@ const NewTractors = () => {
                           </span>
                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         </Listbox.Button>
-                        <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
                           <Listbox.Option
                             value=""
                             className={({ active }) =>
@@ -1086,7 +1096,7 @@ const NewTractors = () => {
                           </span>
                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         </Listbox.Button>
-                        <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
                           <Listbox.Option
                             value=""
                             className={({ active }) =>
@@ -1327,7 +1337,7 @@ const NewTractors = () => {
                     </span>
                     <ChevronDown className="h-4 w-4 text-gray-400" />
                   </Listbox.Button>
-                  <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg py-1 text-sm">
+                  <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg py-1 text-sm">
                     {[
                       { value: "popular", label: "Most Popular" },
                       { value: "price-low", label: "Price: Low to High" },
@@ -1402,53 +1412,46 @@ const NewTractors = () => {
       </div>
 
       {/* Popular Brands Marquee Section */}
-      <div className="bg-white border-b border-gray-100">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 pt-16 md:pt-20 lg:pt-24">
-          <h3 className="text-center text-2xl sm:text-3xl font-extrabold  text-gray-900 tracking-tight mb-6">
-            Popular{" "}
-            <span className="text-transparent  bg-clip-text bg-green-600 gap-3">
-              Tractor Brands
-            </span>
-          </h3>
-          <div className="relative overflow-hidden">
-            <div className="flex gap-8 animate-marquee">
-              {/* Double the brands for seamless loop */}
-              {[...popularBrands, ...popularBrands].map((brand, idx) => (
-                <div
-                  key={idx}
-                  className="flex flex-col items-center gap-2 flex-shrink-0 group cursor-pointer"
-                >
-                  {/* Brand circle with initials */}
-                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-50 border-2 border-gray-200 flex items-center justify-center group-hover:border-green-600 group-hover:shadow-md group-hover:bg-green-100 transition-all duration-300 overflow-hidden">
-                    {brand.logo ? (
-                      <img
-                        src={brand.logo}
-                        alt={brand.name}
-                        className="w-full h-full object-contain p-3"
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                          e.target.nextSibling.style.display = "flex";
-                        }}
-                      />
-                    ) : null}
-                    <span
-                      className={`text-base sm:text-lg font-black text-green-700 ${brand.logo ? "hidden" : "flex"}`}
-                      style={{ display: brand.logo ? "none" : "flex" }}
-                    >
-                      {brand.name
-                        .split(" ")
-                        .map((word) => word[0])
-                        .join("")
-                        .slice(0, 2)
-                        .toUpperCase()}
-                    </span>
-                  </div>
-                </div>
-              ))}
+     {/* Popular Brands Marquee Section */}
+<div className="bg-white border-b border-gray-100">
+  <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 pt-16 md:pt-20 lg:pt-24">
+    <h3 className="text-center text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-6">
+      Popular{" "}
+      <span className="text-transparent bg-clip-text bg-green-600">
+        Tractor Brands
+      </span>
+    </h3>
+    <div className="relative overflow-hidden">
+      <div className="flex gap-8 animate-marquee">
+        {[...popularBrands, ...popularBrands].map((brand, idx) => (
+          <Link
+            key={idx}
+            to={`/tractors?type=new&brand=${encodeURIComponent(brand.name)}`}
+            className="flex flex-col items-center gap-2 flex-shrink-0 group cursor-pointer"
+          >
+            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-50 border-2 border-gray-200 flex items-center justify-center group-hover:border-green-600 group-hover:shadow-md group-hover:bg-green-100 transition-all duration-300 overflow-hidden">
+              <img
+                src={brand.logo}
+                alt={brand.name}
+                className="w-full h-full object-contain p-3"
+                onError={(e) => {
+                  e.target.style.display = "none";
+                  e.target.nextSibling.style.display = "flex";
+                }}
+              />
+              <span className="text-base sm:text-lg font-black text-green-700 hidden">
+                {brand.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
+              </span>
             </div>
-          </div>
-        </div>
+            <span className="text-xs font-medium text-gray-600 group-hover:text-green-700 transition-colors">
+              {brand.name}
+            </span>
+          </Link>
+        ))}
       </div>
+    </div>
+  </div>
+</div>
 
       {/* --- POPULAR COMPARISON HANDPICKS --- */}
 

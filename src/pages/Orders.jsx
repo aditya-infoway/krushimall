@@ -331,7 +331,7 @@ const Orders = () => {
   });
 
   return (
-    <div className="min-h-screen lg:mt-4 bg-gray-50">
+    <div className="min-h-screen  bg-gray-50">
       {/* Cancel Modal */}
       {showCancelModal && selectedItem && (
         <div className="fixed inset-0 z-50">
@@ -498,8 +498,8 @@ const Orders = () => {
       )}
 
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 sticky top-0 z-10">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-10">
+      <div className="bg-white sticky top-0 z-10">
+        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
             My{" "}
             <span className="text-transparent bg-clip-text bg-green-600">
@@ -526,6 +526,7 @@ const Orders = () => {
             />
           </div>
          {/* Status Filter - Headless UI Listbox */}
+{/* Status Filter - Headless UI Listbox */}
 <div className="relative">
   <Listbox value={filterStatus} onChange={(value) => {
     setFilterStatus(value);
@@ -537,7 +538,8 @@ const Orders = () => {
         <span>{filterStatus === "all" ? "All Orders" : filterStatus}</span>
         <ChevronDown className="h-4 w-4" />
       </Listbox.Button>
-      <Listbox.Options className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 z-20 py-1">
+      <Listbox.Options className="absolute left-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-gray-200 z-20 py-1">
+        {/* Changed right-0 to left-0 */}
         {[
           { value: "all", label: "All Orders" },
           { value: "Processing", label: "Processing" },
