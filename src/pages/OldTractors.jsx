@@ -38,6 +38,16 @@ import mah from "../assets/mahindra.png";
 import john from "../assets/johndeere.png";
 import swara from "../assets/swaraj.png";
 import logo from "../assets/massey.png";
+import sonalika from "../assets/sonalika.png";
+import eicher from "../assets/eicher.png";
+import escorts from "../assets/escorts.png";
+import force from "../assets/force.png";
+import indo from "../assets/indo.png";
+import kubota from "../assets/kubota.png";
+import massey from "../assets/massey.png";
+import newinfo from "../assets/new.png";
+import swalogo from "../assets/swarajlogo.png";
+import tafe from "../assets/tafe.png";
 
 const UsedTractors = () => {
   const [popularIndex, setPopularIndex] = useState(0);
@@ -86,18 +96,21 @@ const UsedTractors = () => {
   const [submitted, setSubmitted] = useState(false);
 
   const popularBrands = [
-    { name: "Mahindra", logo: logo },
-    { name: "John Deere", logo: logo },
-    { name: "Swaraj", logo: logo },
-    { name: "TAFE", logo: logo },
-    { name: "New Holland", logo: logo },
-    { name: "Sonalika", logo: logo },
-    { name: "Escorts", logo: logo },
-    { name: "Farmtrac", logo: logo },
-    { name: "Eicher", logo: logo },
-    { name: "Kubota", logo: logo },
-    { name: "Preet", logo: logo },
-    { name: "Indo Farm", logo: logo },
+    { name: "Mahindra", logo: "https://cdn.simpleicons.org/mahindra/FF0000" },
+    {
+      name: "John Deere",
+      logo: "https://cdn.simpleicons.org/johndeere/367C2B",
+    },
+    { name: "Swaraj", logo: swalogo },
+    { name: "TAFE", logo: tafe },
+    { name: "New Holland", logo: newinfo },
+    { name: "Sonalika", logo: sonalika },
+    { name: "Escorts", logo: escorts },
+    { name: "Eicher", logo: eicher },
+    { name: "Kubota", logo: kubota },
+    { name: "Massey Ferguson", logo: massey },
+    { name: "Force Motors", logo: force },
+    { name: "Indo Farm", logo: indo },
   ];
 
   const SUGGESTED_COMPARISONS = [
@@ -566,16 +579,16 @@ const UsedTractors = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-useEffect(() => {
-  const id = setInterval(() => {
-    if (window.innerWidth >= 640) {
-      setPopularIndex((prev) => (prev + 1) % popularUsedTractors.length);
-      setLatestIndex((prev) => (prev + 1) % latestUsedTractors.length);
-      setUpcomingIndex((prev) => (prev + 1) % upcomingUsedTractors.length);
-    }
-  }, 3000);
-  return () => clearInterval(id);
-}, []);
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (window.innerWidth >= 640) {
+        setPopularIndex((prev) => (prev + 1) % popularUsedTractors.length);
+        setLatestIndex((prev) => (prev + 1) % latestUsedTractors.length);
+        setUpcomingIndex((prev) => (prev + 1) % upcomingUsedTractors.length);
+      }
+    }, 3000);
+    return () => clearInterval(id);
+  }, []);
 
   const getVisibleTractors = (tractors, startIndex) => {
     const visible = [];
@@ -584,181 +597,198 @@ useEffect(() => {
     return visible;
   };
 
- const slideNext = (setIndex, length) => {
-  setIndex((prev) => (prev + 1) % length);
-};
+  const slideNext = (setIndex, length) => {
+    setIndex((prev) => (prev + 1) % length);
+  };
 
-const slidePrev = (setIndex, length) => {
-  setIndex((prev) => (prev - 1 + length) % length);
-};
+  const slidePrev = (setIndex, length) => {
+    setIndex((prev) => (prev - 1 + length) % length);
+  };
 
   const TractorCard = ({ tractor }) => (
-  <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col flex-shrink-0 w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]">
-    {/* Clickable Image */}
-    <Link to={`/tractor/${tractor.id}`} className="relative h-40 sm:h-44 overflow-hidden bg-gray-100 block">
-      <img
-        src={tractor.image}
-        alt={tractor.name}
-        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-      />
-      <div className="absolute top-2 left-2">
-        <span className="bg-green-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-          New
-        </span>
-      </div>
-      <button 
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          // Add wishlist logic here
-        }}
-        className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow hover:bg-gray-100 cursor-pointer"
+    <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col flex-shrink-0 w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]">
+      {/* Clickable Image */}
+      <Link
+        to={`/tractor/${tractor.id}`}
+        className="relative h-40 sm:h-44 overflow-hidden bg-gray-100 block"
       >
-        <Heart className="h-3.5 w-3.5 text-gray-500 hover:text-green-600" />
-      </button>
-    </Link>
-    
-    <div className="p-3 flex flex-col flex-1">
-      <div className="flex items-center justify-between mb-1">
-        {/* Clickable Brand Name */}
-        <Link to={`/tractor/${tractor.id}`} className="text-xs font-semibold text-green-600 hover:text-green-700 transition-colors">
-          {tractor.brand}
-        </Link>
-        <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-          <MapPin className="h-3 w-3 flex-shrink-0" />
-          <span className="truncate">{tractor.location}</span>
-        </div>
-      </div>
-      <div className="flex items-center justify-between mb-1">
-        {/* Clickable Product Name */}
-        <Link to={`/tractor/${tractor.id}`} className="text-sm font-bold text-gray-900 mb-2 line-clamp-1 hover:text-green-600 transition-colors">
-          {tractor.name}
-        </Link>
-        <div className="flex items-center gap-1">
-          <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-          <span className="text-xs font-semibold text-gray-700">
-            {tractor.rating}
+        <img
+          src={tractor.image}
+          alt={tractor.name}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+        />
+        <div className="absolute top-2 left-2">
+          <span className="bg-green-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+            New
           </span>
         </div>
-      </div>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Add wishlist logic here
+          }}
+          className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow hover:bg-gray-100 cursor-pointer"
+        >
+          <Heart className="h-3.5 w-3.5 text-gray-500 hover:text-green-600" />
+        </button>
+      </Link>
 
-      <div className="mt-auto pt-2 border-t">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-black text-gray-900">
-            ₹{tractor.price.toLocaleString()}
-          </p>
+      <div className="p-3 flex flex-col flex-1">
+        <div className="flex items-center justify-between mb-1">
+          {/* Clickable Brand Name */}
           <Link
             to={`/tractor/${tractor.id}`}
-            className="bg-green-700 hover:bg-green-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
+            className="text-xs font-semibold text-green-600 hover:text-green-700 transition-colors"
           >
-            Details
+            {tractor.brand}
           </Link>
+          <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+            <MapPin className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate">{tractor.location}</span>
+          </div>
+        </div>
+        <div className="flex items-center justify-between mb-1">
+          {/* Clickable Product Name */}
+          <Link
+            to={`/tractor/${tractor.id}`}
+            className="text-sm font-bold text-gray-900 mb-2 line-clamp-1 hover:text-green-600 transition-colors"
+          >
+            {tractor.name}
+          </Link>
+          <div className="flex items-center gap-1">
+            <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+            <span className="text-xs font-semibold text-gray-700">
+              {tractor.rating}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-auto pt-2 border-t">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-black text-gray-900">
+              ₹{tractor.price.toLocaleString()}
+            </p>
+            <Link
+              to={`/tractor/${tractor.id}`}
+              className="bg-green-700 hover:bg-green-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
+            >
+              Details
+            </Link>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
+  );
   const SliderSection = ({
-  title,
-  subtitle,
-  tractors,
-  index,
-  setIndex,
-  linkTo,
-  badgeColor,
-}) => {
-  const sliderRef = useRef(null);
-  const [isScrolling, setIsScrolling] = useState(false);
-  const scrollTimeoutRef = useRef(null);
+    title,
+    subtitle,
+    tractors,
+    index,
+    setIndex,
+    linkTo,
+    badgeColor,
+  }) => {
+    const sliderRef = useRef(null);
+    const [isScrolling, setIsScrolling] = useState(false);
+    const scrollTimeoutRef = useRef(null);
 
-  // Show arrows when scrolling/touching on mobile
-  useEffect(() => {
-    const slider = sliderRef.current;
-    if (!slider) return;
+    // Show arrows when scrolling/touching on mobile
+    useEffect(() => {
+      const slider = sliderRef.current;
+      if (!slider) return;
 
-    const handleScroll = () => {
-      setIsScrolling(true);
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-      scrollTimeoutRef.current = setTimeout(() => {
-        setIsScrolling(false);
-      }, 1500);
+      const handleScroll = () => {
+        setIsScrolling(true);
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        scrollTimeoutRef.current = setTimeout(() => {
+          setIsScrolling(false);
+        }, 1500);
+      };
+
+      slider.addEventListener("scroll", handleScroll, { passive: true });
+      slider.addEventListener("touchstart", handleScroll, { passive: true });
+
+      return () => {
+        slider.removeEventListener("scroll", handleScroll);
+        slider.removeEventListener("touchstart", handleScroll);
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      };
+    }, []);
+
+    const scrollSlider = (direction) => {
+      if (!sliderRef.current) return;
+      const { scrollLeft, clientWidth } = sliderRef.current;
+      sliderRef.current.scrollTo({
+        left:
+          direction === "left"
+            ? scrollLeft - clientWidth * 0.8
+            : scrollLeft + clientWidth * 0.8,
+        behavior: "smooth",
+      });
     };
 
-    slider.addEventListener("scroll", handleScroll, { passive: true });
-    slider.addEventListener("touchstart", handleScroll, { passive: true });
-
-    return () => {
-      slider.removeEventListener("scroll", handleScroll);
-      slider.removeEventListener("touchstart", handleScroll);
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-    };
-  }, []);
-
-  const scrollSlider = (direction) => {
-    if (!sliderRef.current) return;
-    const { scrollLeft, clientWidth } = sliderRef.current;
-    sliderRef.current.scrollTo({
-      left: direction === "left" 
-        ? scrollLeft - clientWidth * 0.8 
-        : scrollLeft + clientWidth * 0.8,
-      behavior: "smooth",
-    });
-  };
-
-  return (
-    <div className="">
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className={`w-1.5 h-6 rounded-full ${badgeColor}`}></div>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-              {title}
-            </h3>
-          </div>
-          {subtitle && (
-            <p className="text-sm text-gray-500 ml-3.5">{subtitle}</p>
-          )}
-        </div>
-        <Link
-          to={linkTo}
-          className="text-green-600 hover:text-green-700 font-semibold text-sm flex items-center gap-1"
-        >
-          View All <ArrowRight className="h-4 w-4" />
-        </Link>
-      </div>
-
-      {/* MOBILE ONLY - Native scroll with arrows appearing on touch */}
-      <div className="sm:hidden relative">
-        <button
-          onClick={() => scrollSlider("left")}
-          className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
-            isScrolling ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"
-          }`}
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-
-        <div
-          ref={sliderRef}
-          className="flex overflow-x-auto gap-3 pb-4 px-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          {tractors.map((tractor) => (
-            <div key={tractor.id} className="snap-start w-[75vw] flex-shrink-0">
-              <TractorCard tractor={tractor} />
+    return (
+      <div className="">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className={`w-1.5 h-6 rounded-full ${badgeColor}`}></div>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+                {title}
+              </h3>
             </div>
-          ))}
+            {subtitle && (
+              <p className="text-sm text-gray-500 ml-3.5">{subtitle}</p>
+            )}
+          </div>
+          <Link
+            to={linkTo}
+            className="text-green-600 hover:text-green-700 font-semibold text-sm flex items-center gap-1"
+          >
+            View All <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
 
-        <button
-          onClick={() => scrollSlider("right")}
-          className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
-            isScrolling ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
-          }`}
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
+        {/* MOBILE ONLY - Native scroll with arrows appearing on touch */}
+        <div className="sm:hidden relative">
+          <button
+            onClick={() => scrollSlider("left")}
+            className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+              isScrolling
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 -translate-x-2"
+            }`}
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          <div
+            ref={sliderRef}
+            className="flex overflow-x-auto gap-3 pb-4 px-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {tractors.map((tractor) => (
+              <div
+                key={tractor.id}
+                className="snap-start w-[75vw] flex-shrink-0"
+              >
+                <TractorCard tractor={tractor} />
+              </div>
+            ))}
+          </div>
+
+          <button
+            onClick={() => scrollSlider("right")}
+            className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+              isScrolling
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 translate-x-2"
+            }`}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
 
         {/* DESKTOP - Original code completely unchanged */}
         <div className="hidden sm:block relative px-8 sm:px-8 lg:px-10">
@@ -789,7 +819,7 @@ const slidePrev = (setIndex, length) => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ========== HERO SECTION ========== */}
-      <div className="relative text-white min-h-[600px] md:min-h-[650px] flex items-center overflow-hidden">
+      <div className="relative text-white min-h-[600px] md:min-h-[650px] flex items-center ">
         <div className="absolute inset-0 z-0">
           <img
             src="https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?w=1920&auto=format&fit=crop&q=90"
@@ -799,7 +829,7 @@ const slidePrev = (setIndex, length) => {
 
           <div className="absolute inset-0 bg-gradient-to-r from-gray-900/70 via-gray-900/40 to-gray-900/20" />
         </div>
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-16 md:py-20 lg:py-24 relative z-10 w-full">
+        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-8 relative z-10 overflow-visible">
           <div className="flex items-center gap-2 text-sm mb-6">
             <Link
               to="/"
@@ -846,8 +876,8 @@ const slidePrev = (setIndex, length) => {
                 </a>
               </div>
             </div>
-            <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-hidden">
-              <div className="bg-green-700 px-6 py-4">
+            <div className="bg-white rounded-2xl shadow-2xl border border-gray-100 overflow-visible">
+              <div className="bg-green-700 px-6 py-4 rounded-t-2xl">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Filter className="h-5 w-5 text-white" />
@@ -869,40 +899,57 @@ const slidePrev = (setIndex, length) => {
 
               <div className="p-6">
                 {/* Tractor Type Toggle */}
-               {/* Tractor Type Toggle - Headless UI RadioGroup */}
-<div className="mb-5">
-  <label className="block text-sm font-semibold text-gray-700 mb-2">
-    Tractor Type
-  </label>
-  <RadioGroup value={activeTab} onChange={(value) => {
-    if (value === "new" && location.pathname !== "/new-tractors") {
-      navigate("/new-tractors");
-    } else if (value === "used" && location.pathname !== "/old-tractors") {
-      navigate("/old-tractors");
-    }
-  }}>
-    <div className="grid grid-cols-2 gap-2">
-      <RadioGroup.Option value="new">
-        {({ checked }) => (
-          <div className={`flex items-center justify-center cursor-pointer gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 border-2 ${
-            checked ? "bg-green-600 text-white border-green-600 shadow-lg shadow-green-600/20" : "bg-white text-gray-700 border-gray-200 hover:border-green-300 hover:bg-green-50"
-          }`}>
-            <Tractor className="h-4 w-4" /> New
-          </div>
-        )}
-      </RadioGroup.Option>
-      <RadioGroup.Option value="used">
-        {({ checked }) => (
-          <div className={`flex items-center justify-center cursor-pointer gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 border-2 ${
-            checked ? "bg-green-600 text-white border-green-600 shadow-lg shadow-green-600/20" : "bg-white text-gray-700 border-gray-200 hover:border-green-300 hover:bg-green-50"
-          }`}>
-            <Gauge className="h-4 w-4" /> Used
-          </div>
-        )}
-      </RadioGroup.Option>
-    </div>
-  </RadioGroup>
-</div>
+                {/* Tractor Type Toggle - Headless UI RadioGroup */}
+                <div className="mb-5">
+                  <label className="block text-sm font-semibold text-gray-700 mb-2">
+                    Tractor Type
+                  </label>
+                  <RadioGroup
+                    value={activeTab}
+                    onChange={(value) => {
+                      if (
+                        value === "new" &&
+                        location.pathname !== "/new-tractors"
+                      ) {
+                        navigate("/new-tractors");
+                      } else if (
+                        value === "used" &&
+                        location.pathname !== "/old-tractors"
+                      ) {
+                        navigate("/old-tractors");
+                      }
+                    }}
+                  >
+                    <div className="grid grid-cols-2 gap-2">
+                      <RadioGroup.Option value="new">
+                        {({ checked }) => (
+                          <div
+                            className={`flex items-center justify-center cursor-pointer gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 border-2 ${
+                              checked
+                                ? "bg-green-600 text-white border-green-600 shadow-lg shadow-green-600/20"
+                                : "bg-white text-gray-700 border-gray-200 hover:border-green-300 hover:bg-green-50"
+                            }`}
+                          >
+                            <Tractor className="h-4 w-4" /> New
+                          </div>
+                        )}
+                      </RadioGroup.Option>
+                      <RadioGroup.Option value="used">
+                        {({ checked }) => (
+                          <div
+                            className={`flex items-center justify-center cursor-pointer gap-2 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-300 border-2 ${
+                              checked
+                                ? "bg-green-600 text-white border-green-600 shadow-lg shadow-green-600/20"
+                                : "bg-white text-gray-700 border-gray-200 hover:border-green-300 hover:bg-green-50"
+                            }`}
+                          >
+                            <Gauge className="h-4 w-4" /> Used
+                          </div>
+                        )}
+                      </RadioGroup.Option>
+                    </div>
+                  </RadioGroup>
+                </div>
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Search
@@ -919,128 +966,320 @@ const slidePrev = (setIndex, length) => {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                 <div>
-  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Brand</label>
-  <Listbox value={selectedBrand} onChange={setSelectedBrand}>
-    <div className="relative">
-      <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
-        <span className={selectedBrand ? "text-gray-900" : "text-gray-400"}>
-          {selectedBrand || "All Brands"}
-        </span>
-        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-      </Listbox.Button>
-      <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-        <Listbox.Option value="" className={({ active }) => `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`}>
-          All Brands
-        </Listbox.Option>
-        {brandOptions.filter(b => b !== "All Brands").map((brand) => (
-          <Listbox.Option key={brand} value={brand} className={({ active, selected }) => `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`}>
-            {({ selected }) => (<><span>{brand}</span>{selected && <Check className="h-4 w-4 text-green-600" />}</>)}
-          </Listbox.Option>
-        ))}
-      </Listbox.Options>
-    </div>
-  </Listbox>
-</div>
                   <div>
-  <label className="block text-sm font-semibold text-gray-700 mb-1.5">HP Range</label>
-  <Listbox value={selectedHp} onChange={setSelectedHp}>
-    <div className="relative">
-      <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
-        <span className={selectedHp ? "text-gray-900" : "text-gray-400"}>{selectedHp || "All HP"}</span>
-        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-      </Listbox.Button>
-      <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-        <Listbox.Option value="" className={({ active }) => `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`}>All HP</Listbox.Option>
-        {hpOptions.filter(hp => hp !== "All HP").map((hp) => (
-          <Listbox.Option key={hp} value={hp} className={({ active, selected }) => `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`}>
-            {({ selected }) => (<><span>{hp}</span>{selected && <Check className="h-4 w-4 text-green-600" />}</>)}
-          </Listbox.Option>
-        ))}
-      </Listbox.Options>
-    </div>
-  </Listbox>
-</div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                      Brand
+                    </label>
+                    <Listbox value={selectedBrand} onChange={setSelectedBrand}>
+                      <div className="relative">
+                        <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
+                          <span
+                            className={
+                              selectedBrand ? "text-gray-900" : "text-gray-400"
+                            }
+                          >
+                            {selectedBrand || "All Brands"}
+                          </span>
+                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        </Listbox.Button>
+                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                          <Listbox.Option
+                            value=""
+                            className={({ active }) =>
+                              `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`
+                            }
+                          >
+                            All Brands
+                          </Listbox.Option>
+                          {brandOptions
+                            .filter((b) => b !== "All Brands")
+                            .map((brand) => (
+                              <Listbox.Option
+                                key={brand}
+                                value={brand}
+                                className={({ active, selected }) =>
+                                  `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`
+                                }
+                              >
+                                {({ selected }) => (
+                                  <>
+                                    <span>{brand}</span>
+                                    {selected && (
+                                      <Check className="h-4 w-4 text-green-600" />
+                                    )}
+                                  </>
+                                )}
+                              </Listbox.Option>
+                            ))}
+                        </Listbox.Options>
+                      </div>
+                    </Listbox>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                      HP Range
+                    </label>
+                    <Listbox value={selectedHp} onChange={setSelectedHp}>
+                      <div className="relative">
+                        <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
+                          <span
+                            className={
+                              selectedHp ? "text-gray-900" : "text-gray-400"
+                            }
+                          >
+                            {selectedHp || "All HP"}
+                          </span>
+                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        </Listbox.Button>
+                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                          <Listbox.Option
+                            value=""
+                            className={({ active }) =>
+                              `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`
+                            }
+                          >
+                            All HP
+                          </Listbox.Option>
+                          {hpOptions
+                            .filter((hp) => hp !== "All HP")
+                            .map((hp) => (
+                              <Listbox.Option
+                                key={hp}
+                                value={hp}
+                                className={({ active, selected }) =>
+                                  `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`
+                                }
+                              >
+                                {({ selected }) => (
+                                  <>
+                                    <span>{hp}</span>
+                                    {selected && (
+                                      <Check className="h-4 w-4 text-green-600" />
+                                    )}
+                                  </>
+                                )}
+                              </Listbox.Option>
+                            ))}
+                        </Listbox.Options>
+                      </div>
+                    </Listbox>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Transmission</label>
-  <Listbox value={selectedTransmission} onChange={setSelectedTransmission}>
-    <div className="relative">
-      <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
-        <span className={selectedTransmission ? "text-gray-900" : "text-gray-400"}>{selectedTransmission || "All Transmissions"}</span>
-        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-      </Listbox.Button>
-      <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-        <Listbox.Option value="" className={({ active }) => `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`}>All Transmissions</Listbox.Option>
-        {transmissionOptions.filter(t => t !== "All Transmissions").map((t) => (
-          <Listbox.Option key={t} value={t} className={({ active, selected }) => `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`}>
-            {({ selected }) => (<><span>{t}</span>{selected && <Check className="h-4 w-4 text-green-600" />}</>)}
-          </Listbox.Option>
-        ))}
-      </Listbox.Options>
-    </div>
-  </Listbox>
-</div>
-                <div>
-  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Category</label>
-  <Listbox value={selectedCategory} onChange={setSelectedCategory}>
-    <div className="relative">
-      <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
-        <span className={selectedCategory ? "text-gray-900" : "text-gray-400"}>{selectedCategory || "All Categories"}</span>
-        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-      </Listbox.Button>
-      <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-        <Listbox.Option value="" className={({ active }) => `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`}>All Categories</Listbox.Option>
-        {categoryOptions.filter(c => c !== "All Categories").map((c) => (
-          <Listbox.Option key={c} value={c} className={({ active, selected }) => `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`}>
-            {({ selected }) => (<><span>{c}</span>{selected && <Check className="h-4 w-4 text-green-600" />}</>)}
-          </Listbox.Option>
-        ))}
-      </Listbox.Options>
-    </div>
-  </Listbox>
-</div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                      Transmission
+                    </label>
+                    <Listbox
+                      value={selectedTransmission}
+                      onChange={setSelectedTransmission}
+                    >
+                      <div className="relative">
+                        <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
+                          <span
+                            className={
+                              selectedTransmission
+                                ? "text-gray-900"
+                                : "text-gray-400"
+                            }
+                          >
+                            {selectedTransmission || "All Transmissions"}
+                          </span>
+                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        </Listbox.Button>
+                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                          <Listbox.Option
+                            value=""
+                            className={({ active }) =>
+                              `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`
+                            }
+                          >
+                            All Transmissions
+                          </Listbox.Option>
+                          {transmissionOptions
+                            .filter((t) => t !== "All Transmissions")
+                            .map((t) => (
+                              <Listbox.Option
+                                key={t}
+                                value={t}
+                                className={({ active, selected }) =>
+                                  `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`
+                                }
+                              >
+                                {({ selected }) => (
+                                  <>
+                                    <span>{t}</span>
+                                    {selected && (
+                                      <Check className="h-4 w-4 text-green-600" />
+                                    )}
+                                  </>
+                                )}
+                              </Listbox.Option>
+                            ))}
+                        </Listbox.Options>
+                      </div>
+                    </Listbox>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                      Category
+                    </label>
+                    <Listbox
+                      value={selectedCategory}
+                      onChange={setSelectedCategory}
+                    >
+                      <div className="relative">
+                        <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
+                          <span
+                            className={
+                              selectedCategory
+                                ? "text-gray-900"
+                                : "text-gray-400"
+                            }
+                          >
+                            {selectedCategory || "All Categories"}
+                          </span>
+                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        </Listbox.Button>
+                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                          <Listbox.Option
+                            value=""
+                            className={({ active }) =>
+                              `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`
+                            }
+                          >
+                            All Categories
+                          </Listbox.Option>
+                          {categoryOptions
+                            .filter((c) => c !== "All Categories")
+                            .map((c) => (
+                              <Listbox.Option
+                                key={c}
+                                value={c}
+                                className={({ active, selected }) =>
+                                  `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`
+                                }
+                              >
+                                {({ selected }) => (
+                                  <>
+                                    <span>{c}</span>
+                                    {selected && (
+                                      <Check className="h-4 w-4 text-green-600" />
+                                    )}
+                                  </>
+                                )}
+                              </Listbox.Option>
+                            ))}
+                        </Listbox.Options>
+                      </div>
+                    </Listbox>
+                  </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mb-4">
-                <div>
-  <label className="block text-sm font-semibold text-gray-700 mb-1.5">State</label>
-  <Listbox value={selectedState} onChange={setSelectedState}>
-    <div className="relative">
-      <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
-        <span className={selectedState ? "text-gray-900" : "text-gray-400"}>{selectedState || "All States"}</span>
-        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-      </Listbox.Button>
-      <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-        <Listbox.Option value="" className={({ active }) => `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`}>All States</Listbox.Option>
-        {stateOptions.filter(s => s !== "All States").map((state) => (
-          <Listbox.Option key={state} value={state} className={({ active, selected }) => `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`}>
-            {({ selected }) => (<><span>{state}</span>{selected && <Check className="h-4 w-4 text-green-600" />}</>)}
-          </Listbox.Option>
-        ))}
-      </Listbox.Options>
-    </div>
-  </Listbox>
-</div>
-                 <div>
-  <label className="block text-sm font-semibold text-gray-700 mb-1.5">City</label>
-  <Listbox value={selectedCity} onChange={setSelectedCity} disabled={cityOptions.length <= 1}>
-    <div className="relative">
-      <Listbox.Button className={`w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white ${cityOptions.length <= 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}>
-        <span className={selectedCity ? "text-gray-900" : "text-gray-400"}>{selectedCity || "All Cities"}</span>
-        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-      </Listbox.Button>
-      <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-        <Listbox.Option value="" className={({ active }) => `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`}>All Cities</Listbox.Option>
-        {cityOptions.filter(c => c !== "All Cities").map((city) => (
-          <Listbox.Option key={city} value={city} className={({ active, selected }) => `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`}>
-            {({ selected }) => (<><span>{city}</span>{selected && <Check className="h-4 w-4 text-green-600" />}</>)}
-          </Listbox.Option>
-        ))}
-      </Listbox.Options>
-    </div>
-  </Listbox>
-</div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                      State
+                    </label>
+                    <Listbox value={selectedState} onChange={setSelectedState}>
+                      <div className="relative">
+                        <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
+                          <span
+                            className={
+                              selectedState ? "text-gray-900" : "text-gray-400"
+                            }
+                          >
+                            {selectedState || "All States"}
+                          </span>
+                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        </Listbox.Button>
+                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                          <Listbox.Option
+                            value=""
+                            className={({ active }) =>
+                              `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`
+                            }
+                          >
+                            All States
+                          </Listbox.Option>
+                          {stateOptions
+                            .filter((s) => s !== "All States")
+                            .map((state) => (
+                              <Listbox.Option
+                                key={state}
+                                value={state}
+                                className={({ active, selected }) =>
+                                  `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`
+                                }
+                              >
+                                {({ selected }) => (
+                                  <>
+                                    <span>{state}</span>
+                                    {selected && (
+                                      <Check className="h-4 w-4 text-green-600" />
+                                    )}
+                                  </>
+                                )}
+                              </Listbox.Option>
+                            ))}
+                        </Listbox.Options>
+                      </div>
+                    </Listbox>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+                      City
+                    </label>
+                    <Listbox
+                      value={selectedCity}
+                      onChange={setSelectedCity}
+                      disabled={cityOptions.length <= 1}
+                    >
+                      <div className="relative">
+                        <Listbox.Button
+                          className={`w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white ${cityOptions.length <= 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
+                        >
+                          <span
+                            className={
+                              selectedCity ? "text-gray-900" : "text-gray-400"
+                            }
+                          >
+                            {selectedCity || "All Cities"}
+                          </span>
+                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                        </Listbox.Button>
+                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                          <Listbox.Option
+                            value=""
+                            className={({ active }) =>
+                              `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`
+                            }
+                          >
+                            All Cities
+                          </Listbox.Option>
+                          {cityOptions
+                            .filter((c) => c !== "All Cities")
+                            .map((city) => (
+                              <Listbox.Option
+                                key={city}
+                                value={city}
+                                className={({ active, selected }) =>
+                                  `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`
+                                }
+                              >
+                                {({ selected }) => (
+                                  <>
+                                    <span>{city}</span>
+                                    {selected && (
+                                      <Check className="h-4 w-4 text-green-600" />
+                                    )}
+                                  </>
+                                )}
+                              </Listbox.Option>
+                            ))}
+                        </Listbox.Options>
+                      </div>
+                    </Listbox>
+                  </div>
                 </div>
                 <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -1252,8 +1491,7 @@ const slidePrev = (setIndex, length) => {
 
       {/* Results Bar - Outside Hero */}
       <div className="bg-white border-b lg:mt-6 border-gray-200 sticky top-16 z-30">
-       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-4">
-
+        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
@@ -1267,51 +1505,60 @@ const slidePrev = (setIndex, length) => {
                 tractors
               </p>
             </div>
-         {/* Results Bar Sort - Headless UI Listbox */}
-<div className="flex items-center gap-3">
-  <span className="text-sm font-semibold text-gray-600">
-    Sort by:
-  </span>
-  <Listbox value={sortBy} onChange={setSortBy}>
-    <div className="relative">
-      <Listbox.Button className="px-4 py-2 border border-gray-200 bg-white text-gray-700 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none cursor-pointer font-medium flex items-center justify-between gap-2 min-w-[160px]">
-        <span>
-          {sortBy === "popular" ? "Most Popular" :
-           sortBy === "price-low" ? "Price: Low to High" :
-           sortBy === "price-high" ? "Price: High to Low" :
-           sortBy === "newest" ? "Newest First" : "Highest Rated"}
-        </span>
-        <ChevronDown className="h-4 w-4 text-gray-400" />
-      </Listbox.Button>
-      <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg py-1 text-sm">
-        {[
-          { value: "popular", label: "Most Popular" },
-          { value: "price-low", label: "Price: Low to High" },
-          { value: "price-high", label: "Price: High to Low" },
-          { value: "newest", label: "Newest First" },
-          { value: "rating", label: "Highest Rated" },
-        ].map((option) => (
-          <Listbox.Option
-            key={option.value}
-            value={option.value}
-            className={({ active, selected }) =>
-              `cursor-pointer px-4 py-2.5 flex items-center justify-between ${
-                active ? "bg-green-50 text-green-700" : "text-gray-700"
-              } ${selected ? "bg-green-100 font-medium" : ""}`
-            }
-          >
-            {({ selected }) => (
-              <>
-                <span>{option.label}</span>
-                {selected && <Check className="h-4 w-4 text-green-600" />}
-              </>
-            )}
-          </Listbox.Option>
-        ))}
-      </Listbox.Options>
-    </div>
-  </Listbox>
-</div>
+            {/* Results Bar Sort - Headless UI Listbox */}
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-semibold text-gray-600">
+                Sort by:
+              </span>
+              <Listbox value={sortBy} onChange={setSortBy}>
+                <div className="relative">
+                  <Listbox.Button className="px-4 py-2 border border-gray-200 bg-white text-gray-700 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none cursor-pointer font-medium flex items-center justify-between gap-2 min-w-[160px]">
+                    <span>
+                      {sortBy === "popular"
+                        ? "Most Popular"
+                        : sortBy === "price-low"
+                          ? "Price: Low to High"
+                          : sortBy === "price-high"
+                            ? "Price: High to Low"
+                            : sortBy === "newest"
+                              ? "Newest First"
+                              : "Highest Rated"}
+                    </span>
+                    <ChevronDown className="h-4 w-4 text-gray-400" />
+                  </Listbox.Button>
+                  <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg py-1 text-sm">
+                    {[
+                      { value: "popular", label: "Most Popular" },
+                      { value: "price-low", label: "Price: Low to High" },
+                      { value: "price-high", label: "Price: High to Low" },
+                      { value: "newest", label: "Newest First" },
+                      { value: "rating", label: "Highest Rated" },
+                    ].map((option) => (
+                      <Listbox.Option
+                        key={option.value}
+                        value={option.value}
+                        className={({ active, selected }) =>
+                          `cursor-pointer px-4 py-2.5 flex items-center justify-between ${
+                            active
+                              ? "bg-green-50 text-green-700"
+                              : "text-gray-700"
+                          } ${selected ? "bg-green-100 font-medium" : ""}`
+                        }
+                      >
+                        {({ selected }) => (
+                          <>
+                            <span>{option.label}</span>
+                            {selected && (
+                              <Check className="h-4 w-4 text-green-600" />
+                            )}
+                          </>
+                        )}
+                      </Listbox.Option>
+                    ))}
+                  </Listbox.Options>
+                </div>
+              </Listbox>
+            </div>
           </div>
         </div>
       </div>
@@ -1354,8 +1601,9 @@ const slidePrev = (setIndex, length) => {
       </div>
 
       {/* ========== POPULAR BRANDS MARQUEE ========== */}
+      {/* Popular Brands Marquee Section */}
       <div className="bg-white border-b border-gray-100">
-       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 pt-12 md:pt-16 lg:pt-20">
+        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 pt-16 md:pt-20 lg:pt-24">
           <h3 className="text-center text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-6">
             Popular{" "}
             <span className="text-transparent bg-clip-text bg-green-600">
@@ -1365,35 +1613,34 @@ const slidePrev = (setIndex, length) => {
           <div className="relative overflow-hidden">
             <div className="flex gap-8 animate-marquee">
               {[...popularBrands, ...popularBrands].map((brand, idx) => (
-                <div
+                <Link
                   key={idx}
+                  to={`/tractors?type=used&brand=${encodeURIComponent(brand.name)}`}
                   className="flex flex-col items-center gap-2 flex-shrink-0 group cursor-pointer"
                 >
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-50 border-2 border-gray-200 flex items-center justify-center group-hover:border-green-600 group-hover:shadow-md group-hover:bg-green-100 transition-all duration-300 overflow-hidden">
-                    {brand.logo ? (
-                      <img
-                        src={brand.logo}
-                        alt={brand.name}
-                        className="w-full h-full object-contain p-3"
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                          e.target.nextSibling.style.display = "flex";
-                        }}
-                      />
-                    ) : null}
-                    <span
-                      className={`text-base sm:text-lg font-black text-green-700 ${brand.logo ? "hidden" : "flex"}`}
-                      style={{ display: brand.logo ? "none" : "flex" }}
-                    >
+                    <img
+                      src={brand.logo}
+                      alt={brand.name}
+                      className="w-full h-full object-contain p-3"
+                      onError={(e) => {
+                        e.target.style.display = "none";
+                        e.target.nextSibling.style.display = "flex";
+                      }}
+                    />
+                    <span className="text-base sm:text-lg font-black text-green-700 hidden">
                       {brand.name
                         .split(" ")
-                        .map((word) => word[0])
+                        .map((w) => w[0])
                         .join("")
                         .slice(0, 2)
                         .toUpperCase()}
                     </span>
                   </div>
-                </div>
+                  <span className="text-xs font-medium text-gray-600 group-hover:text-green-700 transition-colors">
+                    {brand.name}
+                  </span>
+                </Link>
               ))}
             </div>
           </div>
@@ -1415,8 +1662,7 @@ const slidePrev = (setIndex, length) => {
             </span>
           </div>
         </div>
-       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-12">
-
+        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-12">
           {SUGGESTED_COMPARISONS.map((pair, index) => (
             <div
               key={index}
@@ -1470,9 +1716,9 @@ const slidePrev = (setIndex, length) => {
                 </div>
               </div>
               <Link to="/tractorcompare">
-              <button className="w-full cursor-pointer border border-green-200 bg-white hover:bg-green-50 text-green-700 transition-colors duration-150 text-[10px] sm:text-xs font-semibold py-1.5 px-2 rounded-md text-center truncate">
-                {pair.buttonText}
-              </button>
+                <button className="w-full cursor-pointer border border-green-200 bg-white hover:bg-green-50 text-green-700 transition-colors duration-150 text-[10px] sm:text-xs font-semibold py-1.5 px-2 rounded-md text-center truncate">
+                  {pair.buttonText}
+                </button>
               </Link>
             </div>
           ))}
@@ -1483,7 +1729,6 @@ const slidePrev = (setIndex, length) => {
       <div className="relative bg-white overflow-hidden border-t border-gray-400">
         <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 relative z-10">
           <div className="text-center mb-10">
-           
             <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-3">
               About <span className="text-green-700">Krushi Mall</span>
             </h2>
@@ -1539,8 +1784,7 @@ const slidePrev = (setIndex, length) => {
 
       {/* ========== ENQUIRY FORM SECTION ========== */}
       <section id="enquiry-form" className="bg-gray-50 pt-12 md:pt-16 lg:pt-20">
-       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
-
+        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
           <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
             <div className="lg:col-span-2">
               <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
@@ -1680,23 +1924,36 @@ const slidePrev = (setIndex, length) => {
                       </div>
                     </div>
                     {/* Tractor Type */}
-                   <div>
-  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-    Interested In <span className="text-red-600">*</span>
-  </label>
-  <RadioGroup value={formData.tractorType} onChange={(value) => setFormData({...formData, tractorType: value})}>
-    <RadioGroup.Option value="used">
-      {({ checked }) => (
-        <div className={`flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer ${checked ? "border-green-600 bg-green-50" : "border-gray-200 bg-white"}`}>
-          <div className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${checked ? "border-green-600 bg-green-600" : "border-gray-300"}`}>
-            {checked && <Check className="h-3 w-3 text-white" />}
-          </div>
-          <span className="text-sm font-medium text-gray-900">Used Tractor</span>
-        </div>
-      )}
-    </RadioGroup.Option>
-  </RadioGroup>
-</div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                        Interested In <span className="text-red-600">*</span>
+                      </label>
+                      <RadioGroup
+                        value={formData.tractorType}
+                        onChange={(value) =>
+                          setFormData({ ...formData, tractorType: value })
+                        }
+                      >
+                        <RadioGroup.Option value="used">
+                          {({ checked }) => (
+                            <div
+                              className={`flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer ${checked ? "border-green-600 bg-green-50" : "border-gray-200 bg-white"}`}
+                            >
+                              <div
+                                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${checked ? "border-green-600 bg-green-600" : "border-gray-300"}`}
+                              >
+                                {checked && (
+                                  <Check className="h-3 w-3 text-white" />
+                                )}
+                              </div>
+                              <span className="text-sm font-medium text-gray-900">
+                                Used Tractor
+                              </span>
+                            </div>
+                          )}
+                        </RadioGroup.Option>
+                      </RadioGroup>
+                    </div>
                     <div>
                       <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                         Message{" "}
@@ -1843,7 +2100,6 @@ const slidePrev = (setIndex, length) => {
       {/* ========== TRUST BADGES ========== */}
       <div className="bg-white">
         <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-12">
-
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {[
               {

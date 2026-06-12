@@ -660,7 +660,7 @@ const TractorList = () => {
 
   return (
     <div className=" bg-gray-50 pt-2 xl:mt-4">
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-6 pb-6">
+      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-6 pb-6 lg:pb-20">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">{getTitle()}</h1>

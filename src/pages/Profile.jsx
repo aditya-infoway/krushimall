@@ -197,7 +197,7 @@ const Profile = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 lg:mt-4">
+    <div className="min-h-screen bg-white lg:mt-4">
       {/* Success Toast */}
       {showSaveSuccess && (
         <div className="fixed top-4 right-4 z-50 animate-slideDown bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2">
@@ -207,8 +207,8 @@ const Profile = () => {
       )}
 
       {/* Breadcrumb */}
-      <div className="bg-white border-b border-gray-200">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-2">
+      <div className="bg-white ">
+        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
           <nav className="flex items-center gap-2 text-sm">
             <Link
               to="/"

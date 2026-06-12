@@ -125,13 +125,13 @@ const Service = () => {
   };
 
   return (
-    <div className="h-screen bg-gray-50 font-sans text-gray-800 flex flex-col overflow-x-hidden">
+    <div className="min-h-screen bg-gray-50 font-sans text-gray-800 flex flex-col overflow-x-hidden ">
       {/* Main Title Header Section */}
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-4 lg:pt-12 pb-2 flex-shrink-0">
+      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-2 flex-shrink-0">
         <div className="lg:pl-[calc(33.333%+1.5rem)]">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
             Find a{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-700">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-700"> 
               Service Center Near You
             </span>
           </h1>
@@ -139,10 +139,10 @@ const Service = () => {
       </div>
 
       {/* Main Interactive Map Block Wrapper */}
-      <main className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pb-6 flex-1 flex flex-col min-h-0">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto lg:h-[calc(100vh-11rem)] flex-1 min-h-0">
+      <main className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pb-6 lg:pb-10 flex-1 flex flex-col min-h-0">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto lg:h-[calc(100vh-11rem)] flex-1 min-h-0 pb-6 lg:pb-10">
           {/* LEFT SIDE PANEL */}
-          <section className="lg:col-span-4 flex flex-col bg-white border border-gray-200 shadow-sm rounded-2xl h-[550px] lg:h-full min-h-0 overflow-hidden lg:-mt-12">
+          <section className="lg:col-span-4 flex flex-col bg-white border border-gray-200 shadow-sm rounded-2xl h-[550px] lg:h-full min-h-0 overflow-hidden lg:-mt-12 ">
             {/* Search and Filter Form */}
             <div className="p-4 border-b border-gray-200 bg-white flex-shrink-0 space-y-3">
               <div>
@@ -474,7 +474,7 @@ const Service = () => {
           </section>
 
           {/* RIGHT SIDE PANEL: Map Display */}
-          <section className="lg:col-span-8 bg-gray-100 relative h-[400px] lg:h-full min-h-0 overflow-hidden border border-gray-200 shadow-sm rounded-2xl">
+          <section className="lg:col-span-8 bg-gray-100 relative h-[400px]  lg:h-full min-h-0 overflow-hidden border border-gray-200 shadow-sm  rounded-2xl mb-4 lg:mb-0">
             <iframe
               src={getMapUrl()}
               width="100%"
@@ -487,7 +487,7 @@ const Service = () => {
             ></iframe>
 
             <RadioGroup value={mapType} onChange={setMapType}>
-              <div className="absolute top-3 right-3 bg-white/95 border border-gray-200 p-2 rounded-xl shadow-sm text-xs font-bold space-y-1 text-gray-700 z-10">
+              <div className="absolute top-3 right-3 bg-white/95 border border-gray-200 p-2 rounded-xl shadow-sm text-xs  font-bold space-y-1 text-gray-700 z-10">
                 {["Streets", "Satellite", "Hybrid", "Topographic"].map(
                   (type) => (
                     <RadioGroup.Option key={type} value={type.toLowerCase()}>

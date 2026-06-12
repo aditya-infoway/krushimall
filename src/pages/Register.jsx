@@ -132,8 +132,8 @@ const Register = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-gray-50 pt-16 md:pt-20">
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
+    <div className=" bg-gray-50 pb-8">
+      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Side - Benefits */}
           <div className="hidden lg:block order-2 lg:order-1">

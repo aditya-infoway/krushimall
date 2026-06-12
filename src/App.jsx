@@ -31,6 +31,7 @@ import BookingService from "./pages/BookingService";
 import Profile from "./pages/Profile";
 import BookingHistory from "./pages/BookingHistory";
 import { Toaster } from 'react-hot-toast';
+import AllCategories from "./pages/AllCategories";
 
 function App() {
   return (
@@ -74,6 +75,7 @@ function App() {
                   <Route path="/checkout" element={<Checkout />} />
                   <Route path="/wishlist" element={<Wishlist />} />
                   <Route path="/spare-parts" element={<SpareParts />} />
+                  <Route path="/categories" element={<AllCategories />} />
                   <Route path="/tractors" element={<TractorList />} />
                   <Route path="/new-tractors" element={<NewTractors />} />
                   <Route path="/old-tractors" element={<OldTractors />} />

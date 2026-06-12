@@ -180,7 +180,7 @@ const BookingHistory = () => {
   return (
     <div className="min-h-screen bg-gray-50 ">
       {/* STANDARDIZED: Same spacing pattern as all other components */}
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-6 md:pt-8 lg:pt-10 pb-4">
+      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-4">
         {/* Header */}
         <div className="mb-6 md:mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-3">
@@ -257,7 +257,7 @@ const BookingHistory = () => {
 
         {/* Filter Bar */}
         {/* Filter Tabs - Inline with underline indicator */}
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4  border-b border-gray-100">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4  border-b border-gray-100 mb-4">
           <div className="flex items-center gap-0 overflow-x-auto w-full sm:w-auto scrollbar-hide">
             <button
               onClick={() => setActiveTab("All")}
