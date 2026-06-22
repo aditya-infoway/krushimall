@@ -25,139 +25,75 @@ import mah from "../assets/mahindra.png";
 import john from "../assets/johndeere.png";
 import swara from "../assets/swaraj.png";
 import logo from "../assets/johnlogo.png";
+import apiHelper from "../utils/apiHelper";
 
 const TractorShowcase = () => {
   const [newIndex, setNewIndex] = useState(0);
   const [usedIndex, setUsedIndex] = useState(0);
   const [cardsToShow, setCardsToShow] = useState(4);
+  const [newTractors, setNewTractors] = useState([]);
+  const [usedTractors, setUsedTractors] = useState([]);
   const [wishlist, setWishlist] = useState({});
   const [isTransitioning, setIsTransitioning] = useState(false);
   const intervalRef = useRef(null);
   const newTimerRef = useRef(null);
   const usedTimerRef = useRef(null);
 
-  const allNewTractors = [
-    {
-      id: 1,
-      name: "Mahindra 575 DI",
-      brand: "Mahindra",
-      price: "₹6,85,000",
-      hp: "45 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Delhi",
-      image: "/mah.png",
-      rating: 4.8,
-      badge: "Best Seller",
-      verified: true,
-      discount: "5% OFF",
-    },
-    {
-      id: 2,
-      name: "Swaraj 744 FE",
-      brand: "Swaraj",
-      price: "₹7,25,000",
-      hp: "48 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Pune",
-      image: "/mah.png",
-      rating: 4.7,
-      badge: "Popular",
-      verified: true,
-      discount: "8% OFF",
-    },
-    {
-      id: 3,
-      name: "John Deere 5310",
-      brand: "John Deere",
-      price: "₹8,95,000",
-      hp: "55 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Jaipur",
-      image: "/mah.png",
-      rating: 4.9,
-      badge: "Premium",
-      verified: true,
-      discount: "3% OFF",
-    },
-    {
-      id: 4,
-      name: "TAFE 5900 DI",
-      brand: "TAFE",
-      price: "₹5,95,000",
-      hp: "42 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Chennai",
-      image: "/mah.png",
-      rating: 4.6,
-      badge: "Value Buy",
-      verified: true,
-      discount: "10% OFF",
-    },
-    {
-      id: 5,
-      name: "New Holland 3630 TX",
-      brand: "New Holland",
-      price: "₹7,75,000",
-      hp: "50 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Lucknow",
-      image: "/mah.png",
-      rating: 4.8,
-      badge: "Staff Pick",
-      verified: true,
-      discount: "6% OFF",
-    },
-    {
-      id: 6,
-      name: "Sonalika DI 750 III",
-      brand: "Sonalika",
-      price: "₹6,35,000",
-      hp: "50 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Bhopal",
-      image: "/mah.png",
-      rating: 4.5,
-      badge: "Budget Friendly",
-      verified: true,
-      discount: "12% OFF",
-    },
-    {
-      id: 7,
-      name: "Mahindra Arjun 605",
-      brand: "Mahindra",
-      price: "₹9,25,000",
-      hp: "60 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Nagpur",
-      image: "/mah.png",
-      rating: 4.9,
-      badge: "Premium",
-      verified: true,
-      discount: "4% OFF",
-    },
-    {
-      id: 8,
-      name: "Escorts Powertrac 439",
-      brand: "Escorts",
-      price: "₹5,45,000",
-      hp: "41 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Faridabad",
-      image: "/mah.png",
-      rating: 4.4,
-      badge: "Value Pick",
-      verified: true,
-      discount: "7% OFF",
-    },
-  ];
+ useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const response = await apiHelper.get("/website-variants");
+      console.log("API Response:", response);
+
+      const tractorList = response.data || [];
+
+      if (tractorList.length > 0) {
+        const updatedNewTractors = tractorList.map((apiTractor) => {
+          // ✅ Use apiHelper.image() - no baseUrl needed!
+          const imageUrl = apiTractor.frontView 
+            ? apiHelper.image(apiTractor.frontView) 
+            : "/mah.png";
+
+          return {
+            id: apiTractor.id || Math.random(),
+            brand: apiTractor.brand?.brandName ||
+                   apiTractor.brandName ||
+                   apiTractor.brand ||
+                   "Unknown Brand",
+            name: apiTractor.productName ||
+                  apiTractor.name ||
+                  "Unknown Tractor",
+            price: typeof (apiTractor.exShowroomPrice || apiTractor.price) === "number"
+              ? `₹${(apiTractor.exShowroomPrice || apiTractor.price).toLocaleString("en-IN")}`
+              : apiTractor.exShowroomPrice ||
+                apiTractor.price ||
+                "₹0",
+            location: apiTractor.city ||
+                     apiTractor.district ||
+                     apiTractor.state ||
+                     "Location",
+            image: imageUrl, // ✅ Now uses apiHelper.image()
+            badge: apiTractor.badge || undefined,
+            rating: apiTractor.rating || undefined,
+            verified: apiTractor.verified || undefined,
+          };
+        });
+
+        setNewTractors(updatedNewTractors);
+        console.log("Updated tractors from API:", updatedNewTractors);
+      } else {
+        setNewTractors([]);
+      }
+    } catch (error) {
+      console.error("Error fetching tractors:", error);
+      setNewTractors([]);
+    }
+  };
+
+  fetchData();
+}, []);
+
+ 
 
   const allUsedTractors = [
     {
@@ -349,30 +285,44 @@ const TractorShowcase = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  // Auto-slide for mobile
-  // Auto-slide for DESKTOP ONLY
-  useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      if (window.innerWidth >= 640) {
+
+
+const getVisibleTractors = (tractors, startIndex) => {
+  if (!tractors || tractors.length === 0) return [];
+  
+  // ✅ Show only the actual number of tractors (max 4)
+  const totalToShow = Math.min(cardsToShow, tractors.length);
+  const visible = [];
+  
+  for (let i = 0; i < totalToShow; i++) {
+    const index = (startIndex + i) % tractors.length;
+    visible.push(tractors[index]);
+  }
+  return visible;
+};
+
+// Auto-slide for DESKTOP ONLY
+useEffect(() => {
+  intervalRef.current = setInterval(() => {
+    if (window.innerWidth >= 640) {
+      // ✅ Only auto-slide if we have more tractors than cards to show
+      if (newTractors.length > cardsToShow) {
         setNewIndex(
-          (prev) => (prev + 1) % Math.ceil(allNewTractors.length / cardsToShow),
-        );
-        setUsedIndex(
-          (prev) =>
-            (prev + 1) % Math.ceil(allUsedTractors.length / cardsToShow),
+          (prev) => (prev + 1) % Math.ceil(newTractors.length / cardsToShow)
         );
       }
-    }, 3000);
-    return () => clearInterval(intervalRef.current);
-  }, [cardsToShow]);
-
-  const getVisibleTractors = (tractors, startIndex) => {
-    const visible = [];
-    for (let i = 0; i < cardsToShow; i++) {
-      visible.push(tractors[(startIndex + i) % tractors.length]);
+      if (allUsedTractors.length > cardsToShow) {
+        setUsedIndex(
+          (prev) =>
+            (prev + 1) % Math.ceil(allUsedTractors.length / cardsToShow)
+        );
+      }
     }
-    return visible;
-  };
+  }, 3000);
+  return () => clearInterval(intervalRef.current);
+}, [cardsToShow, newTractors.length]);
+
+
 
   const slideNext = (setIndex, length) => {
     setIndex((prev) => {
@@ -400,13 +350,18 @@ const TractorShowcase = () => {
   const TractorCard = ({ tractor, isUsed = false, className = "" }) => (
     <Link
       to={`/tractor/${tractor.id}`}
-      className={`group bg-white rounded-2xl border-2 border-gray-200 hover:border-green-400 shadow-sm hover:shadow-2xl hover:shadow-green-100/50 transition-all duration-500 overflow-hidden flex flex-col flex-shrink-0 hover:-translate-y-2 cursor-pointer h-full ${className}`}
+     className={`group bg-white rounded-2xl border-2 border-gray-200 hover:border-green-400 shadow-sm hover:shadow-2xl hover:shadow-green-100/50 transition-all duration-500 flex flex-col flex-shrink-0 hover:-translate-y-2 cursor-pointer h-full ${className}`}
     >
       {/* Image Section - Fixed height */}
-      <div className="relative h-36 sm:h-44 overflow-hidden bg-gradient-to-br from-green-50 to-white flex-shrink-0">
+      <div className="relative h-36 sm:h-44 overflow-hidden bg-gradient-to-br from-green-50 to-white flex-shrink-0 rounded-t-2xl">
         <img
-          src={tractor.image}
+          src={tractor.image || "/mah.png"}
           alt={tractor.name}
+          onError={(e) => {
+            console.error("Image failed to load:", tractor.image);
+            e.target.onerror = null;
+            e.target.src = "/mah.png";
+          }}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
         />
 
@@ -417,8 +372,8 @@ const TractorShowcase = () => {
         <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-col gap-1">
           {tractor.badge && (
             <span className="bg-gradient-to-r from-green-600 to-green-700 text-white text-[9px] sm:text-[10px] font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-lg shadow-green-600/30 flex items-center gap-1">
-              <Award className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
-              {tractor.badge}
+              {/* <Award className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
+              {tractor.badge} */}
             </span>
           )}
           {isUsed && tractor.warranty !== "No" && (
@@ -490,10 +445,10 @@ const TractorShowcase = () => {
             </span>
           ) : (
             <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
-              <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-yellow-500 fill-yellow-500" />
+              {/* <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-yellow-500 fill-yellow-500" />
               <span className="text-[10px] sm:text-xs font-bold text-gray-900">
                 {tractor.rating}
-              </span>
+              </span> */}
             </div>
           )}
         </div>
@@ -649,7 +604,7 @@ const TractorShowcase = () => {
           </button>
 
           {/* Cards */}
-          <div className="overflow-hidden">
+          <div className="overflow-visible">
             <div className="flex gap-3 sm:gap-4 transition-transform duration-500 ease-in-out">
               {getVisibleTractors(
                 tractors,
@@ -699,18 +654,27 @@ const TractorShowcase = () => {
           </div>
 
           {/* New Tractors Section */}
-          <div className="my-12 md:my-16 lg:mb-10">
-            <SliderSection
-              title="New Tractors"
-              icon={Tractor}
-              iconGradient="from-green-600 to-green-700"
-              tractors={allNewTractors}
-              index={newIndex}
-              setIndex={setNewIndex}
-              isUsed={false}
-              linkTo="/tractors"
-            />
-          </div>
+         {/* New Tractors Section */}
+<div className="my-12 md:my-16 lg:mb-10">
+  {newTractors.length > 0 ? (
+    <SliderSection
+      title="New Tractors"
+      icon={Tractor}
+      iconGradient="from-green-600 to-green-700"
+      tractors={newTractors}
+      index={newIndex}
+      setIndex={setNewIndex}
+      isUsed={false}
+      linkTo="/tractors"
+    />
+  ) : (
+    <div className="text-center py-12 bg-white rounded-2xl border-2 border-gray-200">
+      <Tractor className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+      <h3 className="text-xl font-semibold text-gray-600 mb-2">No Tractors Available</h3>
+      <p className="text-gray-500">New tractors will appear here once added to the database.</p>
+    </div>
+  )}
+</div>
 
           {/* Used Tractors Section */}
           <SliderSection

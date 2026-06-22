@@ -20,6 +20,7 @@ import {
   ChevronDown,
   Check,
 } from "lucide-react";
+import apiHelper from "../utils/apiHelper";
 
 const TractorList = () => {
   const [searchParams] = useSearchParams();
@@ -35,6 +36,46 @@ const TractorList = () => {
     type === "new" ? 1000000 : 600000,
   ]);
   const [sortBy, setSortBy] = useState("popular");
+  const [newTractors, setNewTractors] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch only NEW tractors from API
+  useEffect(() => {
+    const fetchNewTractors = async () => {
+      try {
+        const response = await apiHelper.get("/website-variants");
+        console.log("API Response for New Tractors:", response);
+
+        const tractorList = response.data || [];
+
+        if (tractorList.length > 0) {
+          const formattedTractors = tractorList.map((apiTractor) => ({
+            id: apiTractor.id,
+            name: apiTractor.productName || "Tractor",
+            brand:
+              apiTractor.brand?.brandName || apiTractor.brandName || "Brand",
+            price: apiTractor.exShowroomPrice || 0,
+            hp: apiTractor.horsePower ? `${apiTractor.horsePower} HP` : "N/A",
+            fuel: "Diesel",
+            year: apiTractor.modelYear?.modelYear || "2024",
+            location: apiTractor.city || apiTractor.district || "Location",
+            image: apiTractor.frontView
+              ? apiHelper.image(apiTractor.frontView)
+              : "/mah.png",
+            rating: 4.5,
+          }));
+
+          setNewTractors(formattedTractors);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching new tractors:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchNewTractors();
+  }, []);
 
   useEffect(() => {
     setSelectedBrand(brandFilter || "");
@@ -531,7 +572,11 @@ const TractorList = () => {
   console.log("selectedHp:", selectedHp);
   // Filter tractors
   const filteredTractors = currentTractors.filter((tractor) => {
-    if (selectedBrand && tractor.brand !== selectedBrand) return false;
+    if (
+      selectedBrand &&
+      tractor.brand.toLowerCase() !== selectedBrand.toLowerCase()
+    )
+      return false;
     if (selectedHp && tractor.hp !== selectedHp) return false;
     if (
       searchQuery &&
