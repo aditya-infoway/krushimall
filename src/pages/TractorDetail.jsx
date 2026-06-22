@@ -12,8 +12,11 @@ import {
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import EnquiryModal from "../components/EnquiryModal";
+import { useParams } from "react-router-dom";
+import apiHelper from "../utils/apiHelper";
 
 const TractorDetail = () => {
+  const { id } = useParams();
   const [currentImage, setCurrentImage] = useState(0);
   const [wishlist, setWishlist] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
@@ -25,72 +28,148 @@ const [isScrollingRelated, setIsScrollingRelated] = useState(false);
 const scrollTimeoutRef = useRef(null);
 const containerRef = useRef(null);
 const [zoomStyle, setZoomStyle] = useState({ display: "none", x: 50, y: 50 });
+const [tractorData, setTractorData] = useState(null);
+const [loading, setLoading] = useState(true);
 
-  const tractor = {
-    name: "Swaraj 744 FE Good tractor",
-    price: "₹ 265000",
-    category: "Tractor",
-    hp: "45 HP",
-    cc: "3136 CC",
-    drive: "2 WD",
-    tyreCondition: "80%",
-    engineCondition: "good",
-    rc: "yes",
-    phone: "12345 67890",
-    description:
-      "Ekdum Badhiya Tractor Farming Ke liye Best. Well-maintained tractor in excellent running condition. Single owner, regularly serviced at authorized center. All documents clear including RC and insurance.",
-    images: ["/mah.png", "/mah.png", "/mah.png", "/mah.png"],
-    similar: [
-      { name: "Mahindra 265 DI", price: "₹ 460,000", image: "/mah.png" },
-      { name: "Mahindra 575 DI", price: "₹ 165,000", image: "/mah.png" },
-      { name: "HMT 5911 Tractor", price: "₹ 395,000", image: "/mah.png" },
-      { name: "Eicher 241", price: "₹ 155,000", image: "/mah.png" },
-    ],
-    relatedProducts: [
-      {
-        id: 5,
-        name: "Mahindra Arjun 605 Big Tractor",
-        location: "Mettur",
-        price: "₹8,50,000",
-        image: "/mah.png",
-      },
-      {
-        id: 6,
-        name: "best swaraj tractor",
-        location: "Bengaluru",
-        price: "₹4,45,000",
-        image: "/mah.png",
-      },
-      {
-        id: 7,
-        name: "Eicher 380 Tractor Best",
-        location: "Karimnagar",
-        price: "₹3,50,000",
-        image: "/mah.png",
-      },
-      {
-        id: 8,
-        name: "Swaraj 744 FE",
-        location: "Sandila",
-        price: "₹3,70,000",
-        image: "/mah.png",
-      },
-      {
-        id: 9,
-        name: "Swaraj 735 FE",
-        location: "Moradabad",
-        price: "₹1,55,000",
-        image: "/mah.png",
-      },
-      {
-        id: 10,
-        name: "Mahindra 475 DI MS SP PLUS",
-        location: "Barnala",
-        price: "₹1,12,000",
-        image: "/mah.png",
-      },
-    ],
+
+
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const response = await apiHelper.get(`/website-variants/${id}`);
+      setTractorData(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error:", error);
+      setLoading(false);
+    }
   };
+  fetchData();
+}, [id]);
+
+// ✅ Use apiHelper.image() directly - no need for getImageUrl function
+const imageUrls = [
+  tractorData?.frontView,
+  tractorData?.leftView,
+  tractorData?.rightView,
+  tractorData?.rearView,
+  tractorData?.engineView,
+  tractorData?.dashboardView,
+  tractorData?.tyreView,
+  tractorData?.hydraulicView,
+  tractorData?.ptoView,
+  tractorData?.additionalImage1,
+  tractorData?.additionalImage2,
+  tractorData?.additionalImage3,
+  tractorData?.additionalImage4,
+  tractorData?.additionalImage5,
+]
+  .filter(img => img) // Remove null/undefined
+  .map(img => apiHelper.image(img)); // ✅ Use apiHelper.image()
+
+// If no images found, use default
+const finalImages = imageUrls.length > 0 ? imageUrls : ["/mah.png"];
+
+const tractor = {
+  name: tractorData?.productName || "Swaraj 744 FE Good tractor",
+  price: tractorData?.exShowroomPrice ? `₹ ${tractorData.exShowroomPrice.toLocaleString()}` : "₹ 265000",
+  category: "Tractor",
+  hp: tractorData?.horsePower ? `${tractorData.horsePower} HP` : "45 HP",
+  cc: tractorData?.cubicCapacity ? `${tractorData.cubicCapacity} CC` : "3136 CC",
+  drive: tractorData?.driveType || "2 WD",
+  tyreCondition: tractorData?.tyreCondition || "80%",
+  engineCondition: tractorData?.engineCondition || "good",
+  rc: tractorData?.rcAvailable ? "yes" : "no",
+  phone: tractorData?.phone || "12345 67890",
+  description: tractorData?.shortDescription || "Ekdum Badhiya Tractor Farming Ke liye Best...",
+  images: finalImages, // ✅ Uses apiHelper.image()
+  similar: [
+    {
+      name: "Mahindra 265 DI",
+      price: "₹ 460,000",
+      image: "/mah.png"
+    },
+    {
+      name: "Mahindra 575 DI",
+      price: "₹ 165,000",
+      image: "/mah.png"
+    },
+    {
+      name: "HMT 5911 Tractor",
+      price: "₹ 395,000",
+      image: "/mah.png"
+    },
+    {
+      name: "Eicher 241",
+      price: "₹ 155,000",
+      image: "/mah.png"
+    },
+  ],
+  relatedProducts: [
+    {
+      id: 5,
+      name: "Mahindra Arjun 605 Big Tractor",
+      location: "Mettur",
+      price: "₹8,50,000",
+      image: "/mah.png",
+    },
+    {
+      id: 6,
+      name: "best swaraj tractor",
+      location: "Bengaluru",
+      price: "₹4,45,000",
+      image: "/mah.png",
+    },
+    {
+      id: 7,
+      name: "Eicher 380 Tractor Best",
+      location: "Karimnagar",
+      price: "₹3,50,000",
+      image: "/mah.png",
+    },
+    {
+      id: 8,
+      name: "Swaraj 744 FE",
+      location: "Sandila",
+      price: "₹3,70,000",
+      image: "/mah.png",
+    },
+    {
+      id: 9,
+      name: "Swaraj 735 FE",
+      location: "Moradabad",
+      price: "₹1,55,000",
+      image: "/mah.png",
+    },
+    {
+      id: 10,
+      name: "Mahindra 475 DI MS SP PLUS",
+      location: "Barnala",
+      price: "₹1,12,000",
+      image: "/mah.png",
+    },
+  ],
+};
+
+
+
+
+useEffect(() => {
+  const fetchData = async () => {
+    try {
+      const response = await apiHelper.get(`/website-variants/${id}`);
+      console.log("API Response:", response.data);
+      console.log("frontView:", response.data?.frontView);
+      setTractorData(response.data);
+      setLoading(false);
+    } catch (error) {
+      console.error("Error:", error);
+      setLoading(false);
+    }
+  };
+  fetchData();
+}, [id]);
+
 
   // Auto-slide for related products
  useEffect(() => {
