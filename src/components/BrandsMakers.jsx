@@ -1,102 +1,55 @@
 import { useState, useEffect, useRef } from "react";
 import { ArrowRight, ChevronDown, ChevronUp } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import sonalika from "../assets/sonalika.png";
-import eicher from "../assets/eicher.png";
-import escorts from "../assets/escorts.png";
-import force from "../assets/force.png";
-import indo from "../assets/indo.png";
-import kubota from "../assets/kubota.png";
-import massey from "../assets/massey.png";
-import newinfo from "../assets/new.png";
-import swalogo from "../assets/swarajlogo.png";
-import tafe from "../assets/tafe.png"
+import apiHelper from "../utils/apiHelper";
 
 const BrandsMakers = () => {
   const navigate = useNavigate();
   const [showAllMobile, setShowAllMobile] = useState(false);
+const [tractorMakers, setTractorMakers] = useState([]);
+const [loading, setLoading] = useState(true);
 
-  const partsBrands = [
-    "Bosch",
-    "Brembo",
-    "Denso",
-    "Valeo",
-    "Mann Filter",
-    "NGK",
-    "KYB",
-    "Monroe",
-    "Continental",
-    "Hella",
-    "SKF",
-    "Gates",
-    "Sachs",
-    "Febi",
-    "TRW",
-    "Delphi",
-  ];
 
-  const tractorMakers = [
-    {
-      name: "Mahindra",
-      logo: "https://cdn.simpleicons.org/mahindra/FF0000",
-      slug: "mahindra",
-    },
-    {
-      name: "Swaraj",
-      logo: swalogo,
-      slug: "swaraj",
-    },
-    {
-      name: "John Deere",
-      logo: "https://cdn.simpleicons.org/johndeere/367C2B",
-      slug: "john-deere",
-    },
-    {
-      name: "TAFE",
-      logo: tafe,
-      slug: "tafe",
-    },
-    {
-      name: "New Holland",
-      logo: newinfo,
-      slug: "new-holland",
-    },
-    {
-      name: "Sonalika",
-      logo: sonalika,
-      slug: "sonalika",
-    },
-    {
-      name: "Escorts",
-      logo: escorts,
-      slug: "escorts",
-    },
-    {
-      name: "Eicher",
-      logo: eicher,
-      slug: "eicher",
-    },
-    {
-      name: "Kubota",
-      logo: kubota,
-      slug: "kubota",
-    },
-    {
-      name: "Massey Ferguson",
-      logo: massey,
-      slug: "massey-ferguson",
-    },
-    {
-      name: "Force Motors",
-      logo: force,
-      slug: "force-motors",
-    },
-    {
-      name: "Indo Farm",
-      logo: indo,
-      slug: "indo-farm",
-    },
-  ];
+
+ 
+
+useEffect(() => {
+  const fetchBrands = async () => {
+    try {
+      setLoading(true);
+      const response = await apiHelper.get("/brand");
+      
+      let brandsData = [];
+      if (response && response.data && Array.isArray(response.data)) {
+        brandsData = response.data;
+      } else if (Array.isArray(response)) {
+        brandsData = response;
+      }
+
+      const mappedBrands = brandsData
+        .filter(brand => brand.status === "ACTIVE")
+        .map((item) => ({
+          name: item.brandName || item.name || "Unknown",
+          logo: apiHelper.image(item.image), // ✅ Using your existing image method
+          slug: (item.brandName || item.name || "unknown")
+            .toLowerCase()
+            .replace(/\s+/g, '-'),
+        }));
+
+      setTractorMakers(mappedBrands);
+    } catch (error) {
+      console.error("Failed to fetch brands:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  fetchBrands();
+}, []);
+
+
+
+
 
   // Handle tractor maker click - navigate to tractors page with brand filter
   const handleTractorMakerClick = (brandName) => {
