@@ -33,20 +33,11 @@ import {
   MessageCircle,
   X,
 } from "lucide-react";
+import apiHelper from "../utils/apiHelper";
 import mah from "../assets/mahindra.png";
 import john from "../assets/johndeere.png";
 import swara from "../assets/swaraj.png";
-import logo from "../assets/johnlogo.png";
-import sonalika from "../assets/sonalika.png";
-import eicher from "../assets/eicher.png";
-import escorts from "../assets/escorts.png";
-import force from "../assets/force.png";
-import indo from "../assets/indo.png";
-import kubota from "../assets/kubota.png";
-import massey from "../assets/massey.png";
-import newinfo from "../assets/new.png";
-import swalogo from "../assets/swarajlogo.png";
-import tafe from "../assets/tafe.png";
+import TractorCategory from "../components/TractorCategory";
 
 const NewTractors = () => {
   const [popularIndex, setPopularIndex] = useState(0);
@@ -65,6 +56,12 @@ const NewTractors = () => {
   const [priceRange, setPriceRange] = useState([0, 1000000]);
   const [sortBy, setSortBy] = useState("popular");
   const [openIndex, setOpenIndex] = useState(null);
+  const [popularBrands, setPopularBrands] = useState([]);
+  const [brandsLoading, setBrandsLoading] = useState(true);
+  // Add these with your other state declarations
+  const [brandOptions, setBrandOptions] = useState(["All Brands"]);
+  const [hpOptions, setHpOptions] = useState(["All HP"]);
+  const [categoryOptions, setCategoryOptions] = useState(["All Categories"]);
   // Add this with other useState declarations:
   const navigate = useNavigate();
   const location = useLocation();
@@ -94,20 +91,86 @@ const NewTractors = () => {
     });
   };
 
- const popularBrands = [
-  { name: "Mahindra", logo: "https://cdn.simpleicons.org/mahindra/FF0000" },
-  { name: "John Deere", logo: "https://cdn.simpleicons.org/johndeere/367C2B" },
-  { name: "Swaraj", logo: swalogo },
-  { name: "TAFE", logo: tafe },
-  { name: "New Holland", logo: newinfo },
-  { name: "Sonalika", logo: sonalika },
-  { name: "Escorts", logo: escorts },
-  { name: "Eicher", logo: eicher },
-  { name: "Kubota", logo: kubota },
-  { name: "Massey Ferguson", logo: massey },
-  { name: "Force Motors", logo: force },
-  { name: "Indo Farm", logo: indo },
-];
+  // Add this useEffect after your other useEffects
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        // Fetch brands
+        const brandResponse = await apiHelper.get("/brand");
+        let brandsData = [];
+        if (
+          brandResponse &&
+          brandResponse.data &&
+          Array.isArray(brandResponse.data)
+        ) {
+          brandsData = brandResponse.data;
+        } else if (Array.isArray(brandResponse)) {
+          brandsData = brandResponse;
+        }
+
+        const brands = brandsData
+          .filter((brand) => brand.status === "ACTIVE")
+          .map((item) => item.brandName || item.name || "Unknown");
+
+        setBrandOptions(["All Brands", ...brands]);
+
+        // Fetch categories
+        const categoryResponse = await apiHelper.get("/category");
+        let categoriesData = [];
+        if (
+          categoryResponse &&
+          categoryResponse.data &&
+          Array.isArray(categoryResponse.data)
+        ) {
+          categoriesData = categoryResponse.data;
+        } else if (Array.isArray(categoryResponse)) {
+          categoriesData = categoryResponse;
+        }
+
+        const categories = categoriesData
+          .filter((cat) => cat.status === "ACTIVE")
+          .map((item) => item.categoryName || item.name || "Unknown");
+
+        setCategoryOptions(["All Categories", ...categories]);
+
+        // Fetch HP options from tractors
+        const tractorResponse = await apiHelper.get("/website-variants");
+        let tractorsData = [];
+        if (
+          tractorResponse &&
+          tractorResponse.data &&
+          Array.isArray(tractorResponse.data)
+        ) {
+          tractorsData = tractorResponse.data;
+        } else if (Array.isArray(tractorResponse)) {
+          tractorsData = tractorResponse;
+        }
+
+        // Extract HP values from tractors and sort them
+        const hpValues = tractorsData
+          .map((t) => t.horsePower || t.hp) // Check both possible field names
+          .filter((hp) => hp !== null && hp !== undefined && hp !== "")
+          .map((hp) => {
+            // If it's a string with "HP", extract the number
+            if (typeof hp === "string" && hp.includes("HP")) {
+              return parseInt(hp.replace("HP", "").trim());
+            }
+            return parseInt(hp);
+          })
+          .filter((hp) => !isNaN(hp))
+          .sort((a, b) => a - b);
+
+        // Create unique HP options with "HP" suffix
+        const uniqueHpOptions = [...new Set(hpValues)].map((hp) => `${hp} HP`);
+
+        setHpOptions(["All HP", ...uniqueHpOptions]);
+      } catch (error) {
+        console.error("Failed to fetch filter options:", error);
+      }
+    };
+
+    fetchFilterOptions();
+  }, []);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -468,18 +531,75 @@ const NewTractors = () => {
     ...latestTractors,
     ...upcomingTractors,
   ];
-  const brandOptions = [
-    "All Brands",
-    ...new Set(allTractors.map((t) => t.brand)),
-  ];
-  const hpOptions = ["All HP", ...new Set(allTractors.map((t) => t.hp))];
+
   const transmissionOptions = [
     "All Transmissions",
     "Manual",
     "Synchronous",
     "Constant Mesh",
   ];
-  const categoryOptions = ["All Categories", "Small", "Medium", "Big",];
+
+  // useEffect(() => {
+  //   const fetchFilterOptions = async () => {
+  //     try {
+  //       // Fetch brands
+  //       const brandResponse = await apiHelper.get("/brand");
+  //       let brandsData = [];
+  //       if (brandResponse && brandResponse.data && Array.isArray(brandResponse.data)) {
+  //         brandsData = brandResponse.data;
+  //       } else if (Array.isArray(brandResponse)) {
+  //         brandsData = brandResponse;
+  //       }
+
+  //       const brands = brandsData
+  //         .filter(brand => brand.status === "ACTIVE")
+  //         .map(item => item.brandName || item.name || "Unknown");
+
+  //       setBrandOptions(["All Brands", ...brands]);
+
+  //       // Fetch categories
+  //       const categoryResponse = await apiHelper.get("/category");
+  //       let categoriesData = [];
+  //       if (categoryResponse && categoryResponse.data && Array.isArray(categoryResponse.data)) {
+  //         categoriesData = categoryResponse.data;
+  //       } else if (Array.isArray(categoryResponse)) {
+  //         categoriesData = categoryResponse;
+  //       }
+
+  //       const categories = categoriesData
+  //         .filter(cat => cat.status === "ACTIVE")
+  //         .map(item => item.categoryName || item.name || "Unknown");
+
+  //       setCategoryOptions(["All Categories", ...categories]);
+
+  //       // Fetch HP options from tractors
+  //       const tractorResponse = await apiHelper.get("/tractor");
+  //       let tractorsData = [];
+  //       if (tractorResponse && tractorResponse.data && Array.isArray(tractorResponse.data)) {
+  //         tractorsData = tractorResponse.data;
+  //       } else if (Array.isArray(tractorResponse)) {
+  //         tractorsData = tractorResponse;
+  //       }
+
+  //       const hpValues = tractorsData
+  //         .map(t => t.hp)
+  //         .filter(hp => hp)
+  //         .sort((a, b) => {
+  //           const numA = parseInt(a);
+  //           const numB = parseInt(b);
+  //           return numA - numB;
+  //         });
+
+  //       setHpOptions(["All HP", ...new Set(hpValues)]);
+
+  //     } catch (error) {
+  //       console.error("Failed to fetch filter options:", error);
+  //     }
+  //   };
+
+  //   fetchFilterOptions();
+  // }, []);
+
   const maxPrice = 1000000;
 
   const clearFilters = () => {
@@ -511,16 +631,16 @@ const NewTractors = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
- useEffect(() => {
-  intervalRef.current = setInterval(() => {
-    if (window.innerWidth >= 640) {
-      setPopularIndex((prev) => (prev + 1) % popularTractors.length);
-      setLatestIndex((prev) => (prev + 1) % latestTractors.length);
-      setUpcomingIndex((prev) => (prev + 1) % upcomingTractors.length);
-    }
-  }, 3000);
-  return () => clearInterval(intervalRef.current);
-}, []);
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      if (window.innerWidth >= 640) {
+        setPopularIndex((prev) => (prev + 1) % popularTractors.length);
+        setLatestIndex((prev) => (prev + 1) % latestTractors.length);
+        setUpcomingIndex((prev) => (prev + 1) % upcomingTractors.length);
+      }
+    }, 3000);
+    return () => clearInterval(intervalRef.current);
+  }, []);
 
   const getVisibleTractors = (tractors, startIndex) => {
     const visible = [];
@@ -550,178 +670,194 @@ const NewTractors = () => {
     }, 3000);
   };
 
- const TractorCard = ({ tractor }) => (
-  <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col flex-shrink-0 w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]">
-    {/* Clickable Image */}
-    <Link to={`/tractor/${tractor.id}`} className="relative h-40 sm:h-44 overflow-hidden bg-gray-100 block">
-      <img
-        src={tractor.image}
-        alt={tractor.name}
-        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-      />
-      <div className="absolute top-2 left-2">
-        <span className="bg-green-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-          New
-        </span>
-      </div>
-      <button 
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          // Add wishlist logic here
-        }}
-        className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow hover:bg-gray-100 cursor-pointer"
+  const TractorCard = ({ tractor }) => (
+    <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col flex-shrink-0 w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]">
+      {/* Clickable Image */}
+      <Link
+        to={`/tractor/${tractor.id}`}
+        className="relative h-40 sm:h-44 overflow-hidden bg-gray-100 block"
       >
-        <Heart className="h-3.5 w-3.5 text-gray-500 hover:text-green-600" />
-      </button>
-    </Link>
-    
-    <div className="p-3 flex flex-col flex-1">
-      <div className="flex items-center justify-between mb-1">
-        {/* Clickable Brand Name */}
-        <Link to={`/tractor/${tractor.id}`} className="text-xs font-semibold text-green-600 hover:text-green-700 transition-colors">
-          {tractor.brand}
-        </Link>
-        <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-          <MapPin className="h-3 w-3 flex-shrink-0" />
-          <span className="truncate">{tractor.location}</span>
-        </div>
-      </div>
-      <div className="flex items-center justify-between mb-1">
-        {/* Clickable Product Name */}
-        <Link to={`/tractor/${tractor.id}`} className="text-sm font-bold text-gray-900 mb-2 line-clamp-1 hover:text-green-600 transition-colors">
-          {tractor.name}
-        </Link>
-        <div className="flex items-center gap-1">
-          <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-          <span className="text-xs font-semibold text-gray-700">
-            {tractor.rating}
+        <img
+          src={tractor.image}
+          alt={tractor.name}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+        />
+        <div className="absolute top-2 left-2">
+          <span className="bg-green-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+            New
           </span>
         </div>
-      </div>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            // Add wishlist logic here
+          }}
+          className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow hover:bg-gray-100 cursor-pointer"
+        >
+          <Heart className="h-3.5 w-3.5 text-gray-500 hover:text-green-600" />
+        </button>
+      </Link>
 
-      <div className="mt-auto pt-2 border-t">
-        <div className="flex items-center justify-between">
-          <p className="text-sm font-black text-gray-900">
-            ₹{tractor.price.toLocaleString()}
-          </p>
+      <div className="p-3 flex flex-col flex-1">
+        <div className="flex items-center justify-between mb-1">
+          {/* Clickable Brand Name */}
           <Link
             to={`/tractor/${tractor.id}`}
-            className="bg-green-700 hover:bg-green-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
+            className="text-xs font-semibold text-green-600 hover:text-green-700 transition-colors"
           >
-            Details
+            {tractor.brand}
           </Link>
+          <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+            <MapPin className="h-3 w-3 flex-shrink-0" />
+            <span className="truncate">{tractor.location}</span>
+          </div>
+        </div>
+        <div className="flex items-center justify-between mb-1">
+          {/* Clickable Product Name */}
+          <Link
+            to={`/tractor/${tractor.id}`}
+            className="text-sm font-bold text-gray-900 mb-2 line-clamp-1 hover:text-green-600 transition-colors"
+          >
+            {tractor.name}
+          </Link>
+          <div className="flex items-center gap-1">
+            <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+            <span className="text-xs font-semibold text-gray-700">
+              {tractor.rating}
+            </span>
+          </div>
+        </div>
+
+        <div className="mt-auto pt-2 border-t">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-black text-gray-900">
+              ₹{tractor.price.toLocaleString()}
+            </p>
+            <Link
+              to={`/tractor/${tractor.id}`}
+              className="bg-green-700 hover:bg-green-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
+            >
+              Details
+            </Link>
+          </div>
         </div>
       </div>
     </div>
-  </div>
-);
- const SliderSection = ({
-  title,
-  subtitle,
-  tractors,
-  index,
-  setIndex,
-  linkTo,
-  badgeColor,
-}) => {
-  const sliderRef = useRef(null);
-  const [isScrolling, setIsScrolling] = useState(false);
-  const scrollTimeoutRef = useRef(null);
+  );
+  const SliderSection = ({
+    title,
+    subtitle,
+    tractors,
+    index,
+    setIndex,
+    linkTo,
+    badgeColor,
+  }) => {
+    const sliderRef = useRef(null);
+    const [isScrolling, setIsScrolling] = useState(false);
+    const scrollTimeoutRef = useRef(null);
 
-  // Show arrows when scrolling/touching on mobile
-  useEffect(() => {
-    const slider = sliderRef.current;
-    if (!slider) return;
+    // Show arrows when scrolling/touching on mobile
+    useEffect(() => {
+      const slider = sliderRef.current;
+      if (!slider) return;
 
-    const handleScroll = () => {
-      setIsScrolling(true);
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-      scrollTimeoutRef.current = setTimeout(() => {
-        setIsScrolling(false);
-      }, 1500);
+      const handleScroll = () => {
+        setIsScrolling(true);
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+        scrollTimeoutRef.current = setTimeout(() => {
+          setIsScrolling(false);
+        }, 1500);
+      };
+
+      slider.addEventListener("scroll", handleScroll, { passive: true });
+      slider.addEventListener("touchstart", handleScroll, { passive: true });
+
+      return () => {
+        slider.removeEventListener("scroll", handleScroll);
+        slider.removeEventListener("touchstart", handleScroll);
+        if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      };
+    }, []);
+
+    const scrollSlider = (direction) => {
+      if (!sliderRef.current) return;
+      const { scrollLeft, clientWidth } = sliderRef.current;
+      sliderRef.current.scrollTo({
+        left:
+          direction === "left"
+            ? scrollLeft - clientWidth * 0.8
+            : scrollLeft + clientWidth * 0.8,
+        behavior: "smooth",
+      });
     };
 
-    slider.addEventListener("scroll", handleScroll, { passive: true });
-    slider.addEventListener("touchstart", handleScroll, { passive: true });
-
-    return () => {
-      slider.removeEventListener("scroll", handleScroll);
-      slider.removeEventListener("touchstart", handleScroll);
-      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
-    };
-  }, []);
-
-  const scrollSlider = (direction) => {
-    if (!sliderRef.current) return;
-    const { scrollLeft, clientWidth } = sliderRef.current;
-    sliderRef.current.scrollTo({
-      left: direction === "left" 
-        ? scrollLeft - clientWidth * 0.8 
-        : scrollLeft + clientWidth * 0.8,
-      behavior: "smooth",
-    });
-  };
-
-  return (
-    <div className="">
-      {/* Title Layout */}
-      <div className="flex items-center justify-between mb-5">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <div className={`w-1.5 h-6 rounded-full ${badgeColor}`}></div>
-            <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-              {title}
-            </h3>
-          </div>
-          {subtitle && (
-            <p className="text-sm text-gray-500 ml-3.5">{subtitle}</p>
-          )}
-        </div>
-        <Link
-          to={linkTo}
-          className="text-green-600 hover:text-green-700 font-semibold text-sm flex items-center gap-1"
-        >
-          View All <ArrowRight className="h-4 w-4" />
-        </Link>
-      </div>
-
-      {/* MOBILE ONLY - Native scroll with arrows appearing on touch */}
-      <div className="sm:hidden relative">
-        {/* Left Arrow */}
-        <button
-          onClick={() => scrollSlider("left")}
-          className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
-            isScrolling ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-2"
-          }`}
-        >
-          <ChevronLeft className="w-4 h-4" />
-        </button>
-
-        {/* Scrollable Container */}
-        <div
-          ref={sliderRef}
-          className="flex overflow-x-auto gap-3 pb-4 px-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
-          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        >
-          {tractors.map((tractor) => (
-            <div key={tractor.id} className="snap-start w-[75vw] flex-shrink-0">
-              <TractorCard tractor={tractor} />
+    return (
+      <div className="">
+        {/* Title Layout */}
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className={`w-1.5 h-6 rounded-full ${badgeColor}`}></div>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+                {title}
+              </h3>
             </div>
-          ))}
+            {subtitle && (
+              <p className="text-sm text-gray-500 ml-3.5">{subtitle}</p>
+            )}
+          </div>
+          <Link
+            to={linkTo}
+            className="text-green-600 hover:text-green-700 font-semibold text-sm flex items-center gap-1"
+          >
+            View All <ArrowRight className="h-4 w-4" />
+          </Link>
         </div>
 
-        {/* Right Arrow */}
-        <button
-          onClick={() => scrollSlider("right")}
-          className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
-            isScrolling ? "opacity-100 translate-x-0" : "opacity-0 translate-x-2"
-          }`}
-        >
-          <ChevronRight className="w-4 h-4" />
-        </button>
-      </div>
-        
+        {/* MOBILE ONLY - Native scroll with arrows appearing on touch */}
+        <div className="sm:hidden relative">
+          {/* Left Arrow */}
+          <button
+            onClick={() => scrollSlider("left")}
+            className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+              isScrolling
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 -translate-x-2"
+            }`}
+          >
+            <ChevronLeft className="w-4 h-4" />
+          </button>
+
+          {/* Scrollable Container */}
+          <div
+            ref={sliderRef}
+            className="flex overflow-x-auto gap-3 pb-4 px-4 scrollbar-hide snap-x snap-mandatory scroll-smooth"
+            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          >
+            {tractors.map((tractor) => (
+              <div
+                key={tractor.id}
+                className="snap-start w-[75vw] flex-shrink-0"
+              >
+                <TractorCard tractor={tractor} />
+              </div>
+            ))}
+          </div>
+
+          {/* Right Arrow */}
+          <button
+            onClick={() => scrollSlider("right")}
+            className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
+              isScrolling
+                ? "opacity-100 translate-x-0"
+                : "opacity-0 translate-x-2"
+            }`}
+          >
+            <ChevronRight className="w-4 h-4" />
+          </button>
+        </div>
 
         {/* DESKTOP - Original code completely unchanged */}
         <div className="hidden sm:block relative px-8 sm:px-8 lg:px-10">
@@ -1374,6 +1510,10 @@ const NewTractors = () => {
         </div>
       </div>
 
+      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
+        <TractorCategory />
+      </div>
+
       {/* Slider Sections - Spacing classes fixed below to match old layout */}
       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-16 md:pt-20 lg:pt-24">
         <div className="mb-8 md:mb-14 lg:mb-20">
@@ -1412,47 +1552,60 @@ const NewTractors = () => {
       </div>
 
       {/* Popular Brands Marquee Section */}
-     {/* Popular Brands Marquee Section */}
-<div className="bg-white border-b border-gray-100">
-  <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 pt-16 md:pt-20 lg:pt-24">
-    <h3 className="text-center text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-6">
-      Popular{" "}
-      <span className="text-transparent bg-clip-text bg-green-600">
-        Tractor Brands
-      </span>
-    </h3>
-    <div className="relative overflow-hidden">
-      <div className="flex gap-8 animate-marquee">
-        {[...popularBrands, ...popularBrands].map((brand, idx) => (
-          <Link
-            key={idx}
-            to={`/tractors?type=new&brand=${encodeURIComponent(brand.name)}`}
-            className="flex flex-col items-center gap-2 flex-shrink-0 group cursor-pointer"
-          >
-            <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-50 border-2 border-gray-200 flex items-center justify-center group-hover:border-green-600 group-hover:shadow-md group-hover:bg-green-100 transition-all duration-300 overflow-hidden">
-              <img
-                src={brand.logo}
-                alt={brand.name}
-                className="w-full h-full object-contain p-3"
-                onError={(e) => {
-                  e.target.style.display = "none";
-                  e.target.nextSibling.style.display = "flex";
-                }}
-              />
-              <span className="text-base sm:text-lg font-black text-green-700 hidden">
-                {brand.name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase()}
-              </span>
-            </div>
-            <span className="text-xs font-medium text-gray-600 group-hover:text-green-700 transition-colors">
-              {brand.name}
+      <div className="bg-white border-b border-gray-100">
+        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 pt-16 md:pt-20 lg:pt-24">
+          <h3 className="text-center text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-6">
+            Popular{" "}
+            <span className="text-transparent bg-clip-text bg-green-600">
+              Tractor Brands
             </span>
-          </Link>
-        ))}
+          </h3>
+          <div className="relative overflow-hidden">
+            {brandsLoading ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
+              </div>
+            ) : popularBrands.length === 0 ? (
+              <p className="text-center text-gray-500 py-8">
+                No brands available
+              </p>
+            ) : (
+              <div className="flex gap-8 animate-marquee">
+                {[...popularBrands, ...popularBrands].map((brand, idx) => (
+                  <Link
+                    key={idx}
+                    to={`/tractors?type=new&brand=${encodeURIComponent(brand.name)}`}
+                    className="flex flex-col items-center gap-2 flex-shrink-0 group cursor-pointer"
+                  >
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-50 border-2 border-gray-200 flex items-center justify-center group-hover:border-green-600 group-hover:shadow-md group-hover:bg-green-100 transition-all duration-300 overflow-hidden">
+                      <img
+                        src={brand.logo}
+                        alt={brand.name}
+                        className="w-full h-full object-contain p-3"
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                          e.target.nextSibling.style.display = "flex";
+                        }}
+                      />
+                      <span className="text-base sm:text-lg font-black text-green-700 hidden">
+                        {brand.name
+                          .split(" ")
+                          .map((w) => w[0])
+                          .join("")
+                          .slice(0, 2)
+                          .toUpperCase()}
+                      </span>
+                    </div>
+                    <span className="text-xs font-medium text-gray-600 group-hover:text-green-700 transition-colors">
+                      {brand.name}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-    </div>
-  </div>
-</div>
-
       {/* --- POPULAR COMPARISON HANDPICKS --- */}
 
       <div className="border-t border-gray-200 w-full">
@@ -1539,7 +1692,6 @@ const NewTractors = () => {
       <div className="relative lg:mt-12 bg-white overflow-hidden border-t border-gray-400">
         <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-16 md:pt-20 lg:pt-24 relative z-10">
           <div className="text-center mb-10">
-            
             <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-3">
               About <span className="text-green-700">Krushi Mall</span>
             </h2>
