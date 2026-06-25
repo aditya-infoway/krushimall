@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Search,
   ChevronDown,
@@ -20,47 +21,30 @@ import {
   Percent,
   CreditCard,
 } from "lucide-react";
-
 import { Listbox } from "@headlessui/react";
+import apiHelper from "../utils/apiHelper";
 
 const HeroSection = () => {
+  const navigate = useNavigate();
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
   const [touchStart, setTouchStart] = useState(null);
   const [touchEnd, setTouchEnd] = useState(null);
+
+  const [brands, setBrands] = useState([]);
+  const [models, setModels] = useState([]);
+  const [years, setYears] = useState([]);
+  const [loading, setLoading] = useState({
+    brands: false,
+    models: false,
+    years: false,
+  });
 
   const [vehicle, setVehicle] = useState({
     make: "",
     model: "",
     year: "",
   });
-
-  const tractorData = {
-    Mahindra: [
-      "575 DI",
-      "Arjun 605",
-      "JIVO 245",
-      "Nova 755",
-      "Arjun Novo 605 DI",
-    ],
-    "John Deere": [
-      "5310",
-      "5050D",
-      "5405 Gear Pro",
-      "6120 B",
-      "5310 PowerTech",
-    ],
-    Swaraj: ["744 FE", "855 FE", "963 FE", "717", "744 XT"],
-    TAFE: ["5900 DI", "Massey 245", "Massey 7250"],
-    Escorts: ["Farmtrac 60", "Farmtrac 45", "Powertrac 439"],
-    "New Holland": ["3630 TX", "3630 TX Plus", "Excel 4710"],
-    Sonalika: ["DI 745", "DI 750 III", "Worldtrac 90"],
-    Eicher: ["380", "485", "557"],
-  };
-
-  const years = ["2024", "2023", "2022", "2021", "2020", "2019"];
-  const makes = Object.keys(tractorData);
-  const models = vehicle.make ? tractorData[vehicle.make] : [];
 
   const slides = [
     {
@@ -150,6 +134,173 @@ const HeroSection = () => {
   };
 
   const currentSlideData = slides[currentSlide];
+
+  // Fetch brands from API
+  useEffect(() => {
+    const fetchBrands = async () => {
+      setLoading((prev) => ({ ...prev, brands: true }));
+      try {
+        const response = await apiHelper.get("/brand");
+        let brandsData = [];
+        if (response && response.data && Array.isArray(response.data)) {
+          brandsData = response.data;
+        } else if (Array.isArray(response)) {
+          brandsData = response;
+        }
+
+        const brandNames = brandsData
+          .filter((brand) => brand.status === "ACTIVE")
+          .map((item) => item.brandName || item.name || "Unknown")
+          .sort();
+
+        setBrands(brandNames);
+      } catch (error) {
+        console.error("Failed to fetch brands:", error);
+        setBrands([]);
+      } finally {
+        setLoading((prev) => ({ ...prev, brands: false }));
+      }
+    };
+    fetchBrands();
+  }, []);
+
+  // Fetch models when brand is selected - filtered by brand
+  useEffect(() => {
+    if (!vehicle.make) {
+      setModels([]);
+      setVehicle((prev) => ({ ...prev, model: "" }));
+      return;
+    }
+
+    const fetchModels = async () => {
+      setLoading((prev) => ({ ...prev, models: true }));
+      try {
+        // Fetch ALL models (no filter)
+        const response = await apiHelper.get("/model");
+        console.log("Models API Response:", response);
+
+        let modelsData = [];
+        if (response && response.data && Array.isArray(response.data)) {
+          modelsData = response.data;
+        } else if (Array.isArray(response)) {
+          modelsData = response;
+        }
+
+        // Filter models by brand name from the brand object
+        const filteredModels = modelsData.filter((item) => {
+          // Check if brand object exists with brandName
+          if (item.brand && item.brand.brandName) {
+            return (
+              item.brand.brandName.toLowerCase() === vehicle.make.toLowerCase()
+            );
+          }
+          // Fallback: check if brandName exists directly
+          if (item.brandName) {
+            return item.brandName.toLowerCase() === vehicle.make.toLowerCase();
+          }
+          return false;
+        });
+
+        console.log(`Filtered models for ${vehicle.make}:`, filteredModels);
+
+        // Extract model names
+        const modelNames = filteredModels
+          .map((item) => item.modelName)
+          .filter(Boolean)
+          .sort();
+
+        // Get unique model names
+        const uniqueModels = [...new Set(modelNames)];
+        setModels(uniqueModels);
+      } catch (error) {
+        console.error("Failed to fetch models:", error);
+        setModels([]);
+      } finally {
+        setLoading((prev) => ({ ...prev, models: false }));
+      }
+    };
+    fetchModels();
+  }, [vehicle.make]);
+
+  // Fetch years from API
+  useEffect(() => {
+    const fetchYears = async () => {
+      setLoading((prev) => ({ ...prev, years: true }));
+      try {
+        const response = await apiHelper.get("/model-year");
+        console.log("Years API Response:", response);
+
+        let yearsData = [];
+        if (response && response.data && Array.isArray(response.data)) {
+          yearsData = response.data;
+        } else if (Array.isArray(response)) {
+          yearsData = response;
+        }
+
+        // Extract year values from objects
+        const yearList = yearsData
+          .map((item) => {
+            // Try different field names
+            return (
+              item.year ||
+              item.modelYear ||
+              item.manufacturingYear ||
+              (typeof item === "string" ? item : null)
+            );
+          })
+          .filter((year) => year && !isNaN(parseInt(year)))
+          .map((year) => parseInt(year).toString())
+          .sort((a, b) => parseInt(b) - parseInt(a));
+
+        // Get unique years
+        const uniqueYears = [...new Set(yearList)];
+
+        if (uniqueYears.length > 0) {
+          setYears(uniqueYears);
+        } else {
+          // Fallback years
+          const currentYear = new Date().getFullYear();
+          const fallbackYears = [];
+          for (let i = 0; i < 10; i++) {
+            fallbackYears.push((currentYear - i).toString());
+          }
+          setYears(fallbackYears);
+        }
+      } catch (error) {
+        console.error("Failed to fetch years:", error);
+        // Fallback years
+        const currentYear = new Date().getFullYear();
+        const fallbackYears = [];
+        for (let i = 0; i < 10; i++) {
+          fallbackYears.push((currentYear - i).toString());
+        }
+        setYears(fallbackYears);
+      } finally {
+        setLoading((prev) => ({ ...prev, years: false }));
+      }
+    };
+    fetchYears();
+  }, []);
+
+  // Handle search button click
+const handleSearch = () => {
+  // Check if brand is selected
+  if (!vehicle.make) {
+    // Show alert or toast message
+    alert("Please select a brand first");
+    return;
+  }
+
+  // Build query parameters
+  const params = new URLSearchParams();
+
+  if (vehicle.make) params.append("brand", vehicle.make);
+  if (vehicle.model) params.append("model", vehicle.model);
+  if (vehicle.year) params.append("year", vehicle.year);
+
+  // Navigate to tractor list page with filters
+  navigate(`/tractors?${params.toString()}`);
+};
 
   return (
     <section
@@ -278,9 +429,10 @@ const HeroSection = () => {
                             year: vehicle.year,
                           })
                         }
-                        options={makes}
+                        options={brands} // Changed from makes to brands
                         placeholder="Select Brand"
                         icon={<Tractor className="h-4 w-4" />}
+                        loading={loading.brands} // Add loading prop
                       />
                     </div>
                     <div>
@@ -292,12 +444,13 @@ const HeroSection = () => {
                         onChange={(value) =>
                           setVehicle({ ...vehicle, model: value })
                         }
-                        options={models}
+                        options={models} // Changed from models variable to models state
                         placeholder={
                           vehicle.make ? "Select Model" : "Select brand first"
                         }
                         disabled={!vehicle.make}
                         icon={<Wrench className="h-4 w-4" />}
+                        loading={loading.models} // Add loading prop
                       />
                     </div>
                     <div>
@@ -309,14 +462,18 @@ const HeroSection = () => {
                         onChange={(value) =>
                           setVehicle({ ...vehicle, year: value })
                         }
-                        options={years}
+                        options={years} // Changed from years variable to years state
                         placeholder="Select Year"
                         icon={<Clock className="h-4 w-4" />}
+                        loading={loading.years} // Add loading prop
                       />
                     </div>
                   </div>
 
-                  <button className="w-full cursor-pointer bg-green-700 hover:bg-green-800 text-white font-bold py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-green-700/20 hover:shadow-green-700/30 group">
+                  <button
+                    onClick={handleSearch}
+                    className="w-full cursor-pointer bg-green-700 hover:bg-green-800 text-white font-bold py-4 rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-lg shadow-green-700/20 hover:shadow-green-700/30 group"
+                  >
                     <Search className="h-5 w-5 group-hover:scale-110 transition-transform" />
                     <span>Search Tractor Parts</span>
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -344,21 +501,20 @@ const HeroSection = () => {
         </button>
 
         {/* Dots indicators */}
-      {/* Dots indicators - Hidden on mobile, visible on desktop */}
-<div className="absolute bottom-4 left-0 right-0 hidden md:flex justify-center items-center gap-3 z-30">
-  {slides.map((_, index) => (
-    <button
-      key={index}
-      onClick={() => goToSlide(index)}
-      className={`transition-all duration-300 rounded-full ${
-        currentSlide === index
-          ? "w-10 h-3 bg-green-700 shadow-lg"
-          : "w-3 h-3 bg-white/50 hover:bg-white/80"
-      }`}
-      aria-label={`Go to slide ${index + 1}`}
-    />
-  ))}
-</div>
+        {/* Dots indicators - Hidden on mobile, visible on desktop */}
+        <div className="absolute bottom-4 left-0 right-0 hidden md:flex justify-center items-center gap-3 z-30">
+          {slides.map((_, index) => (
+            <button
+              key={index}
+              onClick={() => goToSlide(index)}
+              className={`transition-all duration-300 rounded-full ${
+                currentSlide === index
+                  ? "w-10 h-3 bg-green-700 shadow-lg"
+                  : "w-3 h-3 bg-white/50 hover:bg-white/80"
+              }`}
+            />
+          ))}
+        </div>
       </div>
     </section>
   );
@@ -371,13 +527,16 @@ const CustomSelect = ({
   placeholder,
   disabled = false,
   icon,
+  loading = false,
 }) => {
   return (
     <Listbox value={value} onChange={onChange} disabled={disabled}>
       <div className="relative">
         <Listbox.Button
           className={`relative w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all ${
-            disabled ? "opacity-50 cursor-not-allowed" : "hover:border-gray-300 cursor-pointer"
+            disabled
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:border-gray-300 cursor-pointer"
           }`}
         >
           <div className="flex items-center gap-3">
@@ -398,7 +557,9 @@ const CustomSelect = ({
                 value={option}
                 className={({ active }) =>
                   `cursor-pointer px-4 py-3 text-sm transition-colors ${
-                    active ? "bg-green-50 text-green-600 font-medium" : "text-gray-700 hover:bg-gray-50"
+                    active
+                      ? "bg-green-50 text-green-600 font-medium"
+                      : "text-gray-700 hover:bg-gray-50"
                   }`
                 }
               >
@@ -415,6 +576,5 @@ const CustomSelect = ({
     </Listbox>
   );
 };
-
 
 export default HeroSection;
