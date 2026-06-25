@@ -172,6 +172,51 @@ const NewTractors = () => {
     fetchFilterOptions();
   }, []);
 
+
+  useEffect(() => {
+  const fetchPopularBrands = async () => {
+    try {
+      setBrandsLoading(true);
+      const response = await apiHelper.get("/brand");
+      console.log("Full API Response:", response);
+      
+      let brandsData = [];
+      if (response && response.data && Array.isArray(response.data)) {
+        brandsData = response.data;
+      } else if (Array.isArray(response)) {
+        brandsData = response;
+      }
+      
+      console.log("Brands Data:", brandsData);
+      console.log("First Brand:", brandsData[0]);
+
+      // Map brands with their logo URLs from the API
+      const activeBrands = brandsData
+        .filter(brand => brand.status === "ACTIVE")
+        .map(item => {
+          const logoUrl = apiHelper.image(item.image);
+          console.log(`Brand: ${item.brandName}, Logo URL: ${logoUrl}`);
+          
+          return {
+            name: item.brandName || item.name || "Unknown",
+            logo: logoUrl,
+            id: item.id || item.brandId
+          };
+        });
+
+      console.log("Active Brands with Logos:", activeBrands);
+      setPopularBrands(activeBrands);
+    } catch (error) {
+      console.error("Failed to fetch popular brands:", error);
+      setPopularBrands([]);
+    } finally {
+      setBrandsLoading(false);
+    }
+  };
+
+  fetchPopularBrands();
+}, []);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -1585,6 +1630,7 @@ const NewTractors = () => {
                         onError={(e) => {
                           e.target.style.display = "none";
                           e.target.nextSibling.style.display = "flex";
+                          
                         }}
                       />
                       <span className="text-base sm:text-lg font-black text-green-700 hidden">
