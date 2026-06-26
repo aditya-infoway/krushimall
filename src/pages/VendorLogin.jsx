@@ -1,16 +1,12 @@
 import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Shield, Truck, RotateCcw } from 'lucide-react';
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Shield, Store, TrendingUp, Users, ChevronRight } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
- 
-const Login = () => {
 
+const VendorLogin = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
-
-   const params = new URLSearchParams(location.search);
-  const role = params.get('role') || 'user';
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -20,32 +16,26 @@ const Login = () => {
   });
   const [errors, setErrors] = useState({});
 
+  const from = new URLSearchParams(location.search).get('redirect') || '/vendor/dashboard';
 
-   const from = new URLSearchParams(location.search).get('redirect') || '/cart';
-
- const handleSubmit = (e) => {
-  e.preventDefault();
-  const newErrors = validateForm();
-  if (Object.keys(newErrors).length > 0) {
-    setErrors(newErrors);
-    return;
-  }
-  
-  // UPDATE THIS - Login with role
-  login({ 
-    name: role === 'vendor' ? 'Vendor' : 'User', 
-    email: formData.email,
-    role: role 
-  });
-  
-  // UPDATE THIS - Redirect based on role
-  if (role === 'vendor') {
-    navigate('/vendor/dashboard', { replace: true });
-  } else {
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    const newErrors = validateForm();
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+    
+    // Login the vendor
+    login({ 
+      name: 'Vendor', 
+      email: formData.email,
+      role: 'vendor' 
+    });
+    
+    // Redirect to vendor dashboard
     navigate(from, { replace: true });
-  }
-};
-
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -73,15 +63,15 @@ const Login = () => {
     return newErrors;
   };
 
-
-  const benefits = [
-    { icon: Truck, text: 'Track your orders in real-time' },
-    { icon: RotateCcw, text: 'Easy returns and exchanges' },
+  const vendorBenefits = [
+    { icon: Store, text: 'List your products easily' },
+    { icon: Users, text: 'Reach thousands of customers' },
+    { icon: TrendingUp, text: 'Grow your business online' },
     { icon: Shield, text: 'Secure payment processing' },
   ];
 
   return (
-    <div className=" bg-gray-50 pb-8">
+    <div className="bg-gray-50 pb-8 min-h-screen flex items-center">
       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Side - Form */}
@@ -91,11 +81,12 @@ const Login = () => {
                 <Link to="/" className="inline-block text-2xl font-bold text-green-600 tracking-tight mb-6">
                   Krushi<span className="text-gray-900">Mall</span>
                 </Link>
+              
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
-                  Welcome Back 👋
+                  Welcome Back Vendor 👋
                 </h1>
                 <p className="text-gray-600">
-                  Login to access your account and continue shopping
+                  Login to manage your products and orders
                 </p>
               </div>
 
@@ -115,7 +106,7 @@ const Login = () => {
                       className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
                         errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
                       }`}
-                      placeholder="your@email.com"
+                      placeholder="vendor@email.com"
                     />
                   </div>
                   {errors.email && (
@@ -129,7 +120,7 @@ const Login = () => {
                     <label className="block text-sm font-medium text-gray-700">
                       Password
                     </label>
-                    <Link to="/forgot-password" className="text-xs text-green-600 hover:text-green-700 font-medium">
+                    <Link to="/vendor/forgot-password" className="text-xs text-green-600 hover:text-green-700 font-medium">
                       Forgot Password?
                     </Link>
                   </div>
@@ -159,54 +150,64 @@ const Login = () => {
                 </div>
 
                 {/* Remember Me */}
-                <div className="flex items-center">
-                  <input
-                    type="checkbox"
-                    name="rememberMe"
-                    checked={formData.rememberMe}
-                    onChange={handleChange}
-                    className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
-                  />
-                  <label className="ml-2 text-sm text-gray-600">
-                    Remember me
-                  </label>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center">
+                    <input
+                      type="checkbox"
+                      name="rememberMe"
+                      checked={formData.rememberMe}
+                      onChange={handleChange}
+                      className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                    />
+                    <label className="ml-2 text-sm text-gray-600">
+                      Remember me
+                    </label>
+                  </div>
+                  <Link to="/login?role=user" className="text-sm text-gray-500 hover:text-green-600 transition-colors">
+                    Login as Customer?
+                  </Link>
                 </div>
 
                 {/* Submit */}
                 <button
                   type="submit"
-                  className="w-full cursor-pointer bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 group"
+                  className="w-full cursor-pointer bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 group shadow-lg shadow-green-700/20 hover:shadow-green-700/40"
                 >
-                  Log In
+                  <Store className="h-5 w-5" />
+                  Vendor Login
                   <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                 </button>
 
                 {/* Register Link */}
                 <p className="text-center text-sm text-gray-600">
-                  Don't have an account?{' '}
-                  <Link to={`/register?role=${role}`}  className="text-green-600 hover:text-green-700 font-semibold">
-                    Sign Up Now
+                  Don't have a vendor account?{' '}
+                  <Link to="/register?role=vendor" className="text-green-600 hover:text-green-700 font-semibold">
+                    Register as Vendor
                   </Link>
                 </p>
               </form>
-            
             </div>
           </div>
 
           {/* Right Side - Benefits */}
           <div className="hidden lg:block">
             <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 md:p-12 text-white">
-              <h2 className="text-2xl md:text-3xl font-bold mb-6">
-                Why Create an Account?
-              </h2>
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center">
+                  <Store className="h-6 w-6 text-white" />
+                </div>
+                <h2 className="text-2xl md:text-3xl font-bold">
+                  Vendor Dashboard
+                </h2>
+              </div>
               <p className="text-gray-300 mb-8">
-                Join thousands of satisfied customers who trust KrushiMall for their auto parts needs.
+                Login to manage your business, track orders, and grow your sales with KrushiMall.
               </p>
               
               <div className="space-y-6 mb-8">
-                {benefits.map((benefit, index) => (
-                  <div key={index} className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                {vendorBenefits.map((benefit, index) => (
+                  <div key={index} className="flex items-start gap-4 group hover:bg-white/5 p-3 rounded-xl transition-all duration-300">
+                    <div className="flex-shrink-0 w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center group-hover:bg-green-600/30 transition-colors">
                       <benefit.icon className="h-5 w-5 text-green-400" />
                     </div>
                     <div>
@@ -234,10 +235,21 @@ const Login = () => {
                       ))}
                     </div>
                     <p className="text-sm text-gray-400">
-                      Trusted by 10,000+ customers
+                      Join 500+ trusted vendors
                     </p>
                   </div>
                 </div>
+              </div>
+
+              {/* Quick Link to Customer Login */}
+              <div className="mt-6 pt-6 border-t border-gray-700">
+                <Link 
+                  to="/login" 
+                  className="flex items-center justify-between text-gray-400 hover:text-white transition-colors group"
+                >
+                  <span>Login as Customer instead?</span>
+                  <ChevronRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
+                </Link>
               </div>
             </div>
           </div>
@@ -247,4 +259,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default VendorLogin;

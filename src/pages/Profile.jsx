@@ -29,19 +29,25 @@ import {
   Eye,
   Trash2,
   Plus,
+  Globe,
+  Home,
 } from "lucide-react";
 
 const Profile = () => {
   const [activeTab, setActiveTab] = useState("profile");
   const [isEditing, setIsEditing] = useState(false);
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
-  const [userData, setUserData] = useState({
-    name: "Rajesh Kumar",
-    email: "rajesh.kumar@email.com",
-    phone: "+91 98765 43210",
-    location: "Jaipur, Rajasthan",
-    avatar: null,
-  });
+const [userData, setUserData] = useState({
+  name: "Rajesh Kumar",
+  email: "rajesh.kumar@email.com",
+  phone: "+91 98765 43210",
+  avatar: null,
+  address: "123, Main Street, Near City Center",
+  city: "Jaipur",
+  state: "Rajasthan",
+  pincode: "302001",
+  country: "India",
+});
 
   const [orders] = useState([
     {
@@ -109,26 +115,13 @@ const Profile = () => {
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
     {
-      id: "orders",
-      label: "My Orders",
+      id: "",
+      label: "Move to DashBoard",
       icon: Package,
-      link: "/orders",
-      count: orders.length,
+     
+   
     },
-    {
-      id: "wishlist",
-      label: "Wishlist",
-      icon: Heart,
-      link: "/wishlist",
-      count: wishlistItems.length,
-    },
-
-    {
-      id: "Booked Services",
-      label: "Booked Services",
-      icon: Heart,
-      link: "/booking-history",
-    },
+   
     { id: "settings", label: "Settings", icon: Settings },
   ];
 
@@ -171,25 +164,25 @@ const Profile = () => {
   // Stats for profile
   const stats = [
     {
-      label: "Total Orders",
+      label: "Total Enquiry",
       value: "12",
       icon: Package,
       color: "bg-green-50 text-green-600",
     },
     {
-      label: "Wishlist",
+      label: "Follow-ups Attand",
       value: wishlistItems.length.toString(),
       icon: Heart,
       color: "bg-red-50 text-red-500",
     },
     {
-      label: "Reviews",
+      label: "Total Product",
       value: "5",
       icon: Star,
       color: "bg-yellow-50 text-yellow-600",
     },
     {
-      label: "Points",
+      label: "Covergation Ratio",
       value: "1,250",
       icon: Award,
       color: "bg-purple-50 text-purple-600",
@@ -346,83 +339,144 @@ const Profile = () => {
                       )}
                     </button>
                   </div>
+<div className="grid md:grid-cols-2 gap-6">
+  {/* Row 1: Name & Email */}
+  <div>
+    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+      Full Name <span className="text-red-500">*</span>
+    </label>
+    <div className="relative">
+      <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <input
+        type="text"
+        value={userData.name}
+        disabled={!isEditing}
+        onChange={(e) => setUserData({ ...userData, name: e.target.value })}
+        className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-xl bg-white disabled:bg-gray-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all"
+      />
+    </div>
+  </div>
 
-                  <div className="grid md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                        Full Name
-                      </label>
-                      <div className="relative">
-                        <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <input
-                          type="text"
-                          value={userData.name}
-                          disabled={!isEditing}
-                          onChange={(e) =>
-                            setUserData({ ...userData, name: e.target.value })
-                          }
-                          className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-xl bg-white disabled:bg-gray-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all"
-                        />
-                      </div>
-                    </div>
+  <div>
+    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+      Email Address <span className="text-red-500">*</span>
+    </label>
+    <div className="relative">
+      <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <input
+        type="email"
+        value={userData.email}
+        disabled={!isEditing}
+        onChange={(e) => setUserData({ ...userData, email: e.target.value })}
+        className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-xl bg-white disabled:bg-gray-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all"
+      />
+    </div>
+  </div>
 
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                        Email Address
-                      </label>
-                      <div className="relative">
-                        <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <input
-                          type="email"
-                          value={userData.email}
-                          disabled={!isEditing}
-                          onChange={(e) =>
-                            setUserData({ ...userData, email: e.target.value })
-                          }
-                          className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-xl bg-white disabled:bg-gray-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all"
-                        />
-                      </div>
-                    </div>
+  {/* Row 2: Phone & Address (full width) */}
+  <div>
+    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+      Phone Number <span className="text-red-500">*</span>
+    </label>
+    <div className="relative">
+      <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <input
+        type="tel"
+        value={userData.phone}
+        disabled={!isEditing}
+        onChange={(e) => setUserData({ ...userData, phone: e.target.value })}
+        className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-xl bg-white disabled:bg-gray-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all"
+      />
+    </div>
+  </div>
 
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                        Phone Number
-                      </label>
-                      <div className="relative">
-                        <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <input
-                          type="tel"
-                          value={userData.phone}
-                          disabled={!isEditing}
-                          onChange={(e) =>
-                            setUserData({ ...userData, phone: e.target.value })
-                          }
-                          className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-xl bg-white disabled:bg-gray-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all"
-                        />
-                      </div>
-                    </div>
+  <div>
+    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+      Address <span className="text-red-500">*</span>
+    </label>
+    <div className="relative">
+      <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+      <textarea
+        value={userData.address}
+        disabled={!isEditing}
+        onChange={(e) => setUserData({ ...userData, address: e.target.value })}
+        rows="1"
+        className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-xl bg-white disabled:bg-gray-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all resize-none"
+        placeholder="123, Main Street"
+      />
+    </div>
+  </div>
 
-                    <div>
-                      <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                        Location
-                      </label>
-                      <div className="relative">
-                        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        <input
-                          type="text"
-                          value={userData.location}
-                          disabled={!isEditing}
-                          onChange={(e) =>
-                            setUserData({
-                              ...userData,
-                              location: e.target.value,
-                            })
-                          }
-                          className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-xl bg-white disabled:bg-gray-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all"
-                        />
-                      </div>
-                    </div>
-                  </div>
+  {/* Row 3: Country & State */}
+  <div>
+    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+      Country <span className="text-red-500">*</span>
+    </label>
+    <div className="relative">
+      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <input
+        type="text"
+        value={userData.country}
+        disabled={!isEditing}
+        onChange={(e) => setUserData({ ...userData, country: e.target.value })}
+        className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-xl bg-white disabled:bg-gray-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all"
+        placeholder="India"
+      />
+    </div>
+  </div>
+
+  <div>
+    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+      State <span className="text-red-500">*</span>
+    </label>
+    <div className="relative">
+      <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <input
+        type="text"
+        value={userData.state}
+        disabled={!isEditing}
+        onChange={(e) => setUserData({ ...userData, state: e.target.value })}
+        className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-xl bg-white disabled:bg-gray-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all"
+        placeholder="Maharashtra"
+      />
+    </div>
+  </div>
+
+  {/* Row 4: City & Pincode */}
+  <div>
+    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+      City <span className="text-red-500">*</span>
+    </label>
+    <div className="relative">
+      <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <input
+        type="text"
+        value={userData.city}
+        disabled={!isEditing}
+        onChange={(e) => setUserData({ ...userData, city: e.target.value })}
+        className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-xl bg-white disabled:bg-gray-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all"
+        placeholder="Mumbai"
+      />
+    </div>
+  </div>
+
+  <div>
+    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+      Pincode <span className="text-red-500">*</span>
+    </label>
+    <div className="relative">
+      <Home className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+      <input
+        type="text"
+        value={userData.pincode}
+        disabled={!isEditing}
+        onChange={(e) => setUserData({ ...userData, pincode: e.target.value })}
+        className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-xl bg-white disabled:bg-gray-50 disabled:cursor-not-allowed focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all"
+        placeholder="400001"
+      />
+    </div>
+  </div>
+</div>
 
                   {isEditing && (
                     <div className="mt-6 pt-6 border-t border-gray-100 flex gap-3">

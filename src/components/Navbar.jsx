@@ -36,6 +36,7 @@ import {
   GitCompare,
   Scale,
   CalendarCheck,
+    Store,
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -439,15 +440,15 @@ const Navbar = () => {
                         className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
                       >
                         <LogIn className="h-4 w-4" />
-                        Sign In
+                        User
                       </Link>
                       <Link
-                        to="/register"
+                        to="/vendor-login"
                         onClick={() => setUserMenuOpen(false)}
                         className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
                       >
                         <UserPlus className="h-4 w-4" />
-                        Register
+                       Vendor
                       </Link>
                     </div>
                   )}
@@ -668,15 +669,15 @@ const Navbar = () => {
                   className="flex items-center gap-3 p-3 bg-green-600 rounded-xl text-white hover:shadow-lg hover:shadow-green-600/30 transition-all duration-300"
                 >
                   <LogIn className="h-5 w-5" />
-                  <span className="font-semibold text-sm">Sign In</span>
+                  <span className="font-semibold text-sm">User</span>
                 </Link>
                 <Link
-                  to="/register"
+                  to="/vendor-login"
                   onClick={() => setMobileMenuOpen(false)}
                   className="flex items-center gap-3 p-3 bg-white/10 rounded-xl text-white hover:bg-white/20 transition-all duration-300"
                 >
                   <UserPlus className="h-5 w-5" />
-                  <span className="font-semibold text-sm">Register</span>
+                  <span className="font-semibold text-sm">Vendor</span>
                 </Link>
               </div>
             )}
