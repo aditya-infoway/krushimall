@@ -1,5 +1,5 @@
 import toast from 'react-hot-toast';
-import { ShoppingCart, Heart, Trash2, Package, Lock, CheckCircle, X } from 'lucide-react';
+import { ShoppingCart, Heart, Trash2, Package, Lock, CheckCircle, X, AlertCircle } from 'lucide-react';
 
 // Common animation wrapper
 const ToastWrapper = ({ t, children, borderColor, closeColor }) => (
@@ -156,6 +156,66 @@ export const showSuccessToast = (message) => {
     </ToastWrapper>
   ), {
     duration: 3000,
+    position: 'bottom-right',
+  });
+};
+
+// ADD THIS: Error Toast
+export const showErrorToast = (message) => {
+  toast.custom((t) => (
+    <ToastWrapper t={t} borderColor="border-red-200" closeColor="text-red-500 hover:text-red-600 hover:bg-red-50">
+      <div className="flex-1 w-0 p-4">
+        <div className="flex items-start gap-3">
+          <IconBox bg="bg-red-100" icon={<AlertCircle className="h-5 w-5 text-red-600" />} />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-gray-900">Error!</p>
+            <p className="mt-1 text-xs text-gray-500">{message}</p>
+          </div>
+        </div>
+      </div>
+    </ToastWrapper>
+  ), {
+    duration: 4000,
+    position: 'bottom-right',
+  });
+};
+
+// ADD THIS: Info Toast (optional but useful)
+export const showInfoToast = (message) => {
+  toast.custom((t) => (
+    <ToastWrapper t={t} borderColor="border-blue-200" closeColor="text-blue-500 hover:text-blue-600 hover:bg-blue-50">
+      <div className="flex-1 w-0 p-4">
+        <div className="flex items-start gap-3">
+          <IconBox bg="bg-blue-100" icon={<AlertCircle className="h-5 w-5 text-blue-600" />} />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-gray-900">Info</p>
+            <p className="mt-1 text-xs text-gray-500">{message}</p>
+          </div>
+        </div>
+      </div>
+    </ToastWrapper>
+  ), {
+    duration: 3000,
+    position: 'bottom-right',
+  });
+};
+
+// ADD THIS: Warning Toast (optional but useful)
+export const showWarningToast = (message) => {
+  toast.custom((t) => (
+    <ToastWrapper t={t} borderColor="border-yellow-200" closeColor="text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50">
+      <div className="flex-1 w-0 p-4">
+        <div className="flex items-start gap-3">
+          <IconBox bg="bg-yellow-100" icon={<AlertCircle className="h-5 w-5 text-yellow-600" />} />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-gray-900">Warning</p>
+            <p className="mt-1 text-xs text-gray-500">{message}</p>
+          </div>
+        </div>
+      </div>
+    </ToastWrapper>
+  ), {
+    duration: 4000,
     position: 'bottom-right',
   });
 };
