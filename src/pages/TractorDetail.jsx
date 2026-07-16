@@ -800,7 +800,7 @@ const TractorDetails = () => {
     engineType: hasValidValue(d.engineType) ? d.engineType : null,
     fuelType: hasValidValue(d.fuelType) ? d.fuelType : null,
     cylinders: hasValidValue(d.numberOfCylinders) ? d.numberOfCylinders : null,
-    ratedRPM: hasValidValue(d.ratedRPM) ? d.ratedRPM : null,
+    ratedRpm: hasValidValue(d.ratedRpm) ? d.ratedRpm : null,
     aspiratedType: hasValidValue(d.aspiratedType) ? d.aspiratedType : null,
     emissionNorms: hasValidValue(d.emissionNorms) ? d.emissionNorms : null,
     coolingSystem: hasValidValue(d.coolingSystem) ? d.coolingSystem : null,
@@ -1290,8 +1290,9 @@ const TractorDetails = () => {
               {/* Core condition rows */}
               <div className="border-t border-gray-100">
                 <DetailRow
-                  label="Tyre Condition"
-                  value={tractor.tyreCondition}
+                  label="No. of Cylinders"
+                  value={tractor.cylinders}
+               
                 />
                 <DetailRow
                   label="Engine Condition"
@@ -1691,11 +1692,11 @@ const ProductDetailsTab = ({ tractor }) => (
       <div>
         <DetailRow label="Horse Power" value={tractor.hp} />
         <DetailRow label="Cubic Capacity" value={tractor.cc} />
-        <DetailRow label="Drive Type" value={tractor.drive} />
-        <DetailRow label="Tyre Condition" value={tractor.tyreCondition} />
+      <DetailRow label="Engine Condition" value={tractor.engineCondition} />
+      
       </div>
       <div>
-        <DetailRow label="Engine Condition" value={tractor.engineCondition} />
+       
         <DetailRow label="RC Available" value={tractor.rc} />
         <DetailRow label="Stock Status" value={tractor.stockStatus} />
         <DetailRow label="Launch Year" value={tractor.launchYear} last />
@@ -1713,7 +1714,7 @@ const EngineTab = ({ tractor }) => (
       <DetailRow label="Horse Power" value={tractor.hp} />
       <DetailRow label="No. of Cylinders" value={tractor.cylinders} />
       <DetailRow label="Cubic Capacity" value={tractor.cc} />
-      <DetailRow label="Rated RPM" value={tractor.ratedRPM} />
+      <DetailRow label="Rated RPM" value={tractor.ratedRpm} />
       <DetailRow label="Aspirated Type" value={tractor.aspiratedType} />
       <DetailRow label="Emission Norms" value={tractor.emissionNorms} last />
     </SectionCard>
