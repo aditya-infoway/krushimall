@@ -6,35 +6,86 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
+
+// Automatically attach JWT token to every request
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("webToken");
+
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/api$/, "");
 
 const apiHelper = {
-  // Fetch API data
-  get: async (url, params = {}) => {
-    const response = await api.get(url, { params });
+  // GET
+  // get: async (url, params = {}) => {
+  //   const response = await api.get(url, { params });
+  //   return response.data;
+  // },
+
+  get: async (url, config = {}) => {
+  const response = await api.get(url, config);
+  return response.data;
+},
+
+  // POST (Create)
+  post: async (url, data = {}, config = {}) => {
+    const response = await api.post(url, data, config);
     return response.data;
   },
 
-  // ✅ FIXED: Get image URL
+  // PUT (Update Entire Resource)
+  put: async (url, data = {}, config = {}) => {
+    const response = await api.put(url, data, config);
+    return response.data;
+  },
+
+  // PATCH (Partial Update)
+  patch: async (url, data = {}, config = {}) => {
+    const response = await api.patch(url, data, config);
+    return response.data;
+  },
+
+  // DELETE
+  delete: async (url, config = {}) => {
+    const response = await api.delete(url, config);
+    return response.data;
+  },
+
+  // Upload File
+  upload: async (url, formData, config = {}) => {
+    const response = await api.post(url, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+      ...config,
+    });
+    return response.data;
+  },
+
+  // Image URL Helper
   image: (path) => {
     if (!path) return "/mah.png";
 
-    // If it's already a full URL
     if (path.startsWith("http")) {
       return path;
     }
 
-    // ✅ If path already has /uploads/, just add base URL (no extra /uploads/)
     if (path.startsWith("/uploads/")) {
       return `${BASE_URL}${path}`;
     }
 
-    // ✅ If path starts with / but not /uploads/
     if (path.startsWith("/")) {
       return `${BASE_URL}${path}`;
     }
 
-    // Otherwise, add /uploads/
     return `${BASE_URL}/uploads/${path}`;
   },
 };
