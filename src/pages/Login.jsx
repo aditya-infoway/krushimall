@@ -2,17 +2,18 @@ import { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Shield, Truck, RotateCcw } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
- 
-const Login = () => {
+import apiHelper from '../utils/apiHelper';
+import { showSuccessToast, showErrorToast } from '../utils/toast';
 
+const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
 
-   const params = new URLSearchParams(location.search);
-  const role = params.get('role') || 'user';
+  const from = new URLSearchParams(location.search).get('redirect') || '/profile';
 
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -20,41 +21,80 @@ const Login = () => {
   });
   const [errors, setErrors] = useState({});
 
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const newErrors = validateForm();
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
 
-   const from = new URLSearchParams(location.search).get('redirect') || '/cart';
+    setIsLoading(true);
+    setErrors({});
 
- const handleSubmit = (e) => {
-  e.preventDefault();
-  const newErrors = validateForm();
-  if (Object.keys(newErrors).length > 0) {
-    setErrors(newErrors);
+    try {
+    const response = await apiHelper.post("/webauth/login", {
+  email: formData.email,
+  password: formData.password,
+  rememberMe: formData.rememberMe,
+});
+
+localStorage.setItem("webToken", response.token);
+
+login({
+  id: response.user.id,
+  name: response.user.name,
+  email: response.user.email,
+  phone: response.user.phone,
+  isVerified: response.user.isVerified,
+  isVendor: response.user.isVendor,
+  vendor: response.user.vendor,
+});
+
+showSuccessToast("Login successful!");
+
+if (response.user.isVendor) {
+  navigate("/vendor-dashboard");
+} else {
+  navigate(from, { replace: true });
+}
+    } catch (error) {
+  // Remove this line if you don't want your own log
+  // console.error("Login error:", error);
+
+  const status = error.response?.status;
+  const code = error.response?.data?.code;
+
+  if (error.response?.data?.requiresVerification) {
+    showErrorToast("Please verify your email first. Check your OTP.");
+    navigate(`/verify-otp?email=${formData.email}`);
     return;
   }
-  
-  // UPDATE THIS - Login with role
-  login({ 
-    name: role === 'vendor' ? 'Vendor' : 'User', 
-    email: formData.email,
-    role: role 
-  });
-  
-  // UPDATE THIS - Redirect based on role
-  if (role === 'vendor') {
-    navigate('/vendor/dashboard', { replace: true });
-  } else {
-    navigate(from, { replace: true });
-  }
-};
 
+  if (code === "USER_NOT_FOUND" || status === 404) {
+    showErrorToast("Account not found. Please create an account first.");
+    return;
+  }
+
+  if (code === "INVALID_PASSWORD" || status === 401) {
+    showErrorToast("Incorrect password. Please try again.");
+    return;
+  }
+
+  showErrorToast(
+    error.response?.data?.message || "Something went wrong. Please try again."
+  );
+}
+  };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === 'checkbox' ? checked : value,
     }));
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
@@ -73,7 +113,6 @@ const Login = () => {
     return newErrors;
   };
 
-
   const benefits = [
     { icon: Truck, text: 'Track your orders in real-time' },
     { icon: RotateCcw, text: 'Easy returns and exchanges' },
@@ -81,7 +120,7 @@ const Login = () => {
   ];
 
   return (
-    <div className=" bg-gray-50 pb-8">
+    <div className="bg-gray-50 pb-8 min-h-screen">
       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Side - Form */}
@@ -112,9 +151,10 @@ const Login = () => {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
+                      disabled={isLoading}
                       className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
                         errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                      }`}
+                      } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                       placeholder="your@email.com"
                     />
                   </div>
@@ -140,14 +180,16 @@ const Login = () => {
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
+                      disabled={isLoading}
                       className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
                         errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                      }`}
+                      } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                       placeholder="Enter your password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
+                      disabled={isLoading}
                       className="absolute cursor-pointer right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
                       {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
@@ -165,7 +207,8 @@ const Login = () => {
                     name="rememberMe"
                     checked={formData.rememberMe}
                     onChange={handleChange}
-                    className="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded"
+                    disabled={isLoading}
+                    className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
                   <label className="ml-2 text-sm text-gray-600">
                     Remember me
@@ -175,21 +218,33 @@ const Login = () => {
                 {/* Submit */}
                 <button
                   type="submit"
-                  className="w-full cursor-pointer bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 group"
+                  disabled={isLoading}
+                  className="w-full cursor-pointer bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  Log In
-                  <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                  {isLoading ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Logging in...
+                    </>
+                  ) : (
+                    <>
+                      Log In
+                      <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    </>
+                  )}
                 </button>
 
                 {/* Register Link */}
                 <p className="text-center text-sm text-gray-600">
                   Don't have an account?{' '}
-                  <Link to={`/register?role=${role}`}  className="text-green-600 hover:text-green-700 font-semibold">
+                  <Link to="/register" className="text-green-600 hover:text-green-700 font-semibold">
                     Sign Up Now
                   </Link>
                 </p>
               </form>
-            
             </div>
           </div>
 
@@ -202,7 +257,7 @@ const Login = () => {
               <p className="text-gray-300 mb-8">
                 Join thousands of satisfied customers who trust KrushiMall for their auto parts needs.
               </p>
-              
+
               <div className="space-y-6 mb-8">
                 {benefits.map((benefit, index) => (
                   <div key={index} className="flex items-start gap-4">
@@ -229,7 +284,7 @@ const Login = () => {
                     <div className="flex items-center gap-1 mb-1">
                       {[...Array(5)].map((_, i) => (
                         <svg key={i} className="h-4 w-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                          <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                          <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
                         </svg>
                       ))}
                     </div>
