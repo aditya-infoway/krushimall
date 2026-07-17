@@ -33,6 +33,9 @@ import BookingHistory from "./pages/BookingHistory";
 import { Toaster } from 'react-hot-toast';
 import AllCategories from "./pages/AllCategories";
 import BecomeVendor from "./pages/BecomeVendor";
+import VendorProfile from "./pages/VendorProfile";
+import VendorLogin from "./pages/VendorLogin";
+
 
 function App() {
   return (
@@ -63,6 +66,8 @@ function App() {
                   <Route path="booking" element={<BookingService />} />
                   <Route path="/login" element={<Login />} />
                  <Route path="/become-vendor" element={<BecomeVendor />} />
+                 <Route path="/vendor-profile" element={<VendorProfile />} />
+                 <Route path="/vendor-login" element={<VendorLogin />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route path="/help" element={<Help />} />

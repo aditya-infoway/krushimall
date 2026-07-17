@@ -67,25 +67,43 @@ const Profile = () => {
   const [selectedDistrict, setSelectedDistrict] = useState(null);
 
   const [userData, setUserData] = useState({
-    name: "Rajesh Kumar",
-    email: "rajesh.kumar@email.com",
-    phone: "+91 98765 43210",
-    avatar: null,
-    address: "123, Main Street, Near City Center",
-    country: "India",
-    state: "Rajasthan",
-    city: "Jaipur",
-    district: "Jaipur",
-    pincode: "302001",
-    // Vendor specific fields — only shown/used once userType === "vendor"
-    vendorType: "vehicle", // 'vehicle', 'spare-parts', 'service'
-    vehicleType: "new", // 'new', 'used'
-    businessName: "",
-    gstNumber: "",
-    panNumber: "",
-    establishmentYear: "",
-    businessAddress: "",
+    name: "",
+    email: "",
+    phone: "",
+    address: "",
+    country: "",
+    state: "",
+    district: "",
+    city: "",
+    pincode: "",
   });
+
+  useEffect(() => {
+    if (!selectedCountry) {
+      setStates([]);
+      return;
+    }
+
+    const stateList = State.getStatesOfCountry(selectedCountry.isoCode);
+
+    setStates(stateList);
+  }, [selectedCountry]);
+
+  useEffect(() => {
+    if (!selectedCountry || !selectedState) {
+      setCities([]);
+      return;
+    }
+
+    const cityList = City.getCitiesOfState(
+      selectedCountry.isoCode,
+      selectedState.isoCode,
+    );
+
+    setCities(cityList);
+  }, [selectedCountry, selectedState]);
+
+  const districtOptions = cities;
 
   const [orders] = useState([
     {
@@ -164,71 +182,76 @@ const Profile = () => {
           { id: "settings", label: "Settings", icon: Settings },
         ];
 
-  // Load countries on mount
   useEffect(() => {
-    const loadProfile = async () => {
-      try {
-        setLoading(true);
+    setCountries(Country.getAllCountries());
+  }, []);
 
-        const token = localStorage.getItem("webToken");
+  // Load countries on mount
+  const loadProfile = async () => {
+    try {
+      setLoading(true);
 
-        const response = await apiHelper.get("/webauth/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+      const response = await apiHelper.get("/webauth/me");
 
-        const user = response.user;
-        console.log("User data from API:", user);
+      const user = response.user;
 
-        setUserData((prev) => ({
-          ...prev,
-          name: user.name || "",
-          email: user.email || "",
-          phone: user.phone || "",
-          address: user.address || "",
-          country: user.country || "",
-          state: user.state || "",
-          district: user.district || "",
-          city: user.city || "",
-          pincode: user.pincode || "",
-        }));
+      setUserData((prev) => ({
+        ...prev,
+        name: user.name || "",
+        email: user.email || "",
+        phone: user.phone || "",
+        address: user.address || "",
+        country: user.country || "",
+        state: user.state || "",
+        district: user.district || "",
+        city: user.city || "",
+        pincode: user.pincode || "",
+      }));
 
-        // Country
-        const country = Country.getAllCountries().find(
-          (c) => c.name === user.country,
-        );
+      const country = Country.getAllCountries().find(
+        (c) => c.name === user.country,
+      );
 
-        if (country) {
-          setSelectedCountry(country);
+      if (country) {
+        setSelectedCountry(country);
 
-          const state = State.getStatesOfCountry(country.isoCode).find(
-            (s) => s.name === user.state,
+        const stateList = State.getStatesOfCountry(country.isoCode);
+        setStates(stateList);
+
+        const state = stateList.find((s) => s.name === user.state);
+
+        if (state) {
+          setSelectedState(state);
+
+          const cityList = City.getCitiesOfState(
+            country.isoCode,
+            state.isoCode,
           );
 
-          if (state) {
-            setSelectedState(state);
+          setCities(cityList);
 
-            const city = City.getCitiesOfState(
-              country.isoCode,
-              state.isoCode,
-            ).find((c) => c.name === user.city);
+          const city = cityList.find((c) => c.name === user.city);
 
-            if (city) {
-              setSelectedCity(city);
-            }
+          if (city) {
+            setSelectedCity(city);
+          }
+
+          const district = cityList.find((c) => c.name === user.district);
+
+          if (district) {
+            setSelectedDistrict(district);
           }
         }
-
-        setSelectedDistrict(user.district || "");
-      } catch (err) {
-        console.log(err);
-        showErrorToast("Unable to load profile");
-      } finally {
-        setLoading(false);
       }
-    };
+    } catch (err) {
+      console.log(err);
+      showErrorToast("Unable to load profile");
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  useEffect(() => {
     loadProfile();
   }, []);
 
@@ -236,31 +259,66 @@ const Profile = () => {
     setWishlistItems((prev) => prev.filter((item) => item.id !== id));
   };
 
-  const handleSave = () => {
-    setIsEditing(false);
-    setShowSaveSuccess(true);
-    showSuccessToast("Profile updated successfully!");
-    setTimeout(() => setShowSaveSuccess(false), 3000);
+  const handleSave = async () => {
+    try {
+      await apiHelper.put("/webauth/profile", userData);
+
+      showSuccessToast("Profile updated");
+
+      setIsEditing(false);
+
+      loadProfile();
+    } catch (err) {
+      showErrorToast("Unable to update profile");
+    }
   };
 
   const handleCountryChange = (value) => {
     setSelectedCountry(value);
-    setUserData((prev) => ({ ...prev, country: value?.name || "" }));
+
+    setSelectedState(null);
+    setSelectedCity(null);
+    setSelectedDistrict(null);
+
+    setUserData((prev) => ({
+      ...prev,
+      country: value?.name || "",
+      state: "",
+      city: "",
+      district: "",
+    }));
   };
 
   const handleStateChange = (value) => {
     setSelectedState(value);
-    setUserData((prev) => ({ ...prev, state: value?.name || "" }));
+
+    setSelectedCity(null);
+    setSelectedDistrict(null);
+
+    setUserData((prev) => ({
+      ...prev,
+      state: value?.name || "",
+      city: "",
+      district: "",
+    }));
   };
 
   const handleCityChange = (value) => {
     setSelectedCity(value);
-    setUserData((prev) => ({ ...prev, city: value?.name || "" }));
+
+    setUserData((prev) => ({
+      ...prev,
+      city: value?.name || "",
+    }));
   };
 
   const handleDistrictChange = (value) => {
     setSelectedDistrict(value);
-    setUserData((prev) => ({ ...prev, district: value || "" }));
+
+    setUserData((prev) => ({
+      ...prev,
+      district: value?.name || "",
+    }));
   };
 
   const getStatusColor = (status) => {
@@ -574,7 +632,7 @@ const Profile = () => {
             {activeTab === "profile" && (
               <div className="space-y-6">
                 {/* Quick Stats - Vendor or User */}
-                <div className="grid grid-cols-2 gap-3">
+                {/* <div className="grid grid-cols-2 gap-3">
                   {(userType === "vendor" ? vendorStats : userStats).map(
                     (stat, idx) => (
                       <div
@@ -593,7 +651,7 @@ const Profile = () => {
                       </div>
                     ),
                   )}
-                </div>
+                </div> */}
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:p-8">
                   <div className="flex items-center justify-between mb-6">
                     <div>
@@ -739,14 +797,14 @@ const Profile = () => {
                       label="District"
                       value={selectedDistrict}
                       onChange={handleDistrictChange}
-                      options={districts}
+                      options={districtOptions}
                       placeholder={
-                        selectedCity
+                        selectedState
                           ? "Select a district"
                           : "Select a state first"
                       }
                       icon={MapPin}
-                      disabled={!isEditing || !selectedCity}
+                      disabled={!isEditing || !selectedState}
                     />
 
                     {/* City - Dynamic Dropdown */}
