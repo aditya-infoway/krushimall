@@ -1,7 +1,18 @@
-import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Shield, Store, TrendingUp, Users, ChevronRight } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
+import { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  ArrowRight,
+  Shield,
+  Store,
+  TrendingUp,
+  Users,
+  ChevronRight,
+} from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 const VendorLogin = () => {
   const navigate = useNavigate();
@@ -10,13 +21,14 @@ const VendorLogin = () => {
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
     rememberMe: false,
   });
   const [errors, setErrors] = useState({});
 
-  const from = new URLSearchParams(location.search).get('redirect') || '/vendor/dashboard';
+  const from =
+    new URLSearchParams(location.search).get("redirect") || "/vendor/dashboard";
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -25,49 +37,49 @@ const VendorLogin = () => {
       setErrors(newErrors);
       return;
     }
-    
+
     // Login the vendor
-    login({ 
-      name: 'Vendor', 
+    login({
+      name: "Vendor",
       email: formData.email,
-      role: 'vendor' 
+      role: "vendor",
     });
-    
+
     // Redirect to vendor dashboard
     navigate(from, { replace: true });
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     }));
     if (errors[name]) {
-      setErrors(prev => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
+      newErrors.email = "Please enter a valid email";
     }
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = "Password must be at least 6 characters";
     }
     return newErrors;
   };
 
   const vendorBenefits = [
-    { icon: Store, text: 'List your products easily' },
-    { icon: Users, text: 'Reach thousands of customers' },
-    { icon: TrendingUp, text: 'Grow your business online' },
-    { icon: Shield, text: 'Secure payment processing' },
+    { icon: Store, text: "List your products easily" },
+    { icon: Users, text: "Reach thousands of customers" },
+    { icon: TrendingUp, text: "Grow your business online" },
+    { icon: Shield, text: "Secure payment processing" },
   ];
 
   return (
@@ -78,10 +90,13 @@ const VendorLogin = () => {
           <div className="max-w-md mx-auto lg:mx-0 w-full">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8">
               <div className="text-center mb-8">
-                <Link to="/" className="inline-block text-2xl font-bold text-green-600 tracking-tight mb-6">
+                <Link
+                  to="/"
+                  className="inline-block text-2xl font-bold text-green-600 tracking-tight mb-6"
+                >
                   Krushi<span className="text-gray-900">Mall</span>
                 </Link>
-              
+
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
                   Welcome Back Vendor 👋
                 </h1>
@@ -104,7 +119,9 @@ const VendorLogin = () => {
                       value={formData.email}
                       onChange={handleChange}
                       className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                        errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                        errors.email
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
                       }`}
                       placeholder="vendor@email.com"
                     />
@@ -120,19 +137,24 @@ const VendorLogin = () => {
                     <label className="block text-sm font-medium text-gray-700">
                       Password
                     </label>
-                    <Link to="/vendor/forgot-password" className="text-xs text-green-600 hover:text-green-700 font-medium">
+                    <Link
+                      to="/vendor/forgot-password"
+                      className="text-xs text-green-600 hover:text-green-700 font-medium"
+                    >
                       Forgot Password?
                     </Link>
                   </div>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <input
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
                       className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                        errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
+                        errors.password
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
                       }`}
                       placeholder="Enter your password"
                     />
@@ -141,11 +163,17 @@ const VendorLogin = () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute cursor-pointer right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
                     </button>
                   </div>
                   {errors.password && (
-                    <p className="mt-1 text-xs text-red-600">{errors.password}</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.password}
+                    </p>
                   )}
                 </div>
 
@@ -163,7 +191,10 @@ const VendorLogin = () => {
                       Remember me
                     </label>
                   </div>
-                  <Link to="/login?role=user" className="text-sm text-gray-500 hover:text-green-600 transition-colors">
+                  <Link
+                    to="/login?role=user"
+                    className="text-sm text-gray-500 hover:text-green-600 transition-colors"
+                  >
                     Login as Customer?
                   </Link>
                 </div>
@@ -179,12 +210,17 @@ const VendorLogin = () => {
                 </button>
 
                 {/* Register Link */}
-                <p className="text-center text-sm text-gray-600">
-                  Don't have a vendor account?{' '}
-                  <Link to="/register?role=vendor" className="text-green-600 hover:text-green-700 font-semibold">
-                    Register as Vendor
-                  </Link>
-                </p>
+                <div className="space-y-3 pt-2">
+                  <p className="text-center text-sm text-gray-600">
+                    Already registered?{" "}
+                    <Link
+                      to="/become-vendor"
+                      className="text-green-600 font-semibold hover:text-green-700"
+                    >
+                      Sign Up Now
+                    </Link>
+                  </p>
+                </div>
               </form>
             </div>
           </div>
@@ -201,12 +237,16 @@ const VendorLogin = () => {
                 </h2>
               </div>
               <p className="text-gray-300 mb-8">
-                Login to manage your business, track orders, and grow your sales with KrushiMall.
+                Login to manage your business, track orders, and grow your sales
+                with KrushiMall.
               </p>
-              
+
               <div className="space-y-6 mb-8">
                 {vendorBenefits.map((benefit, index) => (
-                  <div key={index} className="flex items-start gap-4 group hover:bg-white/5 p-3 rounded-xl transition-all duration-300">
+                  <div
+                    key={index}
+                    className="flex items-start gap-4 group hover:bg-white/5 p-3 rounded-xl transition-all duration-300"
+                  >
                     <div className="flex-shrink-0 w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center group-hover:bg-green-600/30 transition-colors">
                       <benefit.icon className="h-5 w-5 text-green-400" />
                     </div>
@@ -221,7 +261,10 @@ const VendorLogin = () => {
                 <div className="flex items-center gap-4">
                   <div className="flex -space-x-2">
                     {[...Array(4)].map((_, i) => (
-                      <div key={i} className="w-10 h-10 rounded-full bg-gray-600 border-2 border-gray-800 flex items-center justify-center text-xs font-bold">
+                      <div
+                        key={i}
+                        className="w-10 h-10 rounded-full bg-gray-600 border-2 border-gray-800 flex items-center justify-center text-xs font-bold"
+                      >
                         {String.fromCharCode(65 + i)}
                       </div>
                     ))}
@@ -229,8 +272,12 @@ const VendorLogin = () => {
                   <div>
                     <div className="flex items-center gap-1 mb-1">
                       {[...Array(5)].map((_, i) => (
-                        <svg key={i} className="h-4 w-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
-                          <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z"/>
+                        <svg
+                          key={i}
+                          className="h-4 w-4 text-yellow-400 fill-current"
+                          viewBox="0 0 20 20"
+                        >
+                          <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
                         </svg>
                       ))}
                     </div>
@@ -243,8 +290,8 @@ const VendorLogin = () => {
 
               {/* Quick Link to Customer Login */}
               <div className="mt-6 pt-6 border-t border-gray-700">
-                <Link 
-                  to="/login" 
+                <Link
+                  to="/login"
                   className="flex items-center justify-between text-gray-400 hover:text-white transition-colors group"
                 >
                   <span>Login as Customer instead?</span>
