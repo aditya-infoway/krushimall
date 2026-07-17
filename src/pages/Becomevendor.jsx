@@ -33,6 +33,7 @@ import {
 import { showSuccessToast, showErrorToast } from "../utils/toast";
 import { Combobox } from "@headlessui/react";
 import { Country, State, City } from "country-state-city";
+import apiHelper from "../utils/apiHelper";
 
 // Combobox wrapper component
 const ComboboxWrapper = ({
@@ -135,14 +136,14 @@ const ComboboxWrapper = ({
 };
 
 const BecomeVendor = () => {
+   console.log("BecomeVendor Component");
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [otpSent, setOtpSent] = useState(false);
-  const [otpVerified, setOtpVerified] = useState(false);
+
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [timer, setTimer] = useState(0);
+
 
   // Step 1: Vendor & Personal Details
   const [vendorType, setVendorType] = useState("vehicle");
@@ -204,58 +205,32 @@ const BecomeVendor = () => {
   }, [selectedCountry]);
 
   // Update cities when state changes
-  useEffect(() => {
-    if (selectedCountry && selectedState) {
-      const cityList = City.getCitiesOfState(
-        selectedCountry.isoCode,
-        selectedState.isoCode
-      );
-      setCities(cityList);
-    } else {
-      setCities([]);
-    }
-    setSelectedCity(null);
-    setSelectedDistrict(null);
-    setAddressData(prev => ({ ...prev, city: "", district: "" }));
-  }, [selectedCountry, selectedState]);
+useEffect(() => {
+  if (selectedCountry && selectedState) {
+    const cityList = City.getCitiesOfState(
+      selectedCountry.isoCode,
+      selectedState.isoCode
+    );
 
-  // Generate districts based on selected city (mock data - replace with API)
-  useEffect(() => {
-    if (selectedCity) {
-      // Mock district data - in production, fetch from API based on city
-      const mockDistricts = [
-        "Central District",
-        "North District",
-        "South District",
-        "East District",
-        "West District",
-        "City Center",
-        "Old City",
-        "New Town",
-        "Industrial Area",
-        "Residential Zone",
-        "Commercial Zone",
-        "Suburban Area",
-        "Rural Area",
-        "Township",
-        "Municipality",
-      ];
-      setDistricts(mockDistricts);
-      setSelectedDistrict(null);
-      setAddressData(prev => ({ ...prev, district: "" }));
-    } else {
-      setDistricts([]);
-      setSelectedDistrict(null);
-    }
-  }, [selectedCity]);
+    setCities(cityList);
+    setDistricts(cityList); // Same data source
+  } else {
+    setCities([]);
+    setDistricts([]);
+  }
 
-  // Timer for OTP resend
-  useEffect(() => {
-    if (timer > 0) {
-      const interval = setInterval(() => setTimer(t => t - 1), 1000);
-      return () => clearInterval(interval);
-    }
-  }, [timer]);
+  setSelectedCity(null);
+  setSelectedDistrict(null);
+
+  setAddressData(prev => ({
+    ...prev,
+    city: "",
+    district: "",
+  }));
+}, [selectedCountry, selectedState]);
+
+ 
+
 
   // Step 1 Handlers
   const handlePersonalChange = (e) => {
@@ -275,72 +250,12 @@ const BecomeVendor = () => {
     if (!personalData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(personalData.email)) {
       newErrors.email = "Please enter a valid email";
     }
-    if (!otpVerified) {
-      newErrors.otp = "Please verify your OTP first";
-    }
+   
     return newErrors;
   };
 
-  const handleSendOTP = async () => {
-    // Validate phone/email
-    if (!personalData.number || personalData.number.length < 10) {
-      setErrors(prev => ({ ...prev, number: "Please enter a valid phone number" }));
-      return;
-    }
-
-    if (!personalData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(personalData.email)) {
-      setErrors(prev => ({ ...prev, email: "Please enter a valid email" }));
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // API call to send OTP
-      // await axios.post('/api/send-vendor-otp', {
-      //   number: personalData.number,
-      //   email: personalData.email,
-      // });
-      
-      // Mock successful OTP send
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setOtpSent(true);
-      setTimer(60);
-      showSuccessToast("OTP sent to your phone and email!");
-    } catch (error) {
-      showErrorToast("Failed to send OTP. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleVerifyOTP = async () => {
-    if (!personalData.otp || personalData.otp.length < 4) {
-      setErrors(prev => ({ ...prev, otp: "Please enter the OTP" }));
-      return;
-    }
-
-    setIsLoading(true);
-    try {
-      // API call to verify OTP
-      // const response = await axios.post('/api/verify-vendor-otp', {
-      //   number: personalData.number,
-      //   email: personalData.email,
-      //   otp: personalData.otp,
-      // });
-      
-      // Mock OTP verification (accept any 4+ digit OTP)
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      setOtpVerified(true);
-      showSuccessToast("OTP verified successfully!");
-    } catch (error) {
-      showErrorToast("Invalid OTP. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  
+  
   const handleResendOTP = () => {
     if (timer === 0) {
       handleSendOTP();
@@ -349,11 +264,16 @@ const BecomeVendor = () => {
 
   const handleStep1Next = () => {
     const newErrors = validateStep1();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      showErrorToast("Please fill all required fields and verify OTP");
-      return;
-    }
+   if (
+  !personalData.name ||
+  !personalData.number ||
+  !personalData.email
+) {
+  toast.error("Please fill all required fields");
+  return;
+}
+
+setCurrentStep(2);
     setCurrentStep(2);
   };
 
@@ -379,10 +299,14 @@ const BecomeVendor = () => {
     setAddressData(prev => ({ ...prev, city: value?.name || "" }));
   };
 
-  const handleDistrictChange = (value) => {
-    setSelectedDistrict(value);
-    setAddressData(prev => ({ ...prev, district: value || "" }));
-  };
+const handleDistrictChange = (value) => {
+  setSelectedDistrict(value);
+
+  setAddressData(prev => ({
+    ...prev,
+    district: value?.name || "",
+  }));
+};
 
   const validateStep2 = () => {
     const newErrors = {};
@@ -427,48 +351,56 @@ const BecomeVendor = () => {
     return newErrors;
   };
 
-  const handleSubmit = () => {
-    const newErrors = validateStep3();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      showErrorToast("Please fix password errors");
-      return;
-    }
+const handleSubmit = async () => {
+  console.log("START");
 
-    // Prepare final data
-    const vendorData = {
+  const newErrors = validateStep3();
+
+  if (Object.keys(newErrors).length > 0) {
+    console.log("Validation failed", newErrors);
+    setErrors(newErrors);
+    return;
+  }
+
+  console.log("Validation Passed");
+
+  setIsLoading(true);
+
+  try {
+    const payload = {
       vendorType,
       vehicleType: vendorType === "vehicle" ? vehicleType : null,
-      ...personalData,
-      ...addressData,
-      ...passwordData,
+
+      name: personalData.name,
+      number: personalData.number,
+      email: personalData.email,
+
+      country: addressData.country,
+      state: addressData.state,
+      district: addressData.district,
+      city: addressData.city,
+      address: addressData.address,
+      pincode: addressData.pincode,
+
+      vendorPassword: passwordData.password,
     };
 
-    // Remove OTP and confirmPassword from stored data
-    const { otp, confirmPassword, ...dataToStore } = vendorData;
+    console.log("Payload", payload);
 
-    // TODO: Send to backend API
-    // await axios.post('/api/become-vendor', dataToStore);
+    const response = await apiHelper.post("/vendor/become", payload);
 
-    // Store locally for now
-    localStorage.setItem("userType", "vendor");
-    localStorage.setItem(
-      "vendorData",
-      JSON.stringify({
-        vendorType,
-        vehicleType: vendorType === "vehicle" ? vehicleType : null,
-        businessName: personalData.name,
-        gstNumber: "",
-        panNumber: "",
-        establishmentYear: "",
-        businessAddress: addressData.address,
-        ...addressData,
-      })
-    );
+    console.log("API Response", response);
 
-    showSuccessToast("You're now registered as a vendor!");
-    setTimeout(() => navigate("/profile"), 1200);
-  };
+    if (response.success) {
+      showSuccessToast(response.message);
+      navigate("/vendor-login");
+    }
+  } catch (err) {
+    console.log("ERROR", err);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center mb-8">
@@ -502,6 +434,9 @@ const BecomeVendor = () => {
       ))}
     </div>
   );
+
+
+ 
 
   return (
     <div className="bg-gray-50 pb-8 min-h-screen">
@@ -657,70 +592,7 @@ const BecomeVendor = () => {
                   )}
                 </div>
 
-                {/* OTP Section */}
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Verify Your Identity <span className="text-red-500">*</span>
-                  </label>
-                  <div className="flex gap-3">
-                    <div className="flex-1 relative">
-                      <input
-                        type="text"
-                        name="otp"
-                        value={personalData.otp}
-                        onChange={handlePersonalChange}
-                        placeholder="Enter OTP"
-                        disabled={!otpSent || otpVerified}
-                        className={`w-full pl-4 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                          errors.otp ? "border-red-300 bg-red-50" : "border-gray-300"
-                        } ${(!otpSent || otpVerified) ? "bg-gray-100 cursor-not-allowed" : ""}`}
-                      />
-                    </div>
-                    <button
-                      type="button"
-                      onClick={handleSendOTP}
-                      disabled={isLoading || otpVerified}
-                      className={`px-4 py-3 rounded-lg font-semibold text-sm transition-all whitespace-nowrap ${
-                        otpVerified
-                          ? "bg-green-100 text-green-600 cursor-default"
-                          : isLoading
-                          ? "bg-gray-300 cursor-not-allowed"
-                          : "bg-green-600 hover:bg-green-700 text-white"
-                      }`}
-                    >
-                      {otpVerified ? (
-                        "Verified ✓"
-                      ) : isLoading ? (
-                        "Sending..."
-                      ) : otpSent ? (
-                        timer > 0 ? `Resend in ${timer}s` : "Resend OTP"
-                      ) : (
-                        "Send OTP"
-                      )}
-                    </button>
-                  </div>
-                  {otpSent && !otpVerified && (
-                    <button
-                      type="button"
-                      onClick={handleVerifyOTP}
-                      disabled={isLoading || !personalData.otp}
-                      className="mt-2 text-sm font-semibold text-green-600 hover:text-green-700 transition-colors"
-                    >
-                      Verify OTP
-                    </button>
-                  )}
-                  {errors.otp && (
-                    <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> {errors.otp}
-                    </p>
-                  )}
-                  {otpVerified && (
-                    <p className="mt-2 text-xs text-green-600 flex items-center gap-1">
-                      <CheckCircle className="w-3 h-3" /> OTP verified successfully!
-                    </p>
-                  )}
-                </div>
-
+               
                 <button
                   type="button"
                   onClick={handleStep1Next}
@@ -760,6 +632,23 @@ const BecomeVendor = () => {
                   disabled={!selectedCountry}
                 />
 
+                   {/* District */}
+                <ComboboxWrapper
+                  label="District"
+                  value={selectedDistrict}
+                  onChange={handleDistrictChange}
+                  options={districts}
+                 placeholder={
+  selectedState
+    ? "Select a district"
+    : "Select a state first"
+}
+                  icon={MapPin}
+                  error={errors.district}
+                  required={true}
+                 disabled={!selectedState}
+                />
+
                 {/* City */}
                 <ComboboxWrapper
                   label="City"
@@ -773,18 +662,7 @@ const BecomeVendor = () => {
                   disabled={!selectedState}
                 />
 
-                {/* District */}
-                <ComboboxWrapper
-                  label="District"
-                  value={selectedDistrict}
-                  onChange={handleDistrictChange}
-                  options={districts}
-                  placeholder={selectedCity ? "Select a district" : "Select a city first"}
-                  icon={MapPin}
-                  error={errors.district}
-                  required={true}
-                  disabled={!selectedCity}
-                />
+             
 
                 {/* Address */}
                 <div>
@@ -940,14 +818,16 @@ const BecomeVendor = () => {
                     <ChevronLeft className="h-5 w-5" />
                     Back
                   </button>
-                  <button
-                    type="button"
-                    onClick={handleSubmit}
-                    className="cursor-pointer flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 group shadow-lg shadow-green-700/20 hover:shadow-green-700/40"
-                  >
-                    <CheckCircle className="h-5 w-5" />
-                    Register as Vendor
-                  </button>
+                 <button
+  type="button"
+  onClick={() => {
+    console.log("BUTTON CLICKED");
+    handleSubmit();
+  }}
+  className="cursor-pointer flex-1 bg-gradient-to-r from-green-600 to-green-700"
+>
+  Register as Vendor
+</button>
                 </div>
               </div>
             )}
