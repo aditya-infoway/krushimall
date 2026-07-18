@@ -100,6 +100,9 @@ const Navbar = () => {
     };
   }, [mobileMenuOpen]);
 
+const isVendorLoggedIn =
+  localStorage.getItem("isVendorLoggedIn") === "true";
+
   // Spare Parts subcategories for mega menu
   const sparePartsCategories = [
     {
@@ -385,22 +388,25 @@ const Navbar = () => {
                         >
                           <User className="h-4 w-4" /> My Profile
                         </Link>
-                        <Link
-                          to="/vendor-login"
-                          onClick={() => setUserMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-                        >
-                          <Store className="h-4 w-4" />
-                          Vendor Login
-                        </Link>
-                        <Link
-  to="/vendor-profile"
-  onClick={() => setUserMenuOpen(false)}
-  className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
->
-  <Store className="h-4 w-4" />
-  Vendor Profile
-</Link>
+                       {!isVendorLoggedIn ? (
+  <Link
+    to="/vendor-login"
+    onClick={() => setUserMenuOpen(false)}
+    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+  >
+    <Store className="h-4 w-4" />
+    Vendor Login
+  </Link>
+) : (
+  <Link
+    to="/vendor-profile"
+    onClick={() => setUserMenuOpen(false)}
+    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+  >
+    <Store className="h-4 w-4" />
+    Vendor Profile
+  </Link>
+)}
                         <Link
                           to="/orders"
                           onClick={() => setUserMenuOpen(false)}
@@ -729,18 +735,31 @@ const Navbar = () => {
                   </div>
                   <span className="font-semibold flex-1">My Profile</span>
                 </Link>
-                <Link
-                  to="/vendor-login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group hover:bg-green-700 hover:text-white hover:shadow-xl hover:shadow-green-700/20 hover:scale-[1.02] transform mb-1"
-                >
-                  <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors duration-300">
-                    <Store className="h-5 w-5 text-green-600 group-hover:text-white" />
-                  </div>
+               {!isVendorLoggedIn ? (
+  <Link
+    to="/vendor-login"
+    onClick={() => setMobileMenuOpen(false)}
+    className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group hover:bg-green-700 hover:text-white hover:shadow-xl hover:shadow-green-700/20 hover:scale-[1.02] transform mb-1"
+  >
+    <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors duration-300">
+      <Store className="h-5 w-5 text-green-600 group-hover:text-white" />
+    </div>
 
-                  <span className="font-semibold flex-1">Vendor Login</span>
-                </Link>
-                
+    <span className="font-semibold flex-1">Vendor Login</span>
+  </Link>
+) : (
+  <Link
+    to="/vendor-profile"
+    onClick={() => setMobileMenuOpen(false)}
+    className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group hover:bg-green-700 hover:text-white hover:shadow-xl hover:shadow-green-700/20 hover:scale-[1.02] transform mb-1"
+  >
+    <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors duration-300">
+      <Store className="h-5 w-5 text-green-600 group-hover:text-white" />
+    </div>
+
+    <span className="font-semibold flex-1">Vendor Profile</span>
+  </Link>
+)}
                 <Link
                   to="/orders"
                   onClick={() => setMobileMenuOpen(false)}

@@ -54,7 +54,7 @@ login({
 showSuccessToast("Login successful!");
 
 if (response.user.isVendor) {
-  navigate("/vendor-dashboard");
+  navigate("/profile");
 } else {
   navigate(from, { replace: true });
 }

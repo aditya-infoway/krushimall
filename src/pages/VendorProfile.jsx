@@ -214,10 +214,6 @@ const VendorProfile = () => {
     setCountries(allCountries);
   }, []);
 
-  
-
-
-
   // Load vendor data
   const loadVendorData = async () => {
     try {
@@ -241,9 +237,6 @@ const VendorProfile = () => {
       // Fetch from API
       const response = await apiHelper.get("/vendor/me");
       const userData = response.vendor;
-
-      console.log("Vendor API Response:", response);
-      console.log("Vendor Data:", userData);
 
       setVendorData((prev) => ({
         ...prev,
@@ -330,10 +323,8 @@ const VendorProfile = () => {
   // Tabs for vendor
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
-    { id: "business", label: "Business Info", icon: Store },
+
     { id: "products", label: "Products", icon: Package },
-    { id: "orders", label: "Orders", icon: ShoppingBag },
-    { id: "settings", label: "Settings", icon: Settings },
   ];
 
   const handleSave = async () => {
@@ -368,56 +359,63 @@ const VendorProfile = () => {
     }
   };
 
+  const handleVendorLogout = () => {
+    localStorage.removeItem("vendorToken");
+    localStorage.removeItem("vendorData");
+    localStorage.removeItem("isVendorLoggedIn");
+
+    navigate("/vendor-login", { replace: true });
+  };
+
   const handleCancel = () => {
     setIsEditing(false);
     // Reset dropdown selections
     // You may want to reload original data here
   };
 
-const handleCountryChange = (country) => {
-  setSelectedCountry(country);
+  const handleCountryChange = (country) => {
+    setSelectedCountry(country);
 
-  const stateList = State.getStatesOfCountry(country.isoCode);
-  setStates(stateList);
+    const stateList = State.getStatesOfCountry(country.isoCode);
+    setStates(stateList);
 
-  setCities([]);
-  setDistricts([]);
+    setCities([]);
+    setDistricts([]);
 
-  setSelectedState(null);
-  setSelectedCity(null);
-  setSelectedDistrict(null);
+    setSelectedState(null);
+    setSelectedCity(null);
+    setSelectedDistrict(null);
 
-  setVendorData(prev => ({
-    ...prev,
-    country: country.name,
-    state: "",
-    city: "",
-    district: "",
-  }));
-};
+    setVendorData((prev) => ({
+      ...prev,
+      country: country.name,
+      state: "",
+      city: "",
+      district: "",
+    }));
+  };
 
+  const handleStateChange = (state) => {
+    setSelectedState(state);
 
- const handleStateChange = (state) => {
-  setSelectedState(state);
+    const cityList = City.getCitiesOfState(
+      selectedCountry.isoCode,
+      state.isoCode,
+    );
 
-  const cityList = City.getCitiesOfState(
-    selectedCountry.isoCode,
-    state.isoCode
-  );
+    setCities(cityList);
+    setDistricts(cityList);
 
-  setCities(cityList);
-  setDistricts(cityList);
+    setSelectedCity(null);
+    setSelectedDistrict(null);
 
-  setSelectedCity(null);
-  setSelectedDistrict(null);
-
-  setVendorData(prev => ({
-    ...prev,
-    state: state.name,
-    city: "",
-    district: "",
-  }));
-};
+    setVendorData((prev) => ({
+      ...prev,
+      state: state.name,
+      city: "",
+      district: "",
+    }));
+  };
 
   const handleCityChange = (value) => {
     setSelectedCity(value);
@@ -545,10 +543,7 @@ const handleCountryChange = (country) => {
                 </button>
               ))}
               <button
-                onClick={() => {
-                  logout();
-                  navigate("/login");
-                }}
+                onClick={handleVendorLogout}
                 className="w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
               >
                 <LogOut className="h-4 w-4" />
@@ -1018,7 +1013,10 @@ const handleCountryChange = (country) => {
                       Manage your product listings
                     </p>
                   </div>
-                  <button className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-md hover:shadow-lg">
+                  <button
+                    onClick={() => navigate("/vendor/add-product")}
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold"
+                  >
                     <Plus className="h-4 w-4" />
                     Add Product
                   </button>
@@ -1032,9 +1030,12 @@ const handleCountryChange = (country) => {
                   <p className="text-sm text-gray-500 mb-6">
                     Start selling by adding your first product
                   </p>
-                  <button className="inline-flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-md hover:shadow-lg">
+                  <button
+                    onClick={() => navigate("/vendor/add-product")}
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold"
+                  >
                     <Plus className="h-4 w-4" />
-                    Add Your First Product
+                    Add Product
                   </button>
                 </div>
               </div>
