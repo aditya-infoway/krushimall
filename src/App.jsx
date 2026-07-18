@@ -30,12 +30,12 @@ import TractorList from "./pages/TractorList";
 import BookingService from "./pages/BookingService";
 import Profile from "./pages/Profile";
 import BookingHistory from "./pages/BookingHistory";
-import { Toaster } from 'react-hot-toast';
+import { Toaster } from "react-hot-toast";
 import AllCategories from "./pages/AllCategories";
 import BecomeVendor from "./pages/BecomeVendor";
 import VendorProfile from "./pages/VendorProfile";
 import VendorLogin from "./pages/VendorLogin";
-
+import WebsiteVariant from "./pages/websitevariant/index.jsx";
 
 function App() {
   return (
@@ -65,11 +65,15 @@ function App() {
                   <Route path="service" element={<Service />} />
                   <Route path="booking" element={<BookingService />} />
                   <Route path="/login" element={<Login />} />
-                 <Route path="/become-vendor" element={<BecomeVendor />} />
-                 <Route path="/vendor-profile" element={<VendorProfile />} />
-                 <Route path="/vendor-login" element={<VendorLogin />} />
+                  <Route path="/become-vendor" element={<BecomeVendor />} />
+                  <Route path="/vendor-profile" element={<VendorProfile />} />
+                  <Route path="/vendor-login" element={<VendorLogin />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/profile" element={<Profile />} />
+                  <Route
+                    path="/vendor/add-product"
+                    element={<WebsiteVariant />}
+                  />
                   <Route path="/help" element={<Help />} />
                   <Route path="/booking-history" element={<BookingHistory />} />
                   <Route path="/tractorcompare" element={<TractorCompare />} />
@@ -95,7 +99,6 @@ function App() {
                     path="/category/:categoryName/:subCategoryName"
                     element={<SubCategoryPage />}
                   />
-                  
 
                   {/* Categories */}
                   <Route

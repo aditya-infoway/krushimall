@@ -13,11 +13,12 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
+import apiHelper from "../utils/apiHelper";
 
 const VendorLogin = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+
 
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
@@ -27,27 +28,37 @@ const VendorLogin = () => {
   });
   const [errors, setErrors] = useState({});
 
-  const from =
-    new URLSearchParams(location.search).get("redirect") || "/vendor/dashboard";
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const newErrors = validateForm();
-    if (Object.keys(newErrors).length > 0) {
-      setErrors(newErrors);
-      return;
-    }
 
-    // Login the vendor
-    login({
-      name: "Vendor",
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  const newErrors = validateForm();
+
+  if (Object.keys(newErrors).length > 0) {
+    setErrors(newErrors);
+    return;
+  }
+
+  try {
+    const response = await apiHelper.post("/vendor/login", {
       email: formData.email,
-      role: "vendor",
+      password: formData.password,
     });
 
-    // Redirect to vendor dashboard
-    navigate(from, { replace: true });
-  };
+   if (response.success) {
+  localStorage.setItem("vendorToken", response.token);
+  localStorage.setItem("vendorData", JSON.stringify(response.vendor));
+
+  localStorage.setItem("isVendorLoggedIn", "true");
+
+    navigate("/vendor-profile", { replace: true });
+}
+  } catch (err) {
+    console.log(err);
+  }
+};
+
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
