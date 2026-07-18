@@ -28,7 +28,7 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const fetchCurrentUser = async () => {
-    console.log("Token:", localStorage.getItem("webToken"));
+    
     try {
       const response = await apiHelper.get("/webauth/me");
       if (response.success) {

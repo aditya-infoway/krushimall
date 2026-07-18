@@ -55,7 +55,7 @@ const ComboboxWrapper = ({
     query === ""
       ? options
       : options.filter((option) =>
-          getLabel(option).toLowerCase().includes(query.toLowerCase())
+          getLabel(option).toLowerCase().includes(query.toLowerCase()),
         );
 
   return (
@@ -87,8 +87,18 @@ const ComboboxWrapper = ({
             ref={buttonRef}
             className="absolute inset-y-0 right-0 flex items-center pr-3"
           >
-            <svg className="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="none" stroke="currentColor">
-              <path d="M7 7l3-3 3 3m0 6l-3 3-3-3" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+            <svg
+              className="h-5 w-5 text-gray-400"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+            >
+              <path
+                d="M7 7l3-3 3 3m0 6l-3 3-3-3"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
             </svg>
           </Combobox.Button>
 
@@ -110,7 +120,9 @@ const ComboboxWrapper = ({
                 >
                   {({ selected }) => (
                     <>
-                      <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
+                      <span
+                        className={`block truncate ${selected ? "font-medium" : "font-normal"}`}
+                      >
                         {getLabel(option)}
                       </span>
                       {selected && (
@@ -136,14 +148,13 @@ const ComboboxWrapper = ({
 };
 
 const BecomeVendor = () => {
-   console.log("BecomeVendor Component");
+
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-
 
   // Step 1: Vendor & Personal Details
   const [vendorType, setVendorType] = useState("vehicle");
@@ -201,42 +212,39 @@ const BecomeVendor = () => {
     setSelectedState(null);
     setSelectedCity(null);
     setSelectedDistrict(null);
-    setAddressData(prev => ({ ...prev, state: "", city: "", district: "" }));
+    setAddressData((prev) => ({ ...prev, state: "", city: "", district: "" }));
   }, [selectedCountry]);
 
   // Update cities when state changes
-useEffect(() => {
-  if (selectedCountry && selectedState) {
-    const cityList = City.getCitiesOfState(
-      selectedCountry.isoCode,
-      selectedState.isoCode
-    );
+  useEffect(() => {
+    if (selectedCountry && selectedState) {
+      const cityList = City.getCitiesOfState(
+        selectedCountry.isoCode,
+        selectedState.isoCode,
+      );
 
-    setCities(cityList);
-    setDistricts(cityList); // Same data source
-  } else {
-    setCities([]);
-    setDistricts([]);
-  }
+      setCities(cityList);
+      setDistricts(cityList); // Same data source
+    } else {
+      setCities([]);
+      setDistricts([]);
+    }
 
-  setSelectedCity(null);
-  setSelectedDistrict(null);
+    setSelectedCity(null);
+    setSelectedDistrict(null);
 
-  setAddressData(prev => ({
-    ...prev,
-    city: "",
-    district: "",
-  }));
-}, [selectedCountry, selectedState]);
-
- 
-
+    setAddressData((prev) => ({
+      ...prev,
+      city: "",
+      district: "",
+    }));
+  }, [selectedCountry, selectedState]);
 
   // Step 1 Handlers
   const handlePersonalChange = (e) => {
     const { name, value } = e.target;
-    setPersonalData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
+    setPersonalData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const validateStep1 = () => {
@@ -247,15 +255,16 @@ useEffect(() => {
     if (!personalData.number || personalData.number.length < 10) {
       newErrors.number = "Please enter a valid phone number";
     }
-    if (!personalData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(personalData.email)) {
+    if (
+      !personalData.email ||
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(personalData.email)
+    ) {
       newErrors.email = "Please enter a valid email";
     }
-   
+
     return newErrors;
   };
 
-  
-  
   const handleResendOTP = () => {
     if (timer === 0) {
       handleSendOTP();
@@ -264,49 +273,45 @@ useEffect(() => {
 
   const handleStep1Next = () => {
     const newErrors = validateStep1();
-   if (
-  !personalData.name ||
-  !personalData.number ||
-  !personalData.email
-) {
-  toast.error("Please fill all required fields");
-  return;
-}
+    if (!personalData.name || !personalData.number || !personalData.email) {
+      toast.error("Please fill all required fields");
+      return;
+    }
 
-setCurrentStep(2);
+    setCurrentStep(2);
     setCurrentStep(2);
   };
 
   // Step 2 Handlers
   const handleAddressChange = (e) => {
     const { name, value } = e.target;
-    setAddressData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
+    setAddressData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const handleCountryChange = (value) => {
     setSelectedCountry(value);
-    setAddressData(prev => ({ ...prev, country: value?.name || "" }));
+    setAddressData((prev) => ({ ...prev, country: value?.name || "" }));
   };
 
   const handleStateChange = (value) => {
     setSelectedState(value);
-    setAddressData(prev => ({ ...prev, state: value?.name || "" }));
+    setAddressData((prev) => ({ ...prev, state: value?.name || "" }));
   };
 
   const handleCityChange = (value) => {
     setSelectedCity(value);
-    setAddressData(prev => ({ ...prev, city: value?.name || "" }));
+    setAddressData((prev) => ({ ...prev, city: value?.name || "" }));
   };
 
-const handleDistrictChange = (value) => {
-  setSelectedDistrict(value);
+  const handleDistrictChange = (value) => {
+    setSelectedDistrict(value);
 
-  setAddressData(prev => ({
-    ...prev,
-    district: value?.name || "",
-  }));
-};
+    setAddressData((prev) => ({
+      ...prev,
+      district: value?.name || "",
+    }));
+  };
 
   const validateStep2 = () => {
     const newErrors = {};
@@ -334,8 +339,8 @@ const handleDistrictChange = (value) => {
   // Step 3 Handlers
   const handlePasswordChange = (e) => {
     const { name, value } = e.target;
-    setPasswordData(prev => ({ ...prev, [name]: value }));
-    if (errors[name]) setErrors(prev => ({ ...prev, [name]: "" }));
+    setPasswordData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
   const validateStep3 = () => {
@@ -351,56 +356,56 @@ const handleDistrictChange = (value) => {
     return newErrors;
   };
 
-const handleSubmit = async () => {
-  console.log("START");
+  const handleSubmit = async () => {
+  
 
-  const newErrors = validateStep3();
+    const newErrors = validateStep3();
 
-  if (Object.keys(newErrors).length > 0) {
-    console.log("Validation failed", newErrors);
-    setErrors(newErrors);
-    return;
-  }
-
-  console.log("Validation Passed");
-
-  setIsLoading(true);
-
-  try {
-    const payload = {
-      vendorType,
-      vehicleType: vendorType === "vehicle" ? vehicleType : null,
-
-      name: personalData.name,
-      number: personalData.number,
-      email: personalData.email,
-
-      country: addressData.country,
-      state: addressData.state,
-      district: addressData.district,
-      city: addressData.city,
-      address: addressData.address,
-      pincode: addressData.pincode,
-
-      vendorPassword: passwordData.password,
-    };
-
-    console.log("Payload", payload);
-
-    const response = await apiHelper.post("/vendor/become", payload);
-
-    console.log("API Response", response);
-
-    if (response.success) {
-      showSuccessToast(response.message);
-      navigate("/vendor-login");
+    if (Object.keys(newErrors).length > 0) {
+      console.log("Validation failed", newErrors);
+      setErrors(newErrors);
+      return;
     }
-  } catch (err) {
-    console.log("ERROR", err);
-  } finally {
-    setIsLoading(false);
-  }
-};
+
+
+
+    setIsLoading(true);
+
+    try {
+      const payload = {
+        vendorType,
+        vehicleType: vendorType === "vehicle" ? vehicleType : null,
+
+        name: personalData.name,
+        number: personalData.number,
+        email: personalData.email,
+
+        country: addressData.country,
+        state: addressData.state,
+        district: addressData.district,
+        city: addressData.city,
+        address: addressData.address,
+        pincode: addressData.pincode,
+
+        vendorPassword: passwordData.password,
+      };
+
+  
+
+      const response = await apiHelper.post("/vendor/become", payload);
+
+      console.log("API Response", response);
+
+      if (response.success) {
+        showSuccessToast(response.message);
+        navigate("/vendor-login");
+      }
+    } catch (err) {
+      console.log("ERROR", err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center mb-8">
@@ -412,15 +417,11 @@ const handleSubmit = async () => {
                 currentStep === step
                   ? "bg-green-600 text-white ring-4 ring-green-100"
                   : currentStep > step
-                  ? "bg-green-100 text-green-600"
-                  : "bg-gray-100 text-gray-400"
+                    ? "bg-green-100 text-green-600"
+                    : "bg-gray-100 text-gray-400"
               }`}
             >
-              {currentStep > step ? (
-                <Check className="h-5 w-5" />
-              ) : (
-                step
-              )}
+              {currentStep > step ? <Check className="h-5 w-5" /> : step}
             </div>
           </div>
           {step < 3 && (
@@ -434,9 +435,6 @@ const handleSubmit = async () => {
       ))}
     </div>
   );
-
-
- 
 
   return (
     <div className="bg-gray-50 pb-8 min-h-screen">
@@ -473,20 +471,29 @@ const handleSubmit = async () => {
                   <label className="block text-sm font-medium text-gray-700 mb-3">
                     Vendor Type <span className="text-red-500">*</span>
                   </label>
-                  <RadioGroup value={vendorType} onChange={setVendorType} className="flex flex-wrap gap-6">
+                  <RadioGroup
+                    value={vendorType}
+                    onChange={setVendorType}
+                    className="flex flex-wrap gap-6"
+                  >
                     {[
                       { value: "vehicle", label: "Vehicle" },
                       { value: "spare-parts", label: "Spare Parts" },
                       { value: "service", label: "Service" },
                     ].map((opt) => (
-                      <Field key={opt.value} className="flex items-center gap-2">
+                      <Field
+                        key={opt.value}
+                        className="flex items-center gap-2"
+                      >
                         <Radio
                           value={opt.value}
                           className="group flex size-5 items-center justify-center rounded-full border-2 border-gray-400 bg-white data-checked:border-green-600 data-checked:bg-green-600"
                         >
                           <span className="invisible size-2 rounded-full bg-white group-data-checked:visible" />
                         </Radio>
-                        <Label className="text-sm text-gray-700 cursor-pointer">{opt.label}</Label>
+                        <Label className="text-sm text-gray-700 cursor-pointer">
+                          {opt.label}
+                        </Label>
                       </Field>
                     ))}
                   </RadioGroup>
@@ -498,19 +505,28 @@ const handleSubmit = async () => {
                     <label className="block text-sm font-medium text-gray-700 mb-3">
                       Vehicle Type <span className="text-red-500">*</span>
                     </label>
-                    <RadioGroup value={vehicleType} onChange={setVehicleType} className="flex gap-6">
+                    <RadioGroup
+                      value={vehicleType}
+                      onChange={setVehicleType}
+                      className="flex gap-6"
+                    >
                       {[
                         { value: "new", label: "New" },
                         { value: "used", label: "Used" },
                       ].map((opt) => (
-                        <Field key={opt.value} className="flex items-center gap-2">
+                        <Field
+                          key={opt.value}
+                          className="flex items-center gap-2"
+                        >
                           <Radio
                             value={opt.value}
                             className="group flex size-5 items-center justify-center rounded-full border-2 border-gray-400 bg-white data-checked:border-green-600 data-checked:bg-green-600"
                           >
                             <span className="invisible size-2 rounded-full bg-white group-data-checked:visible" />
                           </Radio>
-                          <Label className="text-sm text-gray-700 cursor-pointer">{opt.label}</Label>
+                          <Label className="text-sm text-gray-700 cursor-pointer">
+                            {opt.label}
+                          </Label>
                         </Field>
                       ))}
                     </RadioGroup>
@@ -530,7 +546,9 @@ const handleSubmit = async () => {
                       value={personalData.name}
                       onChange={handlePersonalChange}
                       className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                        errors.name ? "border-red-300 bg-red-50" : "border-gray-300"
+                        errors.name
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
                       }`}
                       placeholder="Your Full Name"
                     />
@@ -555,7 +573,9 @@ const handleSubmit = async () => {
                       value={personalData.number}
                       onChange={handlePersonalChange}
                       className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                        errors.number ? "border-red-300 bg-red-50" : "border-gray-300"
+                        errors.number
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
                       }`}
                       placeholder="9876543210"
                     />
@@ -580,7 +600,9 @@ const handleSubmit = async () => {
                       value={personalData.email}
                       onChange={handlePersonalChange}
                       className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                        errors.email ? "border-red-300 bg-red-50" : "border-gray-300"
+                        errors.email
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
                       }`}
                       placeholder="your@email.com"
                     />
@@ -592,7 +614,6 @@ const handleSubmit = async () => {
                   )}
                 </div>
 
-               
                 <button
                   type="button"
                   onClick={handleStep1Next}
@@ -625,28 +646,30 @@ const handleSubmit = async () => {
                   value={selectedState}
                   onChange={handleStateChange}
                   options={states}
-                  placeholder={selectedCountry ? "Select a state" : "Select a country first"}
+                  placeholder={
+                    selectedCountry
+                      ? "Select a state"
+                      : "Select a country first"
+                  }
                   icon={Building}
                   error={errors.state}
                   required={true}
                   disabled={!selectedCountry}
                 />
 
-                   {/* District */}
+                {/* District */}
                 <ComboboxWrapper
                   label="District"
                   value={selectedDistrict}
                   onChange={handleDistrictChange}
                   options={districts}
-                 placeholder={
-  selectedState
-    ? "Select a district"
-    : "Select a state first"
-}
+                  placeholder={
+                    selectedState ? "Select a district" : "Select a state first"
+                  }
                   icon={MapPin}
                   error={errors.district}
                   required={true}
-                 disabled={!selectedState}
+                  disabled={!selectedState}
                 />
 
                 {/* City */}
@@ -655,14 +678,14 @@ const handleSubmit = async () => {
                   value={selectedCity}
                   onChange={handleCityChange}
                   options={cities}
-                  placeholder={selectedState ? "Select a city" : "Select a state first"}
+                  placeholder={
+                    selectedState ? "Select a city" : "Select a state first"
+                  }
                   icon={Home}
                   error={errors.city}
                   required={true}
                   disabled={!selectedState}
                 />
-
-             
 
                 {/* Address */}
                 <div>
@@ -677,7 +700,9 @@ const handleSubmit = async () => {
                       onChange={handleAddressChange}
                       rows="3"
                       className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all resize-none ${
-                        errors.address ? "border-red-300 bg-red-50" : "border-gray-300"
+                        errors.address
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
                       }`}
                       placeholder="123, Main Street, Area Name"
                     />
@@ -702,7 +727,9 @@ const handleSubmit = async () => {
                       value={addressData.pincode}
                       onChange={handleAddressChange}
                       className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                        errors.pincode ? "border-red-300 bg-red-50" : "border-gray-300"
+                        errors.pincode
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
                       }`}
                       placeholder="302001"
                     />
@@ -758,7 +785,9 @@ const handleSubmit = async () => {
                       value={passwordData.password}
                       onChange={handlePasswordChange}
                       className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                        errors.password ? "border-red-300 bg-red-50" : "border-gray-300"
+                        errors.password
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
                       }`}
                       placeholder="Min 8 characters"
                     />
@@ -767,7 +796,11 @@ const handleSubmit = async () => {
                       onClick={() => setShowPassword(!showPassword)}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
                     </button>
                   </div>
                   {errors.password && (
@@ -790,21 +823,30 @@ const handleSubmit = async () => {
                       value={passwordData.confirmPassword}
                       onChange={handlePasswordChange}
                       className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                        errors.confirmPassword ? "border-red-300 bg-red-50" : "border-gray-300"
+                        errors.confirmPassword
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
                       }`}
                       placeholder="Confirm your password"
                     />
                     <button
                       type="button"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      onClick={() =>
+                        setShowConfirmPassword(!showConfirmPassword)
+                      }
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      {showConfirmPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
                     </button>
                   </div>
                   {errors.confirmPassword && (
                     <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
-                      <AlertCircle className="w-3 h-3" /> {errors.confirmPassword}
+                      <AlertCircle className="w-3 h-3" />{" "}
+                      {errors.confirmPassword}
                     </p>
                   )}
                 </div>
@@ -818,16 +860,16 @@ const handleSubmit = async () => {
                     <ChevronLeft className="h-5 w-5" />
                     Back
                   </button>
-                 <button
-  type="button"
-  onClick={() => {
-    console.log("BUTTON CLICKED");
-    handleSubmit();
-  }}
-  className="cursor-pointer flex-1 bg-gradient-to-r from-green-600 to-green-700"
->
-  Register as Vendor
-</button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                 
+                      handleSubmit();
+                    }}
+                    className="cursor-pointer flex-1 bg-gradient-to-r from-green-600 to-green-700"
+                  >
+                    Register as Vendor
+                  </button>
                 </div>
               </div>
             )}
