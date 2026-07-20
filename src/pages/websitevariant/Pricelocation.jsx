@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents } from "react-leaflet";
 import L from "leaflet";
 import Select from "react-select";
@@ -18,7 +18,8 @@ import apiHelper from "../../utils/apiHelper";
 // Leaflet icon setup
 delete L.Icon.Default.prototype._getIconUrl;
 L.Icon.Default.mergeOptions({
-  iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+  iconRetinaUrl:
+    "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
   iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
 });
@@ -58,12 +59,17 @@ const selectStyles = {
     ...base,
     borderRadius: "0.75rem",
     overflow: "hidden",
-    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)",
+    boxShadow:
+      "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)",
     backgroundColor: "white",
   }),
   option: (base, state) => ({
     ...base,
-    backgroundColor: state.isSelected ? "#16a34a" : state.isFocused ? "#f0fdf4" : "white",
+    backgroundColor: state.isSelected
+      ? "#16a34a"
+      : state.isFocused
+        ? "#f0fdf4"
+        : "white",
     color: state.isSelected ? "white" : "#111827",
     cursor: "pointer",
     "&:active": {
@@ -97,7 +103,14 @@ const tcsApplicableOptions = [
 ];
 
 // Custom Input Component
-const Input = ({ label, error, description, className = "", icon: Icon, ...props }) => {
+const Input = ({
+  label,
+  error,
+  description,
+  className = "",
+  icon: Icon,
+  ...props
+}) => {
   return (
     <div className={className}>
       {label && (
@@ -111,7 +124,7 @@ const Input = ({ label, error, description, className = "", icon: Icon, ...props
         )}
         <input
           {...props}
-          className={`w-full ${Icon ? 'pl-10' : 'px-4'} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+          className={`w-full ${Icon ? "pl-10" : "px-4"} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
             error ? "border-red-300 bg-red-50" : "border-gray-200"
           } ${props.disabled ? "bg-gray-50 cursor-not-allowed" : ""}`}
         />
@@ -125,13 +138,20 @@ const Input = ({ label, error, description, className = "", icon: Icon, ...props
 };
 
 // Custom Button Component
-const Button = ({ children, variant = "primary", className = "", type = "button", ...props }) => {
-  const baseStyles = "px-6 py-3 rounded-xl text-sm font-semibold transition-all";
+const Button = ({
+  children,
+  variant = "primary",
+  className = "",
+  type = "button",
+  ...props
+}) => {
+  const baseStyles =
+    "px-6 py-3 rounded-xl text-sm font-semibold transition-all";
   const variants = {
     primary: "bg-green-600 text-white hover:bg-green-700 shadow-md",
     outlined: "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50",
   };
-  
+
   return (
     <button
       type={type}
@@ -144,7 +164,15 @@ const Button = ({ children, variant = "primary", className = "", type = "button"
 };
 
 // Custom Listbox Component using Headless UI
-const CustomListbox = ({ data, value, onChange, displayField, placeholder, label, error }) => {
+const CustomListbox = ({
+  data,
+  value,
+  onChange,
+  displayField,
+  placeholder,
+  label,
+  error,
+}) => {
   return (
     <div>
       {label && (
@@ -159,7 +187,10 @@ const CustomListbox = ({ data, value, onChange, displayField, placeholder, label
               {value ? value[displayField] : placeholder}
             </span>
             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-              <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+              <ChevronUpDownIcon
+                className="h-5 w-5 text-gray-400"
+                aria-hidden="true"
+              />
             </span>
           </Listbox.Button>
           <Transition
@@ -206,90 +237,160 @@ const CustomListbox = ({ data, value, onChange, displayField, placeholder, label
   );
 };
 
-export default function PriceLocation({ 
-  setCurrentStep, 
-  currentStep, 
+export default function PriceLocation({
+  setCurrentStep,
+  step,
   completedSteps,
-  onComplete 
+  onComplete,
+    productData,   
+  isEdit, 
 }) {
   const navigate = useNavigate();
   const [position, setPosition] = useState([22.3039, 70.8022]);
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    control,
-    watch,
-  } = useForm({
-    resolver: yupResolver(PriceLocationSchema),
-    defaultValues: {}
-  });
+const {
+  register,
+  handleSubmit,
+  formState: { errors },
+  control,
+  watch,
+  reset,
+} = useForm({
+  resolver: yupResolver(PriceLocationSchema),
+  defaultValues: {},
+});
 
   const [country, setCountry] = useState("");
   const [state, setState] = useState("");
   const [district, setDistrict] = useState("");
+  
+
+ useEffect(() => {
+  const fetchPriceLocation = async () => {
+    try {
+      const productId = isEdit
+        ? productData?.id
+        : localStorage.getItem("vendorProductId");
+
+      if (!productId) return;
+
+      const res = await apiHelper.get(
+        `/vendor-web/website-variant/${productId}`
+      );
+
+      const data = res.data.data || res.data;
+
+      reset({
+        exShowroomPrice: data.exShowroomPrice || "",
+        onRoadPrice: data.onRoadPrice || "",
+        currency: data.currency || "",
+        gst: data.gst || "18",
+        tcsApplicable: data.tcsApplicable || "",
+        tcsPercentage: data.tcsPercentage || "",
+        financeAvailable: data.financeAvailable || "",
+        emiAvailable: data.emiAvailable || "",
+        downPayment: data.downPayment || "",
+        exchangeOffer: data.exchangeOffer || "",
+        offerPrice: data.offerPrice || "",
+        negotiable: data.negotiable || "",
+        country: data.country || "",
+        state: data.state || "",
+        district: data.district || "",
+        taluka: data.taluka || "",
+        city: data.city || "",
+        pincode: data.pincode || "",
+        landmark: data.landmark || "",
+        fullAddress: data.fullAddress || "",
+      });
+
+      setCountry(data.country || "");
+      setState(data.state || "");
+      setDistrict(data.district || "");
+
+      if (data.latitude && data.longitude) {
+        setPosition([Number(data.latitude), Number(data.longitude)]);
+      }
+    } catch (error) {
+      console.log("Price location fetch error", error);
+    }
+  };
+
+  fetchPriceLocation();
+}, [reset, productData, isEdit]);
+
 
   const onSubmit = async (data) => {
-    try {
-      const productId = localStorage.getItem("vendorProductId");
-      if (!productId) {
-        toast("Please save basic information first.");
-        return;
-      }
+  try {
+    const productId = isEdit
+      ? productData?.id
+      : localStorage.getItem("vendorProductId");
 
-      const payload = {
-        exShowroomPrice: data.exShowroomPrice ? Number(data.exShowroomPrice) : null,
-        onRoadPrice: data.onRoadPrice ? Number(data.onRoadPrice) : null,
-        currency: data.currency,
-        gst: data.gst ? Number(data.gst) : null,
-        tcsApplicable: data.tcsApplicable,
-        tcsPercentage: data.tcsPercentage ? Number(data.tcsPercentage) : null,
-        financeAvailable: data.financeAvailable,
-        emiAvailable: data.emiAvailable,
-        downPayment: data.downPayment ? Number(data.downPayment) : null,
-        exchangeOffer: data.exchangeOffer,
-        offerPrice: data.offerPrice ? Number(data.offerPrice) : null,
-        negotiable: data.negotiable,
-        country: data.country,
-        state: data.state,
-        district: data.district,
-        taluka: data.taluka,
-        city: data.city,
-        pincode: data.pincode,
-        landmark: data.landmark,
-        fullAddress: data.fullAddress,
-        latitude: position[0],
-        longitude: position[1],
-        currentStep: 4,
-      };
-
-      await apiHelper.put(`/vendor/products/${productId}/save-step`, payload);
-
-      toast.success("Price and location details saved!");
-      
-      // Mark step as completed
-      if (onComplete) onComplete(currentStep || 5);
-      
-      // Navigate to next step
-      if (setCurrentStep) setCurrentStep(6);
-    } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.message || "Failed to save price and location details.");
+    if (!productId) {
+      toast("Please save basic information first.");
+      return;
     }
-  };
+
+    const payload = {
+      exShowroomPrice: data.exShowroomPrice ? Number(data.exShowroomPrice) : null,
+      onRoadPrice: data.onRoadPrice ? Number(data.onRoadPrice) : null,
+      currency: data.currency,
+      gst: data.gst ? Number(data.gst) : null,
+      tcsApplicable: data.tcsApplicable,
+      tcsPercentage: data.tcsPercentage ? Number(data.tcsPercentage) : null,
+      financeAvailable: data.financeAvailable,
+      emiAvailable: data.emiAvailable,
+      downPayment: data.downPayment ? Number(data.downPayment) : null,
+      exchangeOffer: data.exchangeOffer,
+      offerPrice: data.offerPrice ? Number(data.offerPrice) : null,
+      negotiable: data.negotiable,
+      country: data.country,
+      state: data.state,
+      district: data.district,
+      taluka: data.taluka,
+      city: data.city,
+      pincode: data.pincode,
+      landmark: data.landmark,
+      fullAddress: data.fullAddress,
+      latitude: position[0],
+      longitude: position[1],
+      currentStep: 4,
+    };
+
+    await apiHelper.put(
+      `/vendor-web/website-variant/${productId}/save-step`,
+      payload,
+    );
+
+    toast.success("Price and location details saved!");
+    if (onComplete) onComplete(step);
+    if (setCurrentStep) setCurrentStep(step + 1);
+  } catch (error) {
+    console.error(error);
+    toast.error(
+      error.response?.data?.message ||
+        "Failed to save price and location details.",
+    );
+  }
+};
 
   const handlePrevious = () => {
-    if (currentStep && setCurrentStep) {
-      setCurrentStep(currentStep - 1);
-    } else if (setCurrentStep) {
-      setCurrentStep(4);
+    if (setCurrentStep) {
+      setCurrentStep(step - 1);
     }
   };
 
-  const countryOptions = Country.getAllCountries().map((c) => ({ value: c.isoCode, label: c.name }));
-  const stateOptions = State.getStatesOfCountry(country).map((s) => ({ value: s.isoCode, label: s.name }));
-  const cityOptions = City.getCitiesOfState(country, state).map((c) => ({ value: c.name, label: c.name }));
+  const countryOptions = Country.getAllCountries().map((c) => ({
+    value: c.isoCode,
+    label: c.name,
+  }));
+  const stateOptions = State.getStatesOfCountry(country).map((s) => ({
+    value: s.isoCode,
+    label: s.name,
+  }));
+  const cityOptions = City.getCitiesOfState(country, state).map((c) => ({
+    value: c.name,
+    label: c.name,
+  }));
 
   const currencyOptions = [
     { label: "INR - Indian Rupee", value: "INR" },
@@ -315,36 +416,35 @@ export default function PriceLocation({
             <div className="p-6 md:p-8 lg:p-10 space-y-10">
               {/* Pricing Details */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">Pricing Details</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                  Pricing Details
+                </h3>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                       Ex-Showroom Price <span className="text-red-500">*</span>
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
-                      <Input 
-                        {...register("exShowroomPrice")} 
-                        type="number" 
-                        placeholder="Enter price" 
-                        className="pl-8" 
-                        error={errors?.exShowroomPrice?.message} 
+                      <Input
+                        {...register("exShowroomPrice")}
+                        type="number"
+                        placeholder="Enter price"
+                        error={errors?.exShowroomPrice?.message}
                       />
                     </div>
                   </div>
 
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      On-Road Price <span className="text-xs text-gray-400">(Optional)</span>
+                      On-Road Price{" "}
+                      <span className="text-xs text-gray-400">(Optional)</span>
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
-                      <Input 
-                        {...register("onRoadPrice")} 
-                        type="number" 
-                        placeholder="Enter on-road price" 
-                        className="pl-8" 
-                        error={errors?.onRoadPrice?.message} 
+                      <Input
+                        {...register("onRoadPrice")}
+                        type="number"
+                        placeholder="Enter on-road price"
+                        error={errors?.onRoadPrice?.message}
                       />
                     </div>
                   </div>
@@ -356,7 +456,11 @@ export default function PriceLocation({
                       <CustomListbox
                         label="Currency"
                         data={currencyOptions}
-                        value={currencyOptions.find((o) => o.value === field.value) || null}
+                        value={
+                          currencyOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Currency"
@@ -365,15 +469,13 @@ export default function PriceLocation({
                     )}
                   />
 
-                  <Input 
-                    {...register("gst")} 
-                    type="number" 
-                    label="GST (%)" 
-                    placeholder="GST %" 
-                    defaultValue="18" 
-                    error={errors?.gst?.message} 
+                  <Input
+                    {...register("gst")}
+                    type="number"
+                    label="GST (%)"
+                    placeholder="GST %"
+                    error={errors?.gst?.message}
                   />
-
                   <Controller
                     name="tcsApplicable"
                     control={control}
@@ -381,7 +483,11 @@ export default function PriceLocation({
                       <CustomListbox
                         label="TCS Applicable"
                         data={tcsApplicableOptions}
-                        value={tcsApplicableOptions.find((o) => o.value === field.value) || null}
+                        value={
+                          tcsApplicableOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select"
@@ -390,12 +496,12 @@ export default function PriceLocation({
                     )}
                   />
 
-                  <Input 
-                    {...register("tcsPercentage")} 
-                    type="number" 
-                    label="TCS (%)" 
-                    placeholder="Enter TCS %" 
-                    error={errors?.tcsPercentage?.message} 
+                  <Input
+                    {...register("tcsPercentage")}
+                    type="number"
+                    label="TCS (%)"
+                    placeholder="Enter TCS %"
+                    error={errors?.tcsPercentage?.message}
                   />
 
                   <div>
@@ -404,26 +510,28 @@ export default function PriceLocation({
                     </label>
                     <div className="flex gap-6">
                       <label className="flex cursor-pointer items-center gap-2">
-                        <input 
-                          type="radio" 
-                          value="yes" 
-                          {...register("financeAvailable")} 
-                          className="h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600" 
+                        <input
+                          type="radio"
+                          value="yes"
+                          {...register("financeAvailable")}
+                          className="h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600"
                         />
                         <span className="text-sm text-gray-700">Yes</span>
                       </label>
                       <label className="flex cursor-pointer items-center gap-2">
-                        <input 
-                          type="radio" 
-                          value="no" 
-                          {...register("financeAvailable")} 
-                          className="h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600" 
+                        <input
+                          type="radio"
+                          value="no"
+                          {...register("financeAvailable")}
+                          className="h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600"
                         />
                         <span className="text-sm text-gray-700">No</span>
                       </label>
                     </div>
                     {errors?.financeAvailable && (
-                      <p className="mt-1 text-xs text-red-600">{errors.financeAvailable.message}</p>
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.financeAvailable.message}
+                      </p>
                     )}
                   </div>
 
@@ -433,106 +541,112 @@ export default function PriceLocation({
                     </label>
                     <div className="flex gap-6">
                       <label className="flex cursor-pointer items-center gap-2">
-                        <input 
-                          type="radio" 
-                          value="yes" 
-                          {...register("emiAvailable")} 
-                          className="h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600" 
+                        <input
+                          type="radio"
+                          value="yes"
+                          {...register("emiAvailable")}
+                          className="h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600"
                         />
                         <span className="text-sm text-gray-700">Yes</span>
                       </label>
                       <label className="flex cursor-pointer items-center gap-2">
-                        <input 
-                          type="radio" 
-                          value="no" 
-                          {...register("emiAvailable")} 
-                          className="h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600" 
+                        <input
+                          type="radio"
+                          value="no"
+                          {...register("emiAvailable")}
+                          className="h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600"
                         />
                         <span className="text-sm text-gray-700">No</span>
                       </label>
                     </div>
                     {errors?.emiAvailable && (
-                      <p className="mt-1 text-xs text-red-600">{errors.emiAvailable.message}</p>
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.emiAvailable.message}
+                      </p>
                     )}
                   </div>
 
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      Down Payment <span className="text-xs text-gray-400">(Optional)</span>
+                      Down Payment{" "}
+                      <span className="text-xs text-gray-400">(Optional)</span>
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
-                      <Input 
-                        {...register("downPayment")} 
-                        type="number" 
-                        placeholder="Enter amount" 
-                        className="pl-8" 
-                        error={errors?.downPayment?.message} 
+                      <Input
+                        {...register("downPayment")}
+                        type="number"
+                        placeholder="Enter amount"
+                        error={errors?.downPayment?.message}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Exchange Offer</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Exchange Offer
+                    </label>
                     <div className="flex gap-6">
                       <label className="flex cursor-pointer items-center gap-2">
-                        <input 
-                          type="radio" 
-                          value="yes" 
-                          {...register("exchangeOffer")} 
-                          className="h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600" 
+                        <input
+                          type="radio"
+                          value="yes"
+                          {...register("exchangeOffer")}
+                          className="h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600"
                         />
                         <span className="text-sm text-gray-700">Yes</span>
                       </label>
                       <label className="flex cursor-pointer items-center gap-2">
-                        <input 
-                          type="radio" 
-                          value="no" 
-                          {...register("exchangeOffer")} 
-                          className="h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600" 
+                        <input
+                          type="radio"
+                          value="no"
+                          {...register("exchangeOffer")}
+                          className="h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600"
                         />
                         <span className="text-sm text-gray-700">No</span>
                       </label>
                     </div>
                     {errors?.exchangeOffer && (
-                      <p className="mt-1 text-xs text-red-600">{errors.exchangeOffer.message}</p>
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.exchangeOffer.message}
+                      </p>
                     )}
                   </div>
 
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      Offer Price <span className="text-xs text-gray-400">(Optional)</span>
+                      Offer Price{" "}
+                      <span className="text-xs text-gray-400">(Optional)</span>
                     </label>
                     <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">₹</span>
-                      <Input 
-                        {...register("offerPrice")} 
-                        type="number" 
-                        placeholder="Enter offer price" 
-                        className="pl-8" 
-                        error={errors?.offerPrice?.message} 
+                      <Input
+                        {...register("offerPrice")}
+                        type="number"
+                        placeholder="Enter offer price"
+                        error={errors?.offerPrice?.message}
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Negotiable</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Negotiable
+                    </label>
                     <div className="flex gap-6">
                       <label className="flex cursor-pointer items-center gap-2">
-                        <input 
-                          type="radio" 
-                          value="yes" 
-                          {...register("negotiable")} 
-                          className="h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600" 
+                        <input
+                          type="radio"
+                          value="yes"
+                          {...register("negotiable")}
+                          className="h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600"
                         />
                         <span className="text-sm text-gray-700">Yes</span>
                       </label>
                       <label className="flex cursor-pointer items-center gap-2">
-                        <input 
-                          type="radio" 
-                          value="no" 
-                          {...register("negotiable")} 
-                          className="h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600" 
+                        <input
+                          type="radio"
+                          value="no"
+                          {...register("negotiable")}
+                          className="h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600"
                         />
                         <span className="text-sm text-gray-700">No</span>
                       </label>
@@ -543,10 +657,14 @@ export default function PriceLocation({
 
               {/* Location Details */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">Location Details</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                  Location Details
+                </h3>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Country</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Country
+                    </label>
                     <Controller
                       name="country"
                       control={control}
@@ -555,7 +673,11 @@ export default function PriceLocation({
                           options={countryOptions}
                           styles={selectStyles}
                           placeholder="Search Country"
-                          value={countryOptions.find((o) => o.value === field.value) || null}
+                          value={
+                            countryOptions.find(
+                              (o) => o.value === field.value,
+                            ) || null
+                          }
                           onChange={(selected) => {
                             field.onChange(selected?.value || "");
                             setCountry(selected?.value || "");
@@ -565,7 +687,9 @@ export default function PriceLocation({
                       )}
                     />
                     {errors.country && (
-                      <p className="mt-1 text-xs text-red-600">{errors.country.message}</p>
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.country.message}
+                      </p>
                     )}
                   </div>
 
@@ -582,7 +706,10 @@ export default function PriceLocation({
                           styles={selectStyles}
                           placeholder="Search State"
                           isDisabled={!country}
-                          value={stateOptions.find((o) => o.value === field.value) || null}
+                          value={
+                            stateOptions.find((o) => o.value === field.value) ||
+                            null
+                          }
                           onChange={(selected) => {
                             field.onChange(selected?.value || "");
                             setState(selected?.value || "");
@@ -592,7 +719,9 @@ export default function PriceLocation({
                       )}
                     />
                     {errors?.state && (
-                      <p className="mt-1 text-xs text-red-600">{errors.state.message}</p>
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.state.message}
+                      </p>
                     )}
                   </div>
 
@@ -609,7 +738,10 @@ export default function PriceLocation({
                           styles={selectStyles}
                           placeholder="Search District"
                           isDisabled={!state}
-                          value={cityOptions.find((o) => o.value === field.value) || null}
+                          value={
+                            cityOptions.find((o) => o.value === field.value) ||
+                            null
+                          }
                           onChange={(selected) => {
                             field.onChange(selected?.value || "");
                             setDistrict(selected?.value || "");
@@ -618,12 +750,16 @@ export default function PriceLocation({
                       )}
                     />
                     {errors?.district && (
-                      <p className="mt-1 text-xs text-red-600">{errors.district.message}</p>
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.district.message}
+                      </p>
                     )}
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">Taluka / Tehsil</label>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Taluka
+                    </label>
                     <Controller
                       name="taluka"
                       control={control}
@@ -633,19 +769,26 @@ export default function PriceLocation({
                           styles={selectStyles}
                           placeholder="Search Taluka"
                           isDisabled={!district}
-                          value={cityOptions.find((o) => o.value === field.value) || null}
-                          onChange={(selected) => field.onChange(selected?.value || "")}
+                          value={
+                            cityOptions.find((o) => o.value === field.value) ||
+                            null
+                          }
+                          onChange={(selected) =>
+                            field.onChange(selected?.value || "")
+                          }
                         />
                       )}
                     />
                     {errors?.taluka && (
-                      <p className="mt-1 text-xs text-red-600">{errors.taluka.message}</p>
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.taluka.message}
+                      </p>
                     )}
                   </div>
 
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      Village / City <span className="text-red-500">*</span>
+                      City <span className="text-red-500">*</span>
                     </label>
                     <Controller
                       name="city"
@@ -654,61 +797,85 @@ export default function PriceLocation({
                         <Select
                           options={cityOptions}
                           styles={selectStyles}
-                          placeholder="Search Village / City"
+                          placeholder="Search City"
                           isDisabled={!state}
-                          value={cityOptions.find((o) => o.value === field.value) || null}
-                          onChange={(selected) => field.onChange(selected?.value || "")}
+                          value={
+                            cityOptions.find((o) => o.value === field.value) ||
+                            null
+                          }
+                          onChange={(selected) =>
+                            field.onChange(selected?.value || "")
+                          }
                         />
                       )}
                     />
                     {errors?.city && (
-                      <p className="mt-1 text-xs text-red-600">{errors.city.message}</p>
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.city.message}
+                      </p>
                     )}
                   </div>
 
-                  <Input 
-                    {...register("pincode")} 
-                    type="number" 
-                    label="Pincode" 
-                    placeholder="Enter pincode" 
-                    error={errors?.pincode?.message} 
+                  <Input
+                    {...register("pincode")}
+                    type="number"
+                    label="Pincode"
+                    placeholder="Enter pincode"
+                    error={errors?.pincode?.message}
                   />
-                  
-                  <Input 
-                    {...register("landmark")} 
-                    label="Landmark" 
-                    placeholder="Enter landmark" 
-                    error={errors?.landmark?.message} 
+
+                  <Input
+                    {...register("landmark")}
+                    label="Landmark"
+                    placeholder="Enter landmark"
+                    error={errors?.landmark?.message}
                   />
                 </div>
 
                 <div className="mt-6">
-                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">Full Address</label>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                    Full Address
+                  </label>
                   <textarea
                     {...register("fullAddress")}
                     rows={3}
                     className={`w-full px-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
-                      errors?.fullAddress ? "border-red-300 bg-red-50" : "border-gray-200"
+                      errors?.fullAddress
+                        ? "border-red-300 bg-red-50"
+                        : "border-gray-200"
                     }`}
                     placeholder="Enter complete address..."
                   />
                   {errors?.fullAddress && (
-                    <p className="mt-1 text-xs text-red-600">{errors.fullAddress.message}</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.fullAddress.message}
+                    </p>
                   )}
                 </div>
               </div>
 
               {/* Map Location */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">Map Location</h3>
-                <p className="text-sm text-gray-500 mb-6">Drag the pin to exact location of your tractor</p>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Map Location
+                </h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  Drag the pin to exact location of your tractor
+                </p>
                 <div className="overflow-hidden rounded-xl border border-gray-200">
-                  <MapContainer center={position} zoom={11} style={{ height: "400px", width: "100%" }}>
-                    <TileLayer 
-                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors' 
-                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" 
+                  <MapContainer
+                    center={position}
+                    zoom={11}
+                    style={{ height: "400px", width: "100%" }}
+                  >
+                    <TileLayer
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     />
-                    <LocationMarker position={position} setPosition={setPosition} />
+                    <LocationMarker
+                      position={position}
+                      setPosition={setPosition}
+                    />
                   </MapContainer>
                 </div>
               </div>
@@ -716,18 +883,18 @@ export default function PriceLocation({
 
             {/* Action Buttons */}
             <div className="px-6 md:px-8 lg:px-10 py-6 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between gap-3">
-              <Button 
-                type="button" 
-                variant="outlined" 
+              <Button
+                type="button"
+                variant="outlined"
                 className="min-w-[7rem] order-2 sm:order-1"
                 onClick={handlePrevious}
               >
                 Previous
               </Button>
               <div className="flex flex-col sm:flex-row gap-3 order-1 sm:order-2">
-                <Button 
-                  type="button" 
-                  variant="outlined" 
+                <Button
+                  type="button"
+                  variant="outlined"
                   className="min-w-[7rem]"
                   onClick={() => navigate(-1)}
                 >

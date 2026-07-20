@@ -1,6 +1,5 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
-import { useState, useEffect } from "react";
 import Select from "react-select";
 import { Country, State, City } from "country-state-city";
 import toast from "react-hot-toast";
@@ -8,6 +7,8 @@ import { Listbox, Transition } from "@headlessui/react";
 import { ChevronUpDownIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
+import { useState, useRef, useEffect } from "react";
+import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { BasicInformationSchema } from "./schema";
 import apiHelper from "../../utils/apiHelper";
@@ -56,7 +57,8 @@ const selectStyles = {
     ...base,
     borderRadius: "0.75rem",
     overflow: "hidden",
-    boxShadow: "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)",
+    boxShadow:
+      "0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06)",
     backgroundColor: "white",
   }),
   option: (base, state) => ({
@@ -93,7 +95,14 @@ const selectStyles = {
 };
 
 // Custom Input Component - matches vendor profile theme
-const Input = ({ label, error, description, className = "", icon: Icon, ...props }) => {
+const Input = ({
+  label,
+  error,
+  description,
+  className = "",
+  icon: Icon,
+  ...props
+}) => {
   return (
     <div className={className}>
       {label && (
@@ -107,7 +116,7 @@ const Input = ({ label, error, description, className = "", icon: Icon, ...props
         )}
         <input
           {...props}
-          className={`w-full ${Icon ? 'pl-10' : 'px-4'} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+          className={`w-full ${Icon ? "pl-10" : "px-4"} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
             error ? "border-red-300 bg-red-50" : "border-gray-200"
           } ${props.disabled ? "bg-gray-50 cursor-not-allowed" : ""}`}
         />
@@ -121,7 +130,14 @@ const Input = ({ label, error, description, className = "", icon: Icon, ...props
 };
 
 // Custom Textarea Component - matches vendor profile theme
-const Textarea = ({ label, error, description, className = "", icon: Icon, ...props }) => {
+const Textarea = ({
+  label,
+  error,
+  description,
+  className = "",
+  icon: Icon,
+  ...props
+}) => {
   return (
     <div className={className}>
       {label && (
@@ -135,7 +151,7 @@ const Textarea = ({ label, error, description, className = "", icon: Icon, ...pr
         )}
         <textarea
           {...props}
-          className={`w-full ${Icon ? 'pl-10' : 'px-4'} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+          className={`w-full ${Icon ? "pl-10" : "px-4"} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
             error ? "border-red-300 bg-red-50" : "border-gray-200"
           } ${props.disabled ? "bg-gray-50 cursor-not-allowed" : ""}`}
         />
@@ -149,13 +165,20 @@ const Textarea = ({ label, error, description, className = "", icon: Icon, ...pr
 };
 
 // Custom Button Component - matches vendor profile theme
-const Button = ({ children, variant = "primary", className = "", type = "button", ...props }) => {
-  const baseStyles = "px-6 py-3 rounded-xl text-sm font-semibold transition-all";
+const Button = ({
+  children,
+  variant = "primary",
+  className = "",
+  type = "button",
+  ...props
+}) => {
+  const baseStyles =
+    "px-6 py-3 rounded-xl text-sm font-semibold transition-all";
   const variants = {
     primary: "bg-green-600 text-white hover:bg-green-700 shadow-md",
     outlined: "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50",
   };
-  
+
   return (
     <button
       type={type}
@@ -168,7 +191,16 @@ const Button = ({ children, variant = "primary", className = "", type = "button"
 };
 
 // Custom Listbox Component using Headless UI - matches vendor profile theme
-const CustomListbox = ({ data, value, onChange, displayField, placeholder, label, error, icon: Icon }) => {
+const CustomListbox = ({
+  data,
+  value,
+  onChange,
+  displayField,
+  placeholder,
+  label,
+  error,
+  icon: Icon,
+}) => {
   return (
     <div>
       {label && (
@@ -183,7 +215,10 @@ const CustomListbox = ({ data, value, onChange, displayField, placeholder, label
               {value ? value[displayField] : placeholder}
             </span>
             <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-              <ChevronUpDownIcon className="h-5 w-5 text-gray-400" aria-hidden="true" />
+              <ChevronUpDownIcon
+                className="h-5 w-5 text-gray-400"
+                aria-hidden="true"
+              />
             </span>
           </Listbox.Button>
           <Transition
@@ -231,34 +266,182 @@ const CustomListbox = ({ data, value, onChange, displayField, placeholder, label
 };
 
 // Custom DatePicker Component - matches vendor profile theme
-const DatePicker = ({ value, onChange, label, error, placeholder = "Select date...", icon: Icon }) => {
+
+const DatePicker = ({
+  value, // Date object or null
+  onChange, // (date: Date | null) => void
+  label,
+  error,
+  placeholder = "Select date...",
+}) => {
+  const [open, setOpen] = useState(false);
+  const [viewDate, setViewDate] = useState(value || new Date());
+  const wrapperRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (wrapperRef.current && !wrapperRef.current.contains(e.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (value) setViewDate(value);
+  }, [value]);
+
+  const formatDisplay = (date) => {
+    if (!date) return "";
+    return date.toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+    });
+  };
+
+  const year = viewDate.getFullYear();
+  const month = viewDate.getMonth();
+
+  const firstDayOfMonth = new Date(year, month, 1).getDay();
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  const isSameDay = (a, b) =>
+    a &&
+    b &&
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate();
+
+  const handleSelectDay = (day) => {
+    const newDate = new Date(year, month, day);
+    onChange(newDate);
+    setOpen(false);
+  };
+
+  const goPrevMonth = () => setViewDate(new Date(year, month - 1, 1));
+  const goNextMonth = () => setViewDate(new Date(year, month + 1, 1));
+
+  const weeks = [];
+  let day = 1 - firstDayOfMonth;
+  while (day <= daysInMonth) {
+    const week = [];
+    for (let i = 0; i < 7; i++) {
+      week.push(day > 0 && day <= daysInMonth ? day : null);
+      day++;
+    }
+    weeks.push(week);
+  }
+
   return (
-    <div>
+    <div ref={wrapperRef} className="relative">
       {label && (
         <label className="block text-xs font-semibold text-gray-700 mb-1.5">
           {label}
         </label>
       )}
-      <div className="relative">
-        {Icon && (
-          <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-        )}
-        <input
-          type="date"
-          value={value || ""}
-          onChange={(e) => onChange(e.target.value ? new Date(e.target.value) : null)}
-          className={`w-full ${Icon ? 'pl-10' : 'px-4'} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
-            error ? "border-red-300 bg-red-50" : "border-gray-200"
-          }`}
-          placeholder={placeholder}
-        />
-      </div>
+
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        className={`relative w-full text-left rounded-xl border bg-white py-3 pl-10 pr-4 text-sm outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+          error ? "border-red-300 bg-red-50" : "border-gray-200"
+        }`}
+      >
+        <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+        <span className={value ? "text-gray-900" : "text-gray-400"}>
+          {value ? formatDisplay(value) : placeholder}
+        </span>
+      </button>
+
+      {open && (
+        <div className="absolute z-20 mt-1 w-72 rounded-xl border border-gray-200 bg-white p-4 shadow-lg">
+          <div className="flex items-center justify-between mb-3">
+            <button
+              type="button"
+              onClick={goPrevMonth}
+              className="p-1.5 rounded-lg hover:bg-green-50 text-gray-500 hover:text-green-600 transition-colors"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <span className="text-sm font-semibold text-gray-900">
+              {viewDate.toLocaleDateString("en-GB", {
+                month: "long",
+                year: "numeric",
+              })}
+            </span>
+            <button
+              type="button"
+              onClick={goNextMonth}
+              className="p-1.5 rounded-lg hover:bg-green-50 text-gray-500 hover:text-green-600 transition-colors"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          <div className="grid grid-cols-7 gap-1 mb-1">
+            {["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"].map((d) => (
+              <div
+                key={d}
+                className="text-center text-[11px] font-medium text-gray-400 py-1"
+              >
+                {d}
+              </div>
+            ))}
+          </div>
+
+          {weeks.map((week, wi) => (
+            <div key={wi} className="grid grid-cols-7 gap-1">
+              {week.map((d, di) => {
+                const thisDate = d ? new Date(year, month, d) : null;
+                const selected = isSameDay(thisDate, value);
+                return (
+                  <button
+                    type="button"
+                    key={di}
+                    disabled={!d}
+                    onClick={() => d && handleSelectDay(d)}
+                    className={`h-8 w-8 rounded-lg text-sm transition-colors ${
+                      !d
+                        ? "invisible"
+                        : selected
+                          ? "bg-green-600 text-white font-medium"
+                          : "text-gray-700 hover:bg-green-50 hover:text-green-700"
+                    }`}
+                  >
+                    {d}
+                  </button>
+                );
+              })}
+            </div>
+          ))}
+
+          <button
+            type="button"
+            onClick={() => {
+              onChange(null);
+              setOpen(false);
+            }}
+            className="mt-3 text-xs text-gray-500 hover:text-red-500 transition-colors"
+          >
+            Clear
+          </button>
+        </div>
+      )}
+
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
 };
 
-export default function BasicInformation({ setCurrentStep }) {
+export default function BasicInformation({
+  setCurrentStep,
+  step,
+  onComplete,
+  productData,
+  isEdit,
+}) {
   const navigate = useNavigate();
   const {
     register,
@@ -267,9 +450,10 @@ export default function BasicInformation({ setCurrentStep }) {
     control,
     watch,
     setValue,
+    reset,
   } = useForm({
     resolver: yupResolver(BasicInformationSchema),
-    defaultValues: {}
+    defaultValues: {},
   });
 
   const [country, setCountry] = useState("");
@@ -324,6 +508,67 @@ export default function BasicInformation({ setCurrentStep }) {
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    if (!isEdit || !productData) return;
+
+    setCountry(productData.country || "");
+
+    reset({
+      categoryId: productData.categoryId,
+      brandId: productData.brandId,
+      modelId: productData.modelId,
+      modelYearId: productData.modelYearId,
+      variantId: productData.variantId,
+
+      variantCode: productData.variantCode,
+      productName: productData.productName,
+      productCode: productData.productCode,
+      skuCode: productData.skuCode,
+
+      launchYear: productData.launchYear
+        ? productData.launchYear.split("T")[0]
+        : "",
+
+      country: productData.country,
+      tractorStatus: productData.tractorStatus,
+      shortDescription: productData.shortDescription,
+
+      seoTitle: productData.seoTitle,
+      seoUrl: productData.seoUrl,
+      metaDescription: productData.metaDescription,
+      keywords: productData.keywords,
+
+      highlights: {
+        highlight1: productData.highlight1,
+        highlight2: productData.highlight2,
+        highlight3: productData.highlight3,
+        highlight4: productData.highlight4,
+        highlight5: productData.highlight5,
+      },
+
+      colors: {
+        red: productData.redColor,
+        blue: productData.blueColor,
+        green: productData.greenColor,
+        orange: productData.orangeColor,
+        black: productData.blackColor,
+        white: productData.whiteColor,
+        custom: productData.customColor,
+      },
+
+      customColorName: productData.customColorName,
+      customColorCode: productData.customColorCode,
+
+      availableStates: productData.availableStates || [],
+      availableDistricts: productData.availableDistricts || [],
+      availableDealers: productData.availableDealers || [],
+
+      stockStatus: productData.stockStatus,
+    });
+
+    setValue("showCustomColor", productData.customColor);
+  }, [productData, isEdit, reset]);
 
   const countryOptions = Country.getAllCountries().map((c) => ({
     value: c.isoCode,
@@ -393,12 +638,25 @@ export default function BasicInformation({ setCurrentStep }) {
         currentStep: 0,
       };
 
-      const res = await apiHelper.post("/vendor/products", payload);
-      const productId = res.data.id;
-      localStorage.setItem("vendorProductId", productId.toString());
+      let res;
+
+      if (isEdit) {
+        res = await apiHelper.put(
+          `/vendor-web/website-variant/${productData.id}`,
+          payload,
+        );
+      } else {
+        res = await apiHelper.post("/vendor-web/website-variant", payload);
+
+        localStorage.setItem("vendorProductId", res.data.id.toString());
+      }
 
       toast.success("Basic information saved!");
-      setCurrentStep(1);
+      if (onComplete) {
+        onComplete(step);
+      }
+
+      setCurrentStep(step + 1);
     } catch (error) {
       console.error(error);
       toast.error(
@@ -435,7 +693,9 @@ export default function BasicInformation({ setCurrentStep }) {
                     render={({ field }) => (
                       <CustomListbox
                         data={categories}
-                        value={categories.find((c) => c.id === field.value) || null}
+                        value={
+                          categories.find((c) => c.id === field.value) || null
+                        }
                         onChange={(option) => {
                           field.onChange(option.id);
                           setValue("brandId", "");
@@ -458,7 +718,10 @@ export default function BasicInformation({ setCurrentStep }) {
                     render={({ field }) => (
                       <CustomListbox
                         data={filteredBrands}
-                        value={filteredBrands.find((b) => b.id === field.value) || null}
+                        value={
+                          filteredBrands.find((b) => b.id === field.value) ||
+                          null
+                        }
                         onChange={(option) => {
                           field.onChange(option.id);
                           setValue("modelId", "");
@@ -480,7 +743,10 @@ export default function BasicInformation({ setCurrentStep }) {
                     render={({ field }) => (
                       <CustomListbox
                         data={filteredModels}
-                        value={filteredModels.find((m) => m.id === field.value) || null}
+                        value={
+                          filteredModels.find((m) => m.id === field.value) ||
+                          null
+                        }
                         onChange={(option) => {
                           field.onChange(option.id);
                           setValue("modelYearId", "");
@@ -502,7 +768,9 @@ export default function BasicInformation({ setCurrentStep }) {
                       <CustomListbox
                         data={filteredModelYears}
                         value={
-                          filteredModelYears.find((y) => y.id === field.value) || null
+                          filteredModelYears.find(
+                            (y) => y.id === field.value,
+                          ) || null
                         }
                         onChange={(option) => {
                           field.onChange(option.id);
@@ -532,7 +800,8 @@ export default function BasicInformation({ setCurrentStep }) {
                       <CustomListbox
                         data={filteredVariants}
                         value={
-                          filteredVariants.find((v) => v.id === field.value) || null
+                          filteredVariants.find((v) => v.id === field.value) ||
+                          null
                         }
                         onChange={(option) => {
                           field.onChange(option.id);
@@ -558,7 +827,9 @@ export default function BasicInformation({ setCurrentStep }) {
                     control={control}
                     render={({ field }) => (
                       <DatePicker
-                        value={field.value ? parseLocalDate(field.value) : undefined}
+                        value={
+                          field.value ? parseLocalDate(field.value) : undefined
+                        }
                         onChange={(dates) =>
                           field.onChange(dates ? formatLocalDate(dates) : null)
                         }
@@ -600,8 +871,9 @@ export default function BasicInformation({ setCurrentStep }) {
                     <CustomListbox
                       data={tractorStatusOptions}
                       value={
-                        tractorStatusOptions.find((o) => o.value === field.value) ||
-                        null
+                        tractorStatusOptions.find(
+                          (o) => o.value === field.value,
+                        ) || null
                       }
                       onChange={(option) => field.onChange(option?.value)}
                       displayField="label"
@@ -667,7 +939,10 @@ export default function BasicInformation({ setCurrentStep }) {
 
                 <div className="flex flex-wrap gap-4">
                   {colorOptions.map((color) => (
-                    <label key={color.value} className="flex items-center gap-2 cursor-pointer">
+                    <label
+                      key={color.value}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
                       <input
                         type="checkbox"
                         {...register(`colors.${color.value}`)}
@@ -677,7 +952,9 @@ export default function BasicInformation({ setCurrentStep }) {
                         className="h-6 w-6 rounded-full border border-gray-200"
                         style={{ backgroundColor: color.value }}
                       />
-                      <span className="text-sm text-gray-700">{color.label}</span>
+                      <span className="text-sm text-gray-700">
+                        {color.label}
+                      </span>
                     </label>
                   ))}
                   <label className="flex items-center gap-2 cursor-pointer">
@@ -739,8 +1016,9 @@ export default function BasicInformation({ setCurrentStep }) {
                           styles={selectStyles}
                           placeholder="Search Country"
                           value={
-                            countryOptions.find((o) => o.value === field.value) ||
-                            null
+                            countryOptions.find(
+                              (o) => o.value === field.value,
+                            ) || null
                           }
                           onChange={(selected) => {
                             field.onChange(selected?.value || "");
@@ -788,7 +1066,8 @@ export default function BasicInformation({ setCurrentStep }) {
 
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      Available Districts <span className="text-red-500">*</span>
+                      Available Districts{" "}
+                      <span className="text-red-500">*</span>
                     </label>
                     <Controller
                       name="availableDistricts"
@@ -852,8 +1131,9 @@ export default function BasicInformation({ setCurrentStep }) {
                       <CustomListbox
                         data={stockStatusOptions}
                         value={
-                          stockStatusOptions.find((o) => o.value === field.value) ||
-                          null
+                          stockStatusOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
                         }
                         onChange={(option) => field.onChange(option?.value)}
                         displayField="label"
@@ -905,37 +1185,37 @@ export default function BasicInformation({ setCurrentStep }) {
             </div>
 
             {/* Action Buttons */}
-   <div className="px-6 md:px-8 lg:px-10 py-6 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between gap-3">
-          <Button 
-            type="button" 
-            variant="outlined" 
-            className="min-w-[7rem] order-2 sm:order-1"
-            onClick={() => navigate(-1)}
-          >
-            Cancel
-          </Button>
-          <div className="flex flex-col sm:flex-row gap-3 order-1 sm:order-2">
-            <Button 
-              type="button" 
-              variant="outlined" 
-              className="min-w-[7rem]"
-              onClick={() => {
-                if (step > 1) {
-                  if (setCurrentStep) {
-                    setCurrentStep(step - 1);
-                  } else if (prevStep) {
-                    prevStep();
-                  }
-                }
-              }}
-            >
-              Previous
-            </Button>
-            <Button type="submit" className="min-w-[7rem]">
-              Save &amp; Next
-            </Button>
-          </div>
-        </div>
+            <div className="px-6 md:px-8 lg:px-10 py-6 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between gap-3">
+              <Button
+                type="button"
+                variant="outlined"
+                className="min-w-[7rem] order-2 sm:order-1"
+                onClick={() => navigate(-1)}
+              >
+                Cancel
+              </Button>
+              <div className="flex flex-col sm:flex-row gap-3 order-1 sm:order-2">
+                <Button
+                  type="button"
+                  variant="outlined"
+                  className="min-w-[7rem]"
+                  onClick={() => {
+                    if (step > 1) {
+                      if (setCurrentStep) {
+                        setCurrentStep(step - 1);
+                      } else if (prevStep) {
+                        prevStep();
+                      }
+                    }
+                  }}
+                >
+                  Previous
+                </Button>
+                <Button type="submit" className="min-w-[7rem]">
+                  Save &amp; Next
+                </Button>
+              </div>
+            </div>
           </form>
         </div>
       </div>

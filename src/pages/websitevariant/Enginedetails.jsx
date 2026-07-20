@@ -1,5 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
+import { useEffect } from "react";
 import toast from "react-hot-toast";
 import { Droplets, Filter, Cog, CheckCircle, Thermometer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -40,13 +41,38 @@ const emissionNormsOptions = [
   { label: "Euro 6", value: "euro6" },
 ];
 const coolingSystemOptions = [
-  { label: "Water Cooled", value: "water_cooled", description: "More efficient cooling • Better performance", icon: Droplets },
-  { label: "Oil Cooled", value: "oil_cooled", description: "Low maintenance • Suitable for heavy duty", icon: Thermometer },
+  {
+    label: "Water Cooled",
+    value: "water_cooled",
+    description: "More efficient cooling • Better performance",
+    icon: Droplets,
+  },
+  {
+    label: "Oil Cooled",
+    value: "oil_cooled",
+    description: "Low maintenance • Suitable for heavy duty",
+    icon: Thermometer,
+  },
 ];
 const airFilterTypeOptions = [
-  { label: "Dry Type", value: "dry_type", description: "Low maintenance • Easy to replace", icon: Filter },
-  { label: "Oil Bath Type", value: "oil_bath_type", description: "Better dust trapping • Longer life", icon: Droplets },
-  { label: "Dual Element Type", value: "dual_element_type", description: "High efficiency • Better engine protection", icon: Cog },
+  {
+    label: "Dry Type",
+    value: "dry_type",
+    description: "Low maintenance • Easy to replace",
+    icon: Filter,
+  },
+  {
+    label: "Oil Bath Type",
+    value: "oil_bath_type",
+    description: "Better dust trapping • Longer life",
+    icon: Droplets,
+  },
+  {
+    label: "Dual Element Type",
+    value: "dual_element_type",
+    description: "High efficiency • Better engine protection",
+    icon: Cog,
+  },
 ];
 const engineConditionOptions = [
   { label: "New", value: "new", description: "Brand new engine" },
@@ -56,7 +82,14 @@ const engineConditionOptions = [
 ];
 
 // Custom Input Component
-const Input = ({ label, error, description, className = "", icon: Icon, ...props }) => {
+const Input = ({
+  label,
+  error,
+  description,
+  className = "",
+  icon: Icon,
+  ...props
+}) => {
   return (
     <div className={className}>
       {label && (
@@ -70,7 +103,7 @@ const Input = ({ label, error, description, className = "", icon: Icon, ...props
         )}
         <input
           {...props}
-          className={`w-full ${Icon ? 'pl-10' : 'px-4'} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+          className={`w-full ${Icon ? "pl-10" : "px-4"} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
             error ? "border-red-300 bg-red-50" : "border-gray-200"
           } ${props.disabled ? "bg-gray-50 cursor-not-allowed" : ""}`}
         />
@@ -84,7 +117,14 @@ const Input = ({ label, error, description, className = "", icon: Icon, ...props
 };
 
 // Custom Textarea Component
-const Textarea = ({ label, error, description, className = "", icon: Icon, ...props }) => {
+const Textarea = ({
+  label,
+  error,
+  description,
+  className = "",
+  icon: Icon,
+  ...props
+}) => {
   return (
     <div className={className}>
       {label && (
@@ -98,7 +138,7 @@ const Textarea = ({ label, error, description, className = "", icon: Icon, ...pr
         )}
         <textarea
           {...props}
-          className={`w-full ${Icon ? 'pl-10' : 'px-4'} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+          className={`w-full ${Icon ? "pl-10" : "px-4"} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
             error ? "border-red-300 bg-red-50" : "border-gray-200"
           } ${props.disabled ? "bg-gray-50 cursor-not-allowed" : ""}`}
         />
@@ -112,13 +152,20 @@ const Textarea = ({ label, error, description, className = "", icon: Icon, ...pr
 };
 
 // Custom Button Component
-const Button = ({ children, variant = "primary", className = "", type = "button", ...props }) => {
-  const baseStyles = "px-6 py-3 rounded-xl text-sm font-semibold transition-all";
+const Button = ({
+  children,
+  variant = "primary",
+  className = "",
+  type = "button",
+  ...props
+}) => {
+  const baseStyles =
+    "px-6 py-3 rounded-xl text-sm font-semibold transition-all";
   const variants = {
     primary: "bg-green-600 text-white hover:bg-green-700 shadow-md",
     outlined: "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50",
   };
-  
+
   return (
     <button
       type={type}
@@ -131,7 +178,15 @@ const Button = ({ children, variant = "primary", className = "", type = "button"
 };
 
 // Custom Listbox Component using Headless UI
-const CustomListbox = ({ data, value, onChange, displayField, placeholder, label, error }) => {
+const CustomListbox = ({
+  data,
+  value,
+  onChange,
+  displayField,
+  placeholder,
+  label,
+  error,
+}) => {
   return (
     <div>
       {label && (
@@ -161,23 +216,51 @@ const CustomListbox = ({ data, value, onChange, displayField, placeholder, label
   );
 };
 
-export default function Enginedetails({ setCurrentStep }) {
+export default function Enginedetails({
+  setCurrentStep,
+  step,
+  onComplete,
+  productData,
+  isEdit,
+}) {
   const navigate = useNavigate();
 
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    control,
-    watch,
-  } = useForm({
+const {
+  register,
+  handleSubmit,
+  formState: { errors },
+  control,
+  watch,
+  setValue,
+} = useForm({
     resolver: yupResolver(EnginedetailsSchema),
-    defaultValues: {}
+    defaultValues: {},
   });
+
+  useEffect(() => {
+  if (!isEdit || !productData) return;
+
+  setValue("engineType", productData.engineType || "");
+  setValue("fuelType", productData.fuelType || "");
+  setValue("horsePower", productData.horsePower || "");
+  setValue("numberOfCylinders", productData.numberOfCylinders || "");
+  setValue("cubicCapacity", productData.cubicCapacity || "");
+  setValue("ratedRpm", productData.ratedRpm || "");
+  setValue("aspiratedType", productData.aspiratedType || "");
+  setValue("emissionNorms", productData.emissionNorms || "");
+  setValue("coolingSystem", productData.coolingSystem || "");
+  setValue("airFilterType", productData.airFilterType || "");
+  setValue("maximumTorque", productData.maximumTorque || "");
+  setValue("torqueRpm", productData.torqueRpm || "");
+  setValue("torqueBackup", productData.torqueBackup || "");
+  setValue("engineCondition", productData.engineCondition || "");
+}, [isEdit, productData, setValue]);
 
   const onSubmit = async (data) => {
     try {
-      const productId = localStorage.getItem("vendorProductId");
+     const productId = isEdit
+  ? productData?.id
+  : localStorage.getItem("vendorProductId");
       if (!productId) {
         toast("Please save basic information first.");
         return;
@@ -201,14 +284,28 @@ export default function Enginedetails({ setCurrentStep }) {
         currentStep: 1,
       };
 
-      await apiHelper.put(`/vendor/products/${productId}/save-step`, payload);
+      await apiHelper.put(
+        `/vendor-web/website-variant/${productId}/save-step`,
+        payload,
+      );
 
       toast.success("Engine details saved!");
-      setCurrentStep(2);
+
+      if (onComplete) {
+        onComplete(step);
+      }
+
+      setCurrentStep(step + 1);
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.message || "Failed to save engine details.");
+      toast.error(
+        error.response?.data?.message || "Failed to save engine details.",
+      );
     }
+  };
+
+  const handlePrevious = () => {
+    setCurrentStep(step - 1);
   };
 
   return (
@@ -228,7 +325,9 @@ export default function Enginedetails({ setCurrentStep }) {
             <div className="p-6 md:p-8 lg:p-10 space-y-10">
               {/* Engine Details */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">Engine Specifications</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                  Engine Specifications
+                </h3>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                   <Controller
                     name="engineType"
@@ -236,7 +335,11 @@ export default function Enginedetails({ setCurrentStep }) {
                     render={({ field }) => (
                       <CustomListbox
                         data={engineTypeOptions}
-                        value={engineTypeOptions.find((o) => o.value === field.value) || null}
+                        value={
+                          engineTypeOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Engine Type"
@@ -251,7 +354,11 @@ export default function Enginedetails({ setCurrentStep }) {
                     render={({ field }) => (
                       <CustomListbox
                         data={fuelTypeOptions}
-                        value={fuelTypeOptions.find((o) => o.value === field.value) || null}
+                        value={
+                          fuelTypeOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Fuel Type"
@@ -273,7 +380,11 @@ export default function Enginedetails({ setCurrentStep }) {
                     render={({ field }) => (
                       <CustomListbox
                         data={cylinderOptions}
-                        value={cylinderOptions.find((o) => o.value === field.value) || null}
+                        value={
+                          cylinderOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Cylinders"
@@ -302,7 +413,11 @@ export default function Enginedetails({ setCurrentStep }) {
                     render={({ field }) => (
                       <CustomListbox
                         data={aspiratedTypeOptions}
-                        value={aspiratedTypeOptions.find((o) => o.value === field.value) || null}
+                        value={
+                          aspiratedTypeOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Aspirated Type"
@@ -317,7 +432,11 @@ export default function Enginedetails({ setCurrentStep }) {
                     render={({ field }) => (
                       <CustomListbox
                         data={emissionNormsOptions}
-                        value={emissionNormsOptions.find((o) => o.value === field.value) || null}
+                        value={
+                          emissionNormsOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Emission Norms"
@@ -331,7 +450,9 @@ export default function Enginedetails({ setCurrentStep }) {
 
               {/* Cooling System */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">Cooling System</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                  Cooling System
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {coolingSystemOptions.map((option) => {
                     const selected = watch("coolingSystem") === option.value;
@@ -339,32 +460,44 @@ export default function Enginedetails({ setCurrentStep }) {
                       <label
                         key={option.value}
                         className={`relative flex cursor-pointer items-center gap-4 rounded-xl border p-5 transition-all ${
-                          selected ? "border-green-600 bg-green-50 shadow-sm" : "border-gray-200 hover:border-green-300 hover:bg-gray-50"
+                          selected
+                            ? "border-green-600 bg-green-50 shadow-sm"
+                            : "border-gray-200 hover:border-green-300 hover:bg-gray-50"
                         }`}
                       >
-                        <input 
-                          type="radio" 
-                          value={option.value} 
-                          {...register("coolingSystem")} 
-                          className="absolute right-4 top-4 h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600" 
+                        <input
+                          type="radio"
+                          value={option.value}
+                          {...register("coolingSystem")}
+                          className="absolute right-4 top-4 h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600"
                         />
-                        <option.icon className={`h-10 w-10 flex-shrink-0 ${selected ? "text-green-600" : "text-gray-400"}`} />
+                        <option.icon
+                          className={`h-10 w-10 flex-shrink-0 ${selected ? "text-green-600" : "text-gray-400"}`}
+                        />
                         <div>
-                          <h4 className="font-medium text-gray-900">{option.label}</h4>
-                          <p className="text-sm text-gray-500">{option.description}</p>
+                          <h4 className="font-medium text-gray-900">
+                            {option.label}
+                          </h4>
+                          <p className="text-sm text-gray-500">
+                            {option.description}
+                          </p>
                         </div>
                       </label>
                     );
                   })}
                 </div>
                 {errors?.coolingSystem && (
-                  <p className="mt-2 text-sm text-red-600">{errors.coolingSystem.message}</p>
+                  <p className="mt-2 text-sm text-red-600">
+                    {errors.coolingSystem.message}
+                  </p>
                 )}
               </div>
 
               {/* Air Filter Type */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">Air Filter Type</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                  Air Filter Type
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {airFilterTypeOptions.map((option) => {
                     const selected = watch("airFilterType") === option.value;
@@ -372,64 +505,73 @@ export default function Enginedetails({ setCurrentStep }) {
                       <label
                         key={option.value}
                         className={`relative flex cursor-pointer items-center gap-4 rounded-xl border p-5 transition-all ${
-                          selected ? "border-green-600 bg-green-50 shadow-sm" : "border-gray-200 hover:border-green-300 hover:bg-gray-50"
+                          selected
+                            ? "border-green-600 bg-green-50 shadow-sm"
+                            : "border-gray-200 hover:border-green-300 hover:bg-gray-50"
                         }`}
                       >
-                        <input 
-                          type="radio" 
-                          value={option.value} 
-                          {...register("airFilterType")} 
-                          className="absolute right-4 top-4 h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600" 
+                        <input
+                          type="radio"
+                          value={option.value}
+                          {...register("airFilterType")}
+                          className="absolute right-4 top-4 h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600"
                         />
-                        {selected && (
-                          <CheckCircle className="absolute right-4 top-4 h-5 w-5 text-green-600" />
-                        )}
-                        <option.icon className="h-10 w-10 flex-shrink-0 text-green-600" />
+
                         <div>
-                          <h4 className="font-medium text-gray-900">{option.label}</h4>
-                          <p className="text-sm text-gray-500">{option.description}</p>
+                          <h4 className="font-medium text-gray-900">
+                            {option.label}
+                          </h4>
+                          <p className="text-sm text-gray-500">
+                            {option.description}
+                          </p>
                         </div>
                       </label>
                     );
                   })}
                 </div>
                 {errors?.airFilterType && (
-                  <p className="mt-2 text-sm text-red-600">{errors.airFilterType.message}</p>
+                  <p className="mt-2 text-sm text-red-600">
+                    {errors.airFilterType.message}
+                  </p>
                 )}
               </div>
 
               {/* Torque Details */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">Torque Details</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                  Torque Details
+                </h3>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-                  <Input 
-                    {...register("maximumTorque")} 
-                    type="number" 
-                    label="Maximum Torque (NM)" 
-                    placeholder="Enter Maximum Torque" 
-                    error={errors?.maximumTorque?.message} 
+                  <Input
+                    {...register("maximumTorque")}
+                    type="number"
+                    label="Maximum Torque (NM)"
+                    placeholder="Enter Maximum Torque"
+                    error={errors?.maximumTorque?.message}
                   />
-                  <Input 
-                    {...register("torqueRpm")} 
-                    type="number" 
-                    label="Torque RPM" 
-                    placeholder="Enter Torque RPM" 
-                    error={errors?.torqueRpm?.message} 
+                  <Input
+                    {...register("torqueRpm")}
+                    type="number"
+                    label="Torque RPM"
+                    placeholder="Enter Torque RPM"
+                    error={errors?.torqueRpm?.message}
                   />
-                  <Input 
-                    {...register("torqueBackup")} 
-                    type="number" 
-                    step="0.01" 
-                    label="Torque Backup (%)" 
-                    placeholder="Enter Torque Backup %" 
-                    error={errors?.torqueBackup?.message} 
+                  <Input
+                    {...register("torqueBackup")}
+                    type="number"
+                    step="0.01"
+                    label="Torque Backup (%)"
+                    placeholder="Enter Torque Backup %"
+                    error={errors?.torqueBackup?.message}
                   />
                 </div>
               </div>
 
               {/* Engine Condition */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">Engine Condition</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                  Engine Condition
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                   {engineConditionOptions.map((option) => {
                     const selected = watch("engineCondition") === option.value;
@@ -437,60 +579,56 @@ export default function Enginedetails({ setCurrentStep }) {
                       <label
                         key={option.value}
                         className={`flex cursor-pointer items-start gap-3 rounded-xl border p-4 transition-all ${
-                          selected ? "border-green-600 bg-green-50 shadow-sm" : "border-gray-200 hover:border-green-300 hover:bg-gray-50"
+                          selected
+                            ? "border-green-600 bg-green-50 shadow-sm"
+                            : "border-gray-200 hover:border-green-300 hover:bg-gray-50"
                         }`}
                       >
-                        <input 
-                          type="radio" 
-                          value={option.value} 
-                          {...register("engineCondition")} 
-                          className="mt-1 h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600 flex-shrink-0" 
+                        <input
+                          type="radio"
+                          value={option.value}
+                          {...register("engineCondition")}
+                          className="mt-1 h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600 flex-shrink-0"
                         />
                         <div>
-                          <span className="font-medium text-gray-900 block">{option.label}</span>
-                          <p className="text-sm text-gray-500">{option.description}</p>
+                          <span className="font-medium text-gray-900 block">
+                            {option.label}
+                          </span>
+                          <p className="text-sm text-gray-500">
+                            {option.description}
+                          </p>
                         </div>
                       </label>
                     );
                   })}
                 </div>
                 {errors?.engineCondition && (
-                  <p className="mt-2 text-sm text-red-600">{errors.engineCondition.message}</p>
+                  <p className="mt-2 text-sm text-red-600">
+                    {errors.engineCondition.message}
+                  </p>
                 )}
               </div>
             </div>
 
             {/* Action Buttons */}
             <div className="px-6 md:px-8 lg:px-10 py-6 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between gap-3">
-          <Button 
-            type="button" 
-            variant="outlined" 
-            className="min-w-[7rem] order-2 sm:order-1"
-            onClick={() => {
-              if (step > 1) {
-                if (setCurrentStep) {
-                  setCurrentStep(step - 1);
-                } else if (prevStep) {
-                  prevStep();
-                }
-              }
-            }}
-          >
-            Previous
-          </Button>
-          <div className="flex flex-col sm:flex-row gap-3 order-1 sm:order-2">
-            <Button 
-              type="button" 
-              variant="outlined" 
-              className="min-w-[7rem]"
-              onClick={() => navigate(-1)}
-            >
-              Cancel
-            </Button>
-            <Button type="submit" className="min-w-[7rem]">
-              Save &amp; Next
-            </Button>
-          </div>
+              <Button type="button" variant="outlined" onClick={handlePrevious}>
+                Previous
+              </Button>
+
+              <div className="flex flex-col sm:flex-row gap-3 order-1 sm:order-2">
+                <Button
+                  type="button"
+                  variant="outlined"
+                  className="min-w-[7rem]"
+                  onClick={() => navigate(-1)}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" className="min-w-[7rem]">
+                  Save &amp; Next
+                </Button>
+              </div>
             </div>
           </form>
         </div>
