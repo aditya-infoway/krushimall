@@ -46,16 +46,18 @@ const handleSubmit = async (e) => {
       password: formData.password,
     });
 
-   if (response.success) {
-  localStorage.setItem("vendorToken", response.token);
-  localStorage.setItem("vendorData", JSON.stringify(response.vendor));
+    if (response.success) {
+      localStorage.setItem("isVendorLoggedIn", "true");
+      localStorage.setItem("vendorToken", response.token);
+      localStorage.setItem("vendorData", JSON.stringify(response.vendor));
+      window.dispatchEvent(new Event("vendorAuthChanged"));
 
-  localStorage.setItem("isVendorLoggedIn", "true");
-
-    navigate("/vendor-profile", { replace: true });
-}
+      navigate("/vendor-profile", { replace: true });
+    }
   } catch (err) {
     console.log(err);
+    const message = err.response?.data?.message || "Login failed. Please try again.";
+    setErrors({ submit: message });
   }
 };
 

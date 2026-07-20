@@ -723,9 +723,6 @@ const TractorDetails = () => {
   // Only show colors that are actually saved in the database
   const displayColors = availableColors;
 
-  console.log("Available Colors from API:", colorFields);
-  console.log("Available Colors array:", availableColors);
-  console.log("Display Colors:", displayColors);
 
   // Transmission features
   const transmissionFeatures = [
@@ -1640,6 +1637,7 @@ const TractorDetails = () => {
       {/* Enquiry Modal */}
       <EnquiryModal
         isOpen={showEnquiryModal}
+         websiteVariantId={id}
         onClose={() => setShowEnquiryModal(false)}
       />
     </div>

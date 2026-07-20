@@ -115,9 +115,7 @@ export const TransmissionSchema = Yup.object().shape({
     .positive("Reverse Gears must be positive")
     .required("Reverse Gears Required"),
   gearType: Yup.string().trim().required("Gear Type Required"),
-  transmissionType: Yup.string()
-    .trim()
-    .required("Transmission Type Required"),
+  transmissionType: Yup.string().trim().required("Transmission Type Required"),
   ptoHp: Yup.number()
     .typeError("PTO HP must be a number")
     .positive("PTO HP must be positive")
@@ -172,9 +170,9 @@ export const PriceLocationSchema = Yup.object().shape({
     .positive("Ex-Showroom Price must be positive")
     .required("Ex-Showroom Price Required"),
   onRoadPrice: Yup.number()
-    .typeError("On-Road Price must be a number")
-    .positive("On-Road Price must be positive")
-    .nullable(),
+    .transform((value, originalValue) => (originalValue === "" ? null : value))
+    .nullable()
+    .positive("On-Road Price must be positive"),
   currency: Yup.string().trim().required("Currency Required"),
   gst: Yup.number()
     .typeError("GST must be a number")
@@ -182,12 +180,17 @@ export const PriceLocationSchema = Yup.object().shape({
     .default(18),
   tcsApplicable: Yup.string().trim().oneOf(["yes", "no"]),
   tcsPercentage: Yup.number()
-    .typeError("TCS Percentage must be a number")
-    .min(0, "TCS Percentage cannot be negative")
+    .nullable()
+    .transform((value, originalValue) => {
+      return originalValue === "" || originalValue == null ? null : value;
+    })
     .when("tcsApplicable", {
-      is: "yes",
-      then: (schema) => schema.required("TCS Percentage Required"),
-      otherwise: (schema) => schema.nullable(),
+      is: (value) => value?.toLowerCase() === "yes",
+      then: (schema) =>
+        schema
+          .required("TCS Percentage is required")
+          .min(0, "Cannot be negative"),
+      otherwise: (schema) => schema.notRequired().nullable(),
     }),
   exchangeOffer: Yup.string()
     .trim()
@@ -202,19 +205,19 @@ export const PriceLocationSchema = Yup.object().shape({
     .oneOf(["yes", "no"])
     .required("EMI Availability Required"),
   downPayment: Yup.number()
-    .typeError("Down Payment must be a number")
-    .positive("Down Payment must be positive")
-    .nullable(),
+    .transform((value, originalValue) => (originalValue === "" ? null : value))
+    .nullable()
+    .positive("Down Payment must be positive"),
   offerPrice: Yup.number()
-    .typeError("Offer Price must be a number")
-    .positive("Offer Price must be positive")
-    .nullable(),
+    .transform((value, originalValue) => (originalValue === "" ? null : value))
+    .nullable()
+    .positive("Offer Price must be positive"),
   negotiable: Yup.string().trim().oneOf(["yes", "no"]),
   country: Yup.string().trim(),
   state: Yup.string().trim().required("State Required"),
   district: Yup.string().trim().required("District Required"),
   taluka: Yup.string().trim(),
-  city: Yup.string().trim().required("City/Village Required"),
+  city: Yup.string().trim().required("City Required"),
   pincode: Yup.string()
     .trim()
     .matches(/^[1-9][0-9]{5}$/, "Enter a valid pincode")

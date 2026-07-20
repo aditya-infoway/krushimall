@@ -1,5 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
+import { useEffect } from "react";
 import toast from "react-hot-toast";
 import { Disc3, Settings, Cog, CheckCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
@@ -41,18 +42,55 @@ const forwardGearOptions = [4, 6, 8, 10, 12, 16, 20, 24].map((n) => ({
   value: n,
 }));
 const clutchOptions = [
-  { label: "Single Clutch", value: "single_clutch", description: "Standard single clutch system", icon: Disc3 },
-  { label: "Dual Clutch", value: "dual_clutch", description: "Dual clutch for smooth operation", icon: Settings },
-  { label: "Double Clutch", value: "double_clutch", description: "Provides better control & power", icon: Cog },
+  {
+    label: "Single Clutch",
+    value: "single_clutch",
+    description: "Standard single clutch system",
+    icon: Disc3,
+  },
+  {
+    label: "Dual Clutch",
+    value: "dual_clutch",
+    description: "Dual clutch for smooth operation",
+    icon: Settings,
+  },
+  {
+    label: "Double Clutch",
+    value: "double_clutch",
+    description: "Provides better control & power",
+    icon: Cog,
+  },
 ];
 const transmissionTypeOptions = [
-  { label: "Sliding Mesh", value: "sliding_mesh", description: "Simple and cost effective", icon: Cog },
-  { label: "Constant Mesh", value: "constant_mesh", description: "Better performance and durability", icon: Settings },
-  { label: "Synchromesh", value: "synchromesh", description: "Smooth gear shifting and easy to operate", icon: Cog },
+  {
+    label: "Sliding Mesh",
+    value: "sliding_mesh",
+    description: "Simple and cost effective",
+    icon: Cog,
+  },
+  {
+    label: "Constant Mesh",
+    value: "constant_mesh",
+    description: "Better performance and durability",
+    icon: Settings,
+  },
+  {
+    label: "Synchromesh",
+    value: "synchromesh",
+    description: "Smooth gear shifting and easy to operate",
+    icon: Cog,
+  },
 ];
 
 // Custom Input Component
-const Input = ({ label, error, description, className = "", icon: Icon, ...props }) => {
+const Input = ({
+  label,
+  error,
+  description,
+  className = "",
+  icon: Icon,
+  ...props
+}) => {
   return (
     <div className={className}>
       {label && (
@@ -66,7 +104,7 @@ const Input = ({ label, error, description, className = "", icon: Icon, ...props
         )}
         <input
           {...props}
-          className={`w-full ${Icon ? 'pl-10' : 'px-4'} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+          className={`w-full ${Icon ? "pl-10" : "px-4"} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
             error ? "border-red-300 bg-red-50" : "border-gray-200"
           } ${props.disabled ? "bg-gray-50 cursor-not-allowed" : ""}`}
         />
@@ -80,13 +118,20 @@ const Input = ({ label, error, description, className = "", icon: Icon, ...props
 };
 
 // Custom Button Component
-const Button = ({ children, variant = "primary", className = "", type = "button", ...props }) => {
-  const baseStyles = "px-6 py-3 rounded-xl text-sm font-semibold transition-all";
+const Button = ({
+  children,
+  variant = "primary",
+  className = "",
+  type = "button",
+  ...props
+}) => {
+  const baseStyles =
+    "px-6 py-3 rounded-xl text-sm font-semibold transition-all";
   const variants = {
     primary: "bg-green-600 text-white hover:bg-green-700 shadow-md",
     outlined: "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50",
   };
-  
+
   return (
     <button
       type={type}
@@ -99,7 +144,15 @@ const Button = ({ children, variant = "primary", className = "", type = "button"
 };
 
 // Custom Listbox Component
-const CustomListbox = ({ data, value, onChange, displayField, placeholder, label, error }) => {
+const CustomListbox = ({
+  data,
+  value,
+  onChange,
+  displayField,
+  placeholder,
+  label,
+  error,
+}) => {
   return (
     <div>
       {label && (
@@ -110,7 +163,9 @@ const CustomListbox = ({ data, value, onChange, displayField, placeholder, label
       <select
         value={value?.value || ""}
         onChange={(e) => {
-          const selected = data.find((item) => item.value === e.target.value);
+          const selected = data.find(
+            (item) => String(item.value) === e.target.value,
+          );
           onChange(selected);
         }}
         className={`w-full px-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
@@ -119,7 +174,7 @@ const CustomListbox = ({ data, value, onChange, displayField, placeholder, label
       >
         <option value="">{placeholder}</option>
         {data?.map((item) => (
-          <option key={item.value} value={item.value}>
+          <option key={item.value} value={String(item.value)}>
             {item[displayField] || item.label}
           </option>
         ))}
@@ -129,28 +184,80 @@ const CustomListbox = ({ data, value, onChange, displayField, placeholder, label
   );
 };
 
-export default function Transmission({ 
-  setCurrentStep, 
-  currentStep, 
+export default function Transmission({
+  setCurrentStep,
+  step,
   completedSteps,
-  onComplete 
+  onComplete,
+  productData,
+  isEdit,
 }) {
   const navigate = useNavigate();
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    watch,
-    formState: { errors },
-  } = useForm({
+const {
+  register,
+  handleSubmit,
+  control,
+  watch,
+  setValue,
+  formState: { errors },
+} = useForm({
     resolver: yupResolver(TransmissionSchema),
-    defaultValues: {}
+    defaultValues: {},
   });
+
+  useEffect(() => {
+  if (!isEdit || !productData) return;
+
+  setValue("clutchType", productData.clutchType || "");
+  setValue("forwardGears", productData.forwardGears || "");
+  setValue("reverseGears", productData.reverseGears || "");
+  setValue("gearType", productData.gearType || "");
+  setValue("transmissionType", productData.transmissionType || "");
+  setValue("ptoHp", productData.ptoHp || "");
+  setValue("ptoRpm", productData.ptoRpm || "");
+  setValue("ptoType", productData.ptoType || "");
+  setValue("ptoPosition", productData.ptoPosition || "");
+
+  setValue(
+    "features.creeperGears",
+    productData.creeperGears ?? false
+  );
+  setValue(
+    "features.shuttleShift",
+    productData.shuttleShift ?? false
+  );
+  setValue(
+    "features.sideShiftGear",
+    productData.sideShiftGear ?? false
+  );
+  setValue(
+    "features.powerShuttle",
+    productData.powerShuttle ?? false
+  );
+  setValue(
+    "features.hiLoGears",
+    productData.hiLoGears ?? false
+  );
+  setValue(
+    "features.multiSpeedPto",
+    productData.multiSpeedPto ?? false
+  );
+  setValue(
+    "features.reversePto",
+    productData.reversePto ?? false
+  );
+  setValue(
+    "features.superReducer",
+    productData.superReducer ?? false
+  );
+}, [productData, isEdit, setValue]);
 
   const onSubmit = async (data) => {
     try {
-      const productId = localStorage.getItem("vendorProductId");
+      const productId = isEdit
+  ? productData?.id
+  : localStorage.getItem("vendorProductId");
       if (!productId) {
         toast("Please save basic information first.");
         return;
@@ -177,26 +284,33 @@ export default function Transmission({
         currentStep: 2,
       };
 
-      await apiHelper.put(`/vendor/products/${productId}/save-step`, payload);
+      await apiHelper.put(
+        `/vendor-web/website-variant/${productId}/save-step`,
+        payload,
+      );
 
       toast.success("Transmission details saved!");
-      
-      // Mark step as completed
-      if (onComplete) onComplete(currentStep || 3);
-      
-      // Navigate to next step
-      if (setCurrentStep) setCurrentStep(4);
+
+      // Mark current step as completed
+      if (onComplete) {
+        onComplete(step);
+      }
+
+      // Go to next step
+      if (setCurrentStep) {
+        setCurrentStep(step + 1);
+      }
     } catch (error) {
       console.error(error);
-      toast.error(error.response?.data?.message || "Failed to save transmission details.");
+      toast.error(
+        error.response?.data?.message || "Failed to save transmission details.",
+      );
     }
   };
 
   const handlePrevious = () => {
-    if (currentStep && setCurrentStep) {
-      setCurrentStep(currentStep - 1);
-    } else if (setCurrentStep) {
-      setCurrentStep(2);
+    if (setCurrentStep) {
+      setCurrentStep(step - 1);
     }
   };
 
@@ -205,7 +319,9 @@ export default function Transmission({
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Transmission Details</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            Transmission Details
+          </h1>
           <p className="text-sm text-gray-500 mt-1">
             Provide transmission and gear specifications for your product
           </p>
@@ -217,7 +333,9 @@ export default function Transmission({
             <div className="p-6 md:p-8 lg:p-10 space-y-10">
               {/* Clutch */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">Clutch</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                  Clutch
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {clutchOptions.map((option) => {
                     const selected = watch("clutchType") === option.value;
@@ -225,35 +343,42 @@ export default function Transmission({
                       <label
                         key={option.value}
                         className={`relative flex cursor-pointer items-center gap-4 rounded-xl border p-5 transition-all ${
-                          selected ? "border-green-600 bg-green-50 shadow-sm" : "border-gray-200 hover:border-green-300 hover:bg-gray-50"
+                          selected
+                            ? "border-green-600 bg-green-50 shadow-sm"
+                            : "border-gray-200 hover:border-green-300 hover:bg-gray-50"
                         }`}
                       >
-                        <input 
-                          type="radio" 
-                          value={option.value} 
-                          {...register("clutchType")} 
-                          className="absolute right-4 top-4 h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600" 
+                        <input
+                          type="radio"
+                          value={option.value}
+                          {...register("clutchType")}
+                          className="absolute right-4 top-4 h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600"
                         />
-                        {selected && (
-                          <CheckCircle className="absolute right-4 top-4 h-5 w-5 text-green-600" />
-                        )}
-                        <option.icon className="h-10 w-10 flex-shrink-0 text-green-600" />
+
                         <div>
-                          <h4 className="font-medium text-gray-900">{option.label}</h4>
-                          <p className="text-sm text-gray-500">{option.description}</p>
+                          <h4 className="font-medium text-gray-900">
+                            {option.label}
+                          </h4>
+                          <p className="text-sm text-gray-500">
+                            {option.description}
+                          </p>
                         </div>
                       </label>
                     );
                   })}
                 </div>
                 {errors?.clutchType && (
-                  <p className="mt-2 text-sm text-red-600">{errors.clutchType.message}</p>
+                  <p className="mt-2 text-sm text-red-600">
+                    {errors.clutchType.message}
+                  </p>
                 )}
               </div>
 
               {/* Gear Box */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">Gear Box</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                  Gear Box
+                </h3>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
                   <Controller
                     name="forwardGears"
@@ -261,7 +386,11 @@ export default function Transmission({
                     render={({ field }) => (
                       <CustomListbox
                         data={forwardGearOptions}
-                        value={forwardGearOptions.find((o) => o.value === Number(field.value)) || null}
+                        value={
+                          forwardGearOptions.find(
+                            (o) => o.value === Number(field.value),
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         label="Forward Gears"
@@ -276,7 +405,11 @@ export default function Transmission({
                     render={({ field }) => (
                       <CustomListbox
                         data={reverseGearOptions}
-                        value={reverseGearOptions.find((o) => o.value === Number(field.value)) || null}
+                        value={
+                          reverseGearOptions.find(
+                            (o) => o.value === Number(field.value),
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         label="Reverse Gears"
@@ -291,7 +424,11 @@ export default function Transmission({
                     render={({ field }) => (
                       <CustomListbox
                         data={gearTypeOptions}
-                        value={gearTypeOptions.find((o) => o.value === field.value) || null}
+                        value={
+                          gearTypeOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         label="Gear Type"
@@ -305,7 +442,9 @@ export default function Transmission({
 
               {/* Transmission Type */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">Transmission Type</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                  Transmission Type
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {transmissionTypeOptions.map((option) => {
                     const selected = watch("transmissionType") === option.value;
@@ -313,42 +452,49 @@ export default function Transmission({
                       <label
                         key={option.value}
                         className={`relative flex cursor-pointer items-center gap-4 rounded-xl border p-5 transition-all ${
-                          selected ? "border-green-600 bg-green-50 shadow-sm" : "border-gray-200 hover:border-green-300 hover:bg-gray-50"
+                          selected
+                            ? "border-green-600 bg-green-50 shadow-sm"
+                            : "border-gray-200 hover:border-green-300 hover:bg-gray-50"
                         }`}
                       >
-                        <input 
-                          type="radio" 
-                          value={option.value} 
-                          {...register("transmissionType")} 
-                          className="absolute right-4 top-4 h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600" 
+                        <input
+                          type="radio"
+                          value={option.value}
+                          {...register("transmissionType")}
+                          className="absolute right-4 top-4 h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600"
                         />
-                        {selected && (
-                          <CheckCircle className="absolute right-4 top-4 h-5 w-5 text-green-600" />
-                        )}
-                        <option.icon className="h-10 w-10 flex-shrink-0 text-green-600" />
+
                         <div>
-                          <h4 className="font-medium text-gray-900">{option.label}</h4>
-                          <p className="text-sm text-gray-500">{option.description}</p>
+                          <h4 className="font-medium text-gray-900">
+                            {option.label}
+                          </h4>
+                          <p className="text-sm text-gray-500">
+                            {option.description}
+                          </p>
                         </div>
                       </label>
                     );
                   })}
                 </div>
                 {errors?.transmissionType && (
-                  <p className="mt-2 text-sm text-red-600">{errors.transmissionType.message}</p>
+                  <p className="mt-2 text-sm text-red-600">
+                    {errors.transmissionType.message}
+                  </p>
                 )}
               </div>
 
               {/* PTO (Power Take Off) */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">PTO (Power Take Off)</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                  PTO (Power Take Off)
+                </h3>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                  <Input 
-                    {...register("ptoHp")} 
-                    type="number" 
-                    label="PTO HP" 
-                    placeholder="Enter PTO HP" 
-                    error={errors?.ptoHp?.message} 
+                  <Input
+                    {...register("ptoHp")}
+                    type="number"
+                    label="PTO HP"
+                    placeholder="Enter PTO HP"
+                    error={errors?.ptoHp?.message}
                   />
                   <Controller
                     name="ptoRpm"
@@ -356,7 +502,11 @@ export default function Transmission({
                     render={({ field }) => (
                       <CustomListbox
                         data={ptoRpmOptions}
-                        value={ptoRpmOptions.find((o) => o.value === Number(field.value)) || null}
+                        value={
+                          ptoRpmOptions.find(
+                            (o) => o.value === Number(field.value),
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         label="PTO RPM"
@@ -371,7 +521,10 @@ export default function Transmission({
                     render={({ field }) => (
                       <CustomListbox
                         data={ptoTypeOptions}
-                        value={ptoTypeOptions.find((o) => o.value === field.value) || null}
+                        value={
+                          ptoTypeOptions.find((o) => o.value === field.value) ||
+                          null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         label="PTO Type"
@@ -386,7 +539,11 @@ export default function Transmission({
                     render={({ field }) => (
                       <CustomListbox
                         data={ptoPositionOptions}
-                        value={ptoPositionOptions.find((o) => o.value === field.value) || null}
+                        value={
+                          ptoPositionOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         label="PTO Position"
@@ -400,7 +557,9 @@ export default function Transmission({
 
               {/* Additional Transmission Features */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">Additional Transmission Features</h3>
+                <h3 className="text-lg font-semibold text-gray-900 mb-6">
+                  Additional Transmission Features
+                </h3>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
                   {[
                     ["features.creeperGears", "Creeper Gears"],
@@ -412,11 +571,14 @@ export default function Transmission({
                     ["features.reversePto", "Reverse PTO"],
                     ["features.superReducer", "Super Reducer (Optional)"],
                   ].map(([name, label]) => (
-                    <label key={name} className="flex cursor-pointer items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-green-300 hover:bg-gray-50 transition-all">
-                      <input 
-                        type="checkbox" 
-                        {...register(name)} 
-                        className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-2 focus:ring-green-600" 
+                    <label
+                      key={name}
+                      className="flex cursor-pointer items-center gap-3 p-3 rounded-xl border border-gray-200 hover:border-green-300 hover:bg-gray-50 transition-all"
+                    >
+                      <input
+                        type="checkbox"
+                        {...register(name)}
+                        className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-2 focus:ring-green-600"
                       />
                       <span className="text-sm text-gray-700">{label}</span>
                     </label>
@@ -427,18 +589,18 @@ export default function Transmission({
 
             {/* Action Buttons */}
             <div className="px-6 md:px-8 lg:px-10 py-6 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row justify-between gap-3">
-              <Button 
-                type="button" 
-                variant="outlined" 
+              <Button
+                type="button"
+                variant="outlined"
                 className="min-w-[7rem] order-2 sm:order-1"
                 onClick={handlePrevious}
               >
                 Previous
               </Button>
               <div className="flex flex-col sm:flex-row gap-3 order-1 sm:order-2">
-                <Button 
-                  type="button" 
-                  variant="outlined" 
+                <Button
+                  type="button"
+                  variant="outlined"
                   className="min-w-[7rem]"
                   onClick={() => navigate(-1)}
                 >

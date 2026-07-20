@@ -41,6 +41,7 @@ import {
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useWishlist } from "../context/WishlistContext";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const Navbar = () => {
   const { cart, cartCount, cartTotal, removeFromCart } = useCart();
@@ -56,6 +57,21 @@ const Navbar = () => {
   const mobileMenuRef = useRef(null);
   const cartPreviewRef = useRef(null);
   const userMenuRef = useRef(null);
+
+  const navigate = useNavigate();
+
+  const handleFullLogout = () => {
+    logout();
+    localStorage.removeItem("vendorToken");
+    localStorage.removeItem("vendorData");
+    localStorage.removeItem("isVendorLoggedIn");
+    window.dispatchEvent(new Event("vendorAuthChanged"));
+    setIsVendorLoggedIn(false);
+
+    setUserMenuOpen(false);
+    setMobileMenuOpen(false);
+    navigate("/", { replace: true });
+  };
 
   // Close cart preview when clicking outside
   useEffect(() => {
@@ -100,8 +116,25 @@ const Navbar = () => {
     };
   }, [mobileMenuOpen]);
 
-const isVendorLoggedIn =
-  localStorage.getItem("isVendorLoggedIn") === "true";
+  const location = useLocation();
+
+  const [isVendorLoggedIn, setIsVendorLoggedIn] = useState(
+    localStorage.getItem("isVendorLoggedIn") === "true",
+  );
+
+  useEffect(() => {
+    setIsVendorLoggedIn(localStorage.getItem("isVendorLoggedIn") === "true");
+  }, [location.pathname, user]);
+
+  useEffect(() => {
+    const syncVendorStatus = () => {
+      setIsVendorLoggedIn(localStorage.getItem("isVendorLoggedIn") === "true");
+    };
+
+    window.addEventListener("vendorAuthChanged", syncVendorStatus);
+    return () =>
+      window.removeEventListener("vendorAuthChanged", syncVendorStatus);
+  }, []);
 
   // Spare Parts subcategories for mega menu
   const sparePartsCategories = [
@@ -388,25 +421,25 @@ const isVendorLoggedIn =
                         >
                           <User className="h-4 w-4" /> My Profile
                         </Link>
-                       {!isVendorLoggedIn ? (
-  <Link
-    to="/vendor-login"
-    onClick={() => setUserMenuOpen(false)}
-    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-  >
-    <Store className="h-4 w-4" />
-    Vendor Login
-  </Link>
-) : (
-  <Link
-    to="/vendor-profile"
-    onClick={() => setUserMenuOpen(false)}
-    className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-  >
-    <Store className="h-4 w-4" />
-    Vendor Profile
-  </Link>
-)}
+                        {!isVendorLoggedIn ? (
+                          <Link
+                            to="/vendor-login"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                          >
+                            <Store className="h-4 w-4" />
+                            Vendor Login
+                          </Link>
+                        ) : (
+                          <Link
+                            to="/vendor-profile"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                          >
+                            <Store className="h-4 w-4" />
+                            Vendor Profile
+                          </Link>
+                        )}
                         <Link
                           to="/orders"
                           onClick={() => setUserMenuOpen(false)}
@@ -431,10 +464,7 @@ const isVendorLoggedIn =
                       </div>
                       <div className="border-t border-gray-100 pt-2">
                         <button
-                          onClick={() => {
-                            logout();
-                            setUserMenuOpen(false);
-                          }}
+                          onClick={handleFullLogout}
                           className="flex items-center gap-3 px-4 py-2.5 text-sm text-green-600 hover:bg-green-50 w-full transition-colors"
                         >
                           <LogOut className="h-4 w-4" /> Logout
@@ -735,31 +765,31 @@ const isVendorLoggedIn =
                   </div>
                   <span className="font-semibold flex-1">My Profile</span>
                 </Link>
-               {!isVendorLoggedIn ? (
-  <Link
-    to="/vendor-login"
-    onClick={() => setMobileMenuOpen(false)}
-    className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group hover:bg-green-700 hover:text-white hover:shadow-xl hover:shadow-green-700/20 hover:scale-[1.02] transform mb-1"
-  >
-    <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors duration-300">
-      <Store className="h-5 w-5 text-green-600 group-hover:text-white" />
-    </div>
+                {!isVendorLoggedIn ? (
+                  <Link
+                    to="/vendor-login"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group hover:bg-green-700 hover:text-white hover:shadow-xl hover:shadow-green-700/20 hover:scale-[1.02] transform mb-1"
+                  >
+                    <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors duration-300">
+                      <Store className="h-5 w-5 text-green-600 group-hover:text-white" />
+                    </div>
 
-    <span className="font-semibold flex-1">Vendor Login</span>
-  </Link>
-) : (
-  <Link
-    to="/vendor-profile"
-    onClick={() => setMobileMenuOpen(false)}
-    className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group hover:bg-green-700 hover:text-white hover:shadow-xl hover:shadow-green-700/20 hover:scale-[1.02] transform mb-1"
-  >
-    <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors duration-300">
-      <Store className="h-5 w-5 text-green-600 group-hover:text-white" />
-    </div>
+                    <span className="font-semibold flex-1">Vendor Login</span>
+                  </Link>
+                ) : (
+                  <Link
+                    to="/vendor-profile"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group hover:bg-green-700 hover:text-white hover:shadow-xl hover:shadow-green-700/20 hover:scale-[1.02] transform mb-1"
+                  >
+                    <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors duration-300">
+                      <Store className="h-5 w-5 text-green-600 group-hover:text-white" />
+                    </div>
 
-    <span className="font-semibold flex-1">Vendor Profile</span>
-  </Link>
-)}
+                    <span className="font-semibold flex-1">Vendor Profile</span>
+                  </Link>
+                )}
                 <Link
                   to="/orders"
                   onClick={() => setMobileMenuOpen(false)}
@@ -856,10 +886,7 @@ const isVendorLoggedIn =
           {isAuthenticated && (
             <div className="flex-shrink-0 border-t border-gray-200 bg-white px-4 py-4">
               <button
-                onClick={() => {
-                  logout();
-                  setMobileMenuOpen(false);
-                }}
+                onClick={handleFullLogout}
                 className="w-full px-4 py-3.5 rounded-xl transition-all duration-300 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 flex items-center gap-3 group"
               >
                 <div className="p-1.5 rounded-lg bg-red-100 group-hover:bg-red-200 transition-colors">
