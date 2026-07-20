@@ -42,7 +42,7 @@ export const showCartAddedToast = (productName) => {
     </ToastWrapper>
   ), {
     duration: 3000,
-    position: 'bottom-right',
+    position: 'top-right',
   });
 };
 
@@ -61,7 +61,7 @@ export const showWishlistAddedToast = (productName) => {
     </ToastWrapper>
   ), {
     duration: 3000,
-    position: 'bottom-right',
+    position: 'top-right',
   });
 };
 
@@ -80,7 +80,7 @@ export const showWishlistRemovedToast = (productName) => {
     </ToastWrapper>
   ), {
     duration: 3000,
-    position: 'bottom-right',
+    position: 'top-right',
   });
 };
 
@@ -99,7 +99,7 @@ export const showCartRemovedToast = (productName) => {
     </ToastWrapper>
   ), {
     duration: 3000,
-    position: 'bottom-right',
+    position: 'top-right',
   });
 };
 
@@ -118,7 +118,7 @@ export const showOrderPlacedToast = (orderId) => {
     </ToastWrapper>
   ), {
     duration: 5000,
-    position: 'bottom-right',
+    position: 'top-right',
   });
 };
 
@@ -137,7 +137,7 @@ export const showLoginRequiredToast = () => {
     </ToastWrapper>
   ), {
     duration: 4000,
-    position: 'bottom-right',
+    position: 'top-right',
   });
 };
 
@@ -156,7 +156,7 @@ export const showSuccessToast = (message) => {
     </ToastWrapper>
   ), {
     duration: 3000,
-    position: 'bottom-right',
+    position: 'top-right',
   });
 };
 
@@ -176,7 +176,7 @@ export const showErrorToast = (message) => {
     </ToastWrapper>
   ), {
     duration: 4000,
-    position: 'bottom-right',
+    position: 'top-right',
   });
 };
 
@@ -196,7 +196,7 @@ export const showInfoToast = (message) => {
     </ToastWrapper>
   ), {
     duration: 3000,
-    position: 'bottom-right',
+    position: 'top-right',
   });
 };
 
@@ -216,6 +216,6 @@ export const showWarningToast = (message) => {
     </ToastWrapper>
   ), {
     duration: 4000,
-    position: 'bottom-right',
+    position: 'top-right',
   });
 };

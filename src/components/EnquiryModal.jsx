@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { X, Phone, Mail, User, MessageSquare, Send, Clock, Check, Sparkles } from "lucide-react";
 import { RadioGroup } from "@headlessui/react";
-
-const EnquiryModal = ({ isOpen: externalIsOpen, onClose }) => {
+import apiHelper from "../utils/apiHelper";
+import { showSuccessToast, showErrorToast } from "../utils/toast";
+const EnquiryModal = ({ isOpen: externalIsOpen, onClose,websiteVariantId, }) => {
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -112,21 +113,47 @@ const EnquiryModal = ({ isOpen: externalIsOpen, onClose }) => {
     });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+
+console.log({
+  websiteVariantId,
+  fullName: formData.name,
+  email: formData.email,
+  mobileNumber: formData.phone,
+  message: formData.message,
+});
+
+ const handleSubmit = async (e) => {
+  console.log("websiteVariantId =", websiteVariantId);
+  e.preventDefault();
+
+  try {
     setIsSubmitting(true);
 
+    await apiHelper.post("/vendor-web/website-enquiry", {
+        websiteVariantId,
+      fullName: formData.name,
+      email: formData.email,
+      mobileNumber: formData.phone,
+      message: formData.message,
+    });
+
+    showSuccessToast("Enquiry submitted successfully!");
+
+    setSubmitted(true);
+
     setTimeout(() => {
-      console.log("Enquiry submitted:", formData);
-      setIsSubmitting(false);
-      setSubmitted(true);
+      handleClose();
+    }, 2000);
+  } catch (error) {
+    console.error(error);
 
-      setTimeout(() => {
-        handleClose();
-      }, 2000);
-    }, 1500);
-  };
-
+    showErrorToast(
+      error.response?.data?.message || "Failed to submit enquiry"
+    );
+  } finally {
+    setIsSubmitting(false);
+  }
+};
   if (!shouldRender) return null;
 
   return (

@@ -6,44 +6,6 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
 });
 
-
-// Automatically attach JWT token to every request
-// api.interceptors.request.use(
-//   (config) => {
-//     const url = config.url || "";
-
-    
-
-//     let token = null;
-
-//     // Vendor protected routes
-//     if (
-//       url === "/vendor/me" ||
-//       url === "/vendor/update" ||
-//       url === "/vendor/update-password"
-//     ) {
-//       token = localStorage.getItem("vendorToken");
-//     }
-
-//     // Website protected routes
-//     else if (
-//       url === "/webauth/me" ||
-//       url === "/webauth/profile" ||
-//       url === "/vendor/become"
-//     ) {
-//       token = localStorage.getItem("webToken");
-//     }
-
-//     if (token) {
-//       config.headers.Authorization = `Bearer ${token}`;
-//     }
-
-
-//     return config;
-//   },
-//   (error) => Promise.reject(error)
-// );
-
 api.interceptors.request.use(
   (config) => {
     const url = config.url || "";
@@ -143,6 +105,11 @@ const apiHelper = {
 
     return `${BASE_URL}/uploads/${path}`;
   },
+
+  getImageUrl(path) {
+    return this.image(path);
+  },
+
 };
 
 export default apiHelper;

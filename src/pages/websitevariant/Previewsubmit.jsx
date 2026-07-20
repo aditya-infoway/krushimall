@@ -49,9 +49,12 @@ function PreviewRow({ label, value }) {
 export default function PreviewSubmit({ 
   setCurrentStep, 
   setFinished,
-  currentStep,
+   step,
   completedSteps,
-  onComplete 
+  onComplete, 
+  productData,   
+  isEdit,
+
 }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
@@ -64,16 +67,24 @@ export default function PreviewSubmit({
     loadData();
   }, []);
 
-  const loadData = async () => {
-    try {
-      const id = localStorage.getItem("vendorProductId");
-      if (!id) return;
-      const res = await apiHelper.get(`/vendor/products/${id}`);
-      setTractorData(res.data);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+ useEffect(() => {
+  loadData();
+}, [isEdit, productData]);
+
+const loadData = async () => {
+  try {
+    const id = isEdit
+      ? productData?.id
+      : localStorage.getItem("vendorProductId");
+
+    if (!id) return;
+
+    const res = await apiHelper.get(`/vendor-web/website-variant/${id}`);
+    setTractorData(res.data);
+  } catch (error) {
+    console.error(error);
+  }
+};
 
   const images = [
     tractorData?.frontView,
@@ -104,37 +115,48 @@ export default function PreviewSubmit({
   const selectedImage = images[selectedIndex];
 
   const handleSubmit = async () => {
-    try {
-      setLoading(true);
-      const productId = localStorage.getItem("vendorProductId");
-      if (!productId) {
-        toast("Product ID not found");
-        return;
-      }
+  try {
+    setLoading(true);
 
-      await apiHelper.put(`/vendor/products/${productId}/submit`, { agreed });
+    const productId = isEdit
+      ? productData?.id
+      : localStorage.getItem("vendorProductId");
 
-      toast.success("Tractor submitted successfully for review!");
-      if (onComplete) onComplete(currentStep || 7);
-      setFinished(true);
-      localStorage.removeItem("vendorProductId");
-    } catch (error) {
-      console.error(error);
-      toast.error(error.response?.data?.message || "Failed to submit. Please try again.");
-    } finally {
-      setLoading(false);
+    if (!productId) {
+      toast.error("Product ID not found");
+      return;
     }
-  };
+
+    await apiHelper.put(
+      `/vendor-web/website-variant/${productId}/submit`,
+      { agreed }
+    );
+
+    toast.success("Tractor submitted successfully for review!");
+
+    // Only clean up the temp id if it was a create-flow submission
+    if (!isEdit) {
+      localStorage.removeItem("vendorProductId");
+    }
+
+    navigate("/vendor-profile?tab=products", { replace: true });
+  } catch (error) {
+    console.error(error);
+    toast.error(
+      error.response?.data?.message || "Failed to submit. Please try again."
+    );
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleSaveDraft = () => toast.success("Draft saved!");
 
   const handlePrevious = () => {
-    if (currentStep && setCurrentStep) {
-      setCurrentStep(currentStep - 1);
-    } else if (setCurrentStep) {
-      setCurrentStep(6);
-    }
-  };
+  if (setCurrentStep) {
+    setCurrentStep(step - 1);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 md:py-12 lg:py-16">

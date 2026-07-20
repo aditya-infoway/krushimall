@@ -45,7 +45,10 @@ function App() {
           <ScrollToTop />
           <WishlistProvider>
             <Toaster
-              position="bottom-right"
+              position="top-right"
+              containerStyle={{
+                top: 120, // Adjust according to your navbar height
+              }}
               toastOptions={{
                 duration: 3000,
               }}
@@ -72,6 +75,10 @@ function App() {
                   <Route path="/profile" element={<Profile />} />
                   <Route
                     path="/vendor/add-product"
+                    element={<WebsiteVariant />}
+                  />
+                  <Route
+                    path="/vendor/edit-product/:id"
                     element={<WebsiteVariant />}
                   />
                   <Route path="/help" element={<Help />} />

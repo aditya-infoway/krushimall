@@ -1,6 +1,6 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { Tractor, Settings, GitBranch, CheckCircle, Joystick } from "lucide-react";
 import { Listbox, Transition } from "@headlessui/react";
@@ -171,30 +171,77 @@ const CustomListbox = ({ data, value, onChange, displayField, placeholder, label
   );
 };
 
-export default function HydraulicTyres({ 
-  setCurrentStep, 
-  currentStep, 
-  completedSteps,
-  onComplete 
+export default function HydraulicTyres({
+  setCurrentStep,
+  step,
+  onComplete,
+  productData,
+  isEdit,
 }) {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    control,
-    watch,
-    formState: { errors },
-  } = useForm({
+const {
+  register,
+ handleSubmit,
+  control,
+  watch,
+  reset,
+  formState: { errors },
+} = useForm({
     resolver: yupResolver(HydraulicTyresSchema),
     defaultValues: {}
   });
 
+
+  useEffect(() => {
+  if (!isEdit || !productData) return;
+
+  reset({
+    liftingCapacity: productData.liftingCapacity ?? "",
+    liftingCapacityAt610mm: productData.liftingCapacityAt610mm ?? "",
+    hydraulicType: productData.hydraulicType ?? "",
+    controlType: productData.controlType ?? "",
+    remoteValveType: productData.remoteValveType ?? "",
+    numberOfRemoteValves: productData.numberOfRemoteValves ?? "",
+    threePointLinkage: productData.threePointLinkage ?? "",
+    linkageCategory: productData.linkageCategory ?? "",
+    topLink: productData.topLink ?? "",
+    draftSensitivity: productData.draftSensitivity ?? "",
+
+    features: {
+      externalHydraulicCylinder:
+        productData.externalHydraulicCylinder ?? false,
+
+      selfLevelling:
+        productData.selfLevelling ?? false,
+
+      quickHitch:
+        productData.quickHitch ?? false,
+
+      downPositionControl:
+        productData.downPositionControl ?? false,
+
+      loadSensing:
+        productData.loadSensing ?? false,
+
+      flowControl:
+        productData.flowControl ?? false,
+
+      returnToDepth:
+        productData.returnToDepth ?? false,
+
+      transportLock:
+        productData.transportLock ?? false,
+    },
+  });
+}, [productData, isEdit, reset]);
+
   const onSubmit = async (data) => {
     try {
       setLoading(true);
-      const productId = localStorage.getItem("vendorProductId");
+      const productId =
+  localStorage.getItem("vendorProductId") || productData?.id;
       if (!productId) {
         toast("Please save basic information first.");
         return;
@@ -222,15 +269,19 @@ export default function HydraulicTyres({
         currentStep: 3,
       };
 
-      await apiHelper.put(`/vendor/products/${productId}/save-step`, payload);
+      await apiHelper.put(`/vendor-web/website-variant/${productId}/save-step`, payload);
 
       toast.success("Hydraulic details saved!");
       
-      // Mark step as completed
-      if (onComplete) onComplete(currentStep || 4);
-      
-      // Navigate to next step
-      if (setCurrentStep) setCurrentStep(5);
+     // Mark current step as completed
+if (onComplete) {
+  onComplete(step);
+}
+
+// Go to next step
+if (setCurrentStep) {
+  setCurrentStep(step + 1);
+}
     } catch (error) {
       console.error(error);
       toast.error(error.response?.data?.message || "Failed to save hydraulic details.");
@@ -239,13 +290,11 @@ export default function HydraulicTyres({
     }
   };
 
-  const handlePrevious = () => {
-    if (currentStep && setCurrentStep) {
-      setCurrentStep(currentStep - 1);
-    } else if (setCurrentStep) {
-      setCurrentStep(3);
-    }
-  };
+ const handlePrevious = () => {
+  if (setCurrentStep) {
+    setCurrentStep(step - 1);
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 md:py-12 lg:py-16">
