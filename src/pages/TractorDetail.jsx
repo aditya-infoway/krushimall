@@ -31,13 +31,13 @@ import {
   Award,
   Truck,
   Shield,
-   Star,            
-  User,             
-  Calendar as CalendarIcon, 
-  MessageSquare,    
+  Star,
+  User,
+  Calendar as CalendarIcon,
+  MessageSquare,
   ThumbsUp,
-  Eye,        
-  ShoppingCart, 
+  Eye,
+  ShoppingCart,
 } from "lucide-react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import EnquiryModal from "../components/EnquiryModal";
@@ -116,7 +116,7 @@ const DetailRow = ({ label, value, last = false }) => {
 
   return (
     <div
-      className={`flex justify-between py-3 ${!last ? "border-b border-gray-100" : ""}`}
+      className={`flex justify-between py-3 ${!last ? "border-b border-gray-400" : ""}`}
     >
       <span className="text-gray-500 text-sm">{label}</span>
       <span className="font-semibold text-gray-900 text-sm capitalize text-right max-w-[55%]">
@@ -161,7 +161,7 @@ const SectionCard = ({ title, icon: Icon, children, className = "" }) => {
   if (!hasContent) return null;
 
   return (
-      <div
+    <div
       className={`bg-white rounded-2xl border border-gray-400 shadow-sm overflow-hidden ${className}`}
     >
       {/* Green Header Section */}
@@ -169,11 +169,9 @@ const SectionCard = ({ title, icon: Icon, children, className = "" }) => {
         {Icon && <Icon size={18} className="text-white" />}
         <h3 className="text-lg font-bold text-white">{title}</h3>
       </div>
-      
+
       {/* White Content Section */}
-      <div className="p-6">
-        {children}
-      </div>
+      <div className="p-6 vorder">{children}</div>
     </div>
   );
 };
@@ -235,20 +233,22 @@ const TABS = [
   { id: "dealer", label: "Dealer Info" },
 ];
 
-
-
-
 // ─── Review Components ──────────────────────────────────────────────────────
 
 // Star Rating Component
-const StarRating = ({ rating, onRatingChange, readonly = false, size = "md" }) => {
+const StarRating = ({
+  rating,
+  onRatingChange,
+  readonly = false,
+  size = "md",
+}) => {
   const [hoverRating, setHoverRating] = useState(0);
   const stars = [1, 2, 3, 4, 5];
-  
+
   const sizeClasses = {
     sm: "w-4 h-4",
     md: "w-5 h-5",
-    lg: "w-8 h-8"
+    lg: "w-8 h-8",
   };
 
   return (
@@ -260,7 +260,7 @@ const StarRating = ({ rating, onRatingChange, readonly = false, size = "md" }) =
           onClick={() => !readonly && onRatingChange(star)}
           onMouseEnter={() => !readonly && setHoverRating(star)}
           onMouseLeave={() => !readonly && setHoverRating(0)}
-          className={`${!readonly && 'cursor-pointer'} focus:outline-none transition-transform ${!readonly && 'hover:scale-110'}`}
+          className={`${!readonly && "cursor-pointer"} focus:outline-none transition-transform ${!readonly && "hover:scale-110"}`}
           disabled={readonly}
         >
           <Star
@@ -285,7 +285,7 @@ const ReviewCard = ({ review }) => {
       return d.toLocaleDateString("en-US", {
         year: "numeric",
         month: "short",
-        day: "numeric"
+        day: "numeric",
       });
     } catch {
       return "Recent";
@@ -342,7 +342,7 @@ const ReviewsSection = ({ tractorId }) => {
         // Replace with your actual API call
         // const response = await apiHelper.get(`/reviews/tractor/${tractorId}`);
         // setReviews(response.data);
-        
+
         // Sample data
         setTimeout(() => {
           setReviews([
@@ -350,23 +350,26 @@ const ReviewsSection = ({ tractorId }) => {
               id: 1,
               userName: "Rajesh Kumar",
               rating: 5,
-              comment: "Excellent tractor! Great performance and fuel efficiency. Perfect for my farm.",
-              createdAt: "2026-06-15T10:30:00"
+              comment:
+                "Excellent tractor! Great performance and fuel efficiency. Perfect for my farm.",
+              createdAt: "2026-06-15T10:30:00",
             },
             {
               id: 2,
               userName: "Priya Singh",
               rating: 4,
-              comment: "Good value for money. Smooth transmission and powerful engine.",
-              createdAt: "2026-06-10T14:20:00"
+              comment:
+                "Good value for money. Smooth transmission and powerful engine.",
+              createdAt: "2026-06-10T14:20:00",
             },
             {
               id: 3,
               userName: "Amit Patel",
               rating: 5,
-              comment: "Best investment for my farm. After-sales service is excellent.",
-              createdAt: "2026-06-05T09:15:00"
-            }
+              comment:
+                "Best investment for my farm. After-sales service is excellent.",
+              createdAt: "2026-06-05T09:15:00",
+            },
           ]);
           setLoading(false);
         }, 500);
@@ -382,7 +385,7 @@ const ReviewsSection = ({ tractorId }) => {
   // Submit Review
   const handleSubmitReview = async (e) => {
     e.preventDefault();
-    
+
     if (rating === 0) {
       setError("Please select a rating");
       return;
@@ -407,23 +410,23 @@ const ReviewsSection = ({ tractorId }) => {
       //   rating,
       //   comment: comment.trim()
       // });
-      
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
       const newReview = {
         id: Date.now(),
         userName: userName.trim() || "Anonymous User",
         rating,
         comment: comment.trim(),
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
       };
-      
+
       setReviews([newReview, ...reviews]);
       setSuccessMessage("Thank you! Your review has been submitted.");
       setRating(0);
       setUserName("");
       setComment("");
-      
+
       setTimeout(() => setSuccessMessage(""), 3000);
     } catch (error) {
       console.error("Error submitting review:", error);
@@ -435,17 +438,10 @@ const ReviewsSection = ({ tractorId }) => {
 
   // Calculate Statistics
   const totalReviews = reviews.length;
-  const averageRating = totalReviews > 0 
-    ? (reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews)
-    : 0;
-
-  const ratingDistribution = [5, 4, 3, 2, 1].map(star => ({
-    star,
-    count: reviews.filter(r => r.rating === star).length,
-    percentage: totalReviews > 0 
-      ? (reviews.filter(r => r.rating === star).length / totalReviews) * 100 
-      : 0
-  }));
+  const averageRating =
+    totalReviews > 0
+      ? reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews
+      : 0;
 
   if (loading) {
     return (
@@ -464,161 +460,134 @@ const ReviewsSection = ({ tractorId }) => {
         What our customers say about this tractor
       </p>
 
-      {/* Review Summary */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center md:text-left">
+      {/* Two-column layout: reviews on left, form on right */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* LEFT COLUMN: Summary + All Reviews */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <div className="flex items-center gap-3 pb-6 border-b border-gray-100">
             <div className="text-4xl font-bold text-gray-900">
               {averageRating.toFixed(1)}
             </div>
-            <div className="mt-1">
+            <div>
               <StarRating rating={averageRating} readonly size="md" />
+              <p className="text-sm text-gray-500 mt-1">
+                Based on {totalReviews}{" "}
+                {totalReviews === 1 ? "review" : "reviews"}
+              </p>
             </div>
-            <p className="text-sm text-gray-500 mt-1">
-              Based on {totalReviews} {totalReviews === 1 ? 'review' : 'reviews'}
-            </p>
           </div>
-          <div className="col-span-2">
-            <div className="space-y-1.5">
-              {ratingDistribution.map(({ star, percentage }) => (
-                <div key={star} className="flex items-center gap-3">
-                  <span className="text-sm text-gray-600 w-12">{star} ★</span>
-                  <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-green-500 rounded-full transition-all duration-500"
-                      style={{ width: `${percentage}%` }}
-                    />
-                  </div>
-                  <span className="text-xs text-gray-500 w-12 text-right">
-                    {Math.round(percentage)}%
-                  </span>
-                  <span className="text-xs text-gray-400 w-8 text-right">
-                    ({ratingDistribution.find(r => r.star === star)?.count || 0})
-                  </span>
+
+          <div className="pt-6">
+            {reviews.length > 0 ? (
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-4">
+                  All Reviews ({reviews.length})
+                </h4>
+                {reviews.map((review) => (
+                  <ReviewCard key={review.id} review={review} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="text-gray-300 mb-3">
+                  <Star className="w-12 h-12 mx-auto" />
                 </div>
-              ))}
-            </div>
+                <p className="text-gray-500">No reviews yet.</p>
+                <p className="text-gray-400 text-sm mt-1">
+                  Be the first to review this tractor!
+                </p>
+              </div>
+            )}
           </div>
         </div>
-      </div>
 
-      {/* Review Form */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
-        <h3 className="text-lg font-bold text-gray-900 mb-4">Write a Review</h3>
-        
-        <form onSubmit={handleSubmitReview} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Your Rating *
-            </label>
-            <StarRating rating={rating} onRatingChange={setRating} size="lg" />
-            {rating === 0 && error && (
-              <p className="text-red-500 text-xs mt-1">Please select a rating</p>
-            )}
-          </div>
+        {/* RIGHT COLUMN: Review Form */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">
+            Write a Review
+          </h3>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Your Name 
-            </label>
-            <input
-              type="text"
-              value={userName}
-              onChange={(e) => setUserName(e.target.value)}
-              placeholder="Enter your name"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Your Review *
-            </label>
-            <textarea
-              value={comment}
-              onChange={(e) => setComment(e.target.value)}
-              placeholder="Share your experience with this tractor..."
-              rows="4"
-              className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all resize-none"
-            />
-            {comment && comment.length < 10 && (
-              <p className="text-red-500 text-xs mt-1">
-                Minimum 10 characters required
-              </p>
-            )}
-            {error && (
-              <p className="text-red-500 text-xs mt-1">{error}</p>
-            )}
-          </div>
-
-          {successMessage && (
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-green-600" />
-              <p className="text-green-700 text-sm">{successMessage}</p>
+          <form onSubmit={handleSubmitReview} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Your Rating <span className="text-red-500">*</span>
+              </label>
+              <StarRating
+                rating={rating}
+                onRatingChange={setRating}
+                size="lg"
+              />
+              {rating === 0 && error && (
+                <p className="text-red-500 text-xs mt-1">
+                  Please select a rating
+                </p>
+              )}
             </div>
-          )}
 
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? (
-              <span className="flex items-center justify-center gap-2">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Submitting...
-              </span>
-            ) : (
-              "Submit Review"
-            )}
-          </button>
-        </form>
-      </div>
-
-      {/* All Reviews */}
-      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-        {reviews.length > 0 ? (
-          <div>
-            <h4 className="font-semibold text-gray-900 mb-4">
-              All Reviews ({reviews.length})
-            </h4>
-            {reviews.map((review) => (
-              <ReviewCard key={review.id} review={review} />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-8">
-            <div className="text-gray-300 mb-3">
-              <Star className="w-12 h-12 mx-auto" />
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Your Name
+              </label>
+              <input
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="Enter your name"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+              />
             </div>
-            <p className="text-gray-500">No reviews yet.</p>
-            <p className="text-gray-400 text-sm mt-1">Be the first to review this tractor!</p>
-          </div>
-        )}
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Your Review <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Share your experience with this tractor..."
+                rows="4"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all resize-none"
+              />
+              {comment && comment.length < 10 && (
+                <p className="text-red-500 text-xs mt-1">
+                  Minimum 10 characters required
+                </p>
+              )}
+              {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+            </div>
+
+            {successMessage && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <p className="text-green-700 text-sm">{successMessage}</p>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Submitting...
+                </span>
+              ) : (
+                "Submit Review"
+              )}
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
 };
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 // ─── Main Component ────────────────────────────────────────────────────────
 const TractorDetails = () => {
   const { id } = useParams();
-   const navigate = useNavigate();
+  const navigate = useNavigate();
   const [currentImage, setCurrentImage] = useState(0);
   const [wishlist, setWishlist] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
@@ -641,8 +610,6 @@ const TractorDetails = () => {
         setLoading(true);
         setError(null);
         const response = await apiHelper.get(`/website-variants/${id}`);
-        console.log("API Response:", response.data);
-        // Log specific fields for debugging - using actual field names from API
 
         setTractorData(response.data);
       } catch (error) {
@@ -722,7 +689,6 @@ const TractorDetails = () => {
 
   // Only show colors that are actually saved in the database
   const displayColors = availableColors;
-
 
   // Transmission features
   const transmissionFeatures = [
@@ -1096,43 +1062,43 @@ const TractorDetails = () => {
   return (
     <div className="bg-gray-100 min-h-screen">
       {/* Breadcrumb */}
-     {/* Breadcrumb with Back Button on Right */}
-<div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-8 pb-4">
-  <div className="flex items-center justify-between gap-4">
-    {/* Breadcrumb - Left */}
-    <div className="flex items-center gap-2 text-sm flex-wrap">
-      <Link
-        to="/"
-        className="text-green-600 hover:text-green-700 font-medium transition-colors"
-      >
-        Home
-      </Link>
-      <span className="text-gray-400">/</span>
-      <Link
-        to="/tractor"
-        className="text-green-600 hover:text-green-700 font-medium transition-colors"
-      >
-        Tractor
-      </Link>
-      <span className="text-gray-400">/</span>
-      <span className="text-gray-500 truncate max-w-[150px] sm:max-w-[250px]">
-        {tractor.name}
-      </span>
-    </div>
+      {/* Breadcrumb with Back Button on Right */}
+      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-8 pb-4">
+        <div className="flex items-center justify-between gap-4">
+          {/* Breadcrumb - Left */}
+          <div className="flex items-center gap-2 text-sm flex-wrap">
+            <Link
+              to="/"
+              className="text-green-600 hover:text-green-700 font-medium transition-colors"
+            >
+              Home
+            </Link>
+            <span className="text-gray-400">/</span>
+            <Link
+              to="/tractor"
+              className="text-green-600 hover:text-green-700 font-medium transition-colors"
+            >
+              Tractor
+            </Link>
+            <span className="text-gray-400">/</span>
+            <span className="text-gray-500 truncate max-w-[150px] sm:max-w-[250px]">
+              {tractor.name}
+            </span>
+          </div>
 
-    {/* Back Button - Right */}
-    <button
-      onClick={() => navigate(-1)}
-      className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group flex-shrink-0"
-      aria-label="Go back"
-    >
-      <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" />
-      <span className="text-sm font-medium text-gray-600 group-hover:text-green-600 transition-colors">
-        Back
-      </span>
-    </button>
-  </div>
-</div>
+          {/* Back Button - Right */}
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group flex-shrink-0"
+            aria-label="Go back"
+          >
+            <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" />
+            <span className="text-sm font-medium text-gray-600 group-hover:text-green-600 transition-colors">
+              Back
+            </span>
+          </button>
+        </div>
+      </div>
 
       {/* ── Main Content ── */}
       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pb-10">
@@ -1286,11 +1252,7 @@ const TractorDetails = () => {
 
               {/* Core condition rows */}
               <div className="border-t border-gray-100">
-                <DetailRow
-                  label="No. of Cylinders"
-                  value={tractor.cylinders}
-               
-                />
+                <DetailRow label="No. of Cylinders" value={tractor.cylinders} />
                 <DetailRow
                   label="Engine Condition"
                   value={tractor.engineCondition}
@@ -1390,10 +1352,8 @@ const TractorDetails = () => {
             </div>
           </div>
         </div>
-
         {/* ── TABS SECTION ── */}
         <div className="mt-10 mb-6">
-          {/* Tab Navigation */}
           {/* Tab Navigation - No icons, no scrollbar */}
           <div className="flex gap-8 border-b border-gray-200 overflow-x-auto hide-scrollbar">
             {TABS.map((tab) => (
@@ -1414,230 +1374,235 @@ const TractorDetails = () => {
           {/* Tab Content */}
           <div className="mt-6">{renderTabContent()}</div>
         </div>
-
-
-
         <ReviewsSection tractorId={id} />
-
-    {/* ── Related Products Slider ── */}
-<div className="mt-16">
-  {/* Header with decorative elements */}
-  <div className="flex items-center gap-4 mb-2">
-    <div className="h-1 w-10 bg-green-600 rounded-full"></div>
-    <h2 className="text-2xl font-bold text-gray-900">
-      Related <span className="text-green-600">Products</span>
-    </h2>
-    <div className="flex-1 h-px bg-gray-200"></div>
-    <Link
-      to="/tractors"
-      className="text-sm font-semibold text-green-600 hover:text-green-700 flex items-center gap-1 transition-colors whitespace-nowrap"
-    >
-      View All
-      <ChevronRight className="w-4 h-4" />
-    </Link>
-  </div>
-  <p className="text-gray-500 text-sm mb-6 ml-14">
-    Discover more tractors that might interest you
-  </p>
-
-  {/* Mobile View */}
-  <div className="sm:hidden relative">
-    <button
-      onClick={() => scrollRelated("left")}
-      className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-9 h-9 bg-white border-2 border-green-200 text-green-700 rounded-full shadow-lg hover:bg-green-50 hover:border-green-400 transition-all duration-300 ${
-        isScrollingRelated
-          ? "opacity-100 translate-x-0"
-          : "opacity-0 -translate-x-2"
-      }`}
-    >
-      <ChevronLeft className="h-4 w-4" />
-    </button>
-    <div
-      ref={relatedScrollRef}
-      className="flex overflow-x-auto gap-4 pb-4 px-1 snap-x snap-mandatory scroll-smooth"
-      style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-    >
-      {tractor.relatedProducts.map((product) => (
-        <Link
-          key={product.id}
-          to={`/tractor/${product.id}`}
-          className="snap-start w-[75vw] flex-shrink-0"
-        >
-          <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-green-300 transition-all duration-300">
-            <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 h-44 overflow-hidden">
-              <img
-                src={product.image || "/mah.png"}
-                alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-              {/* Gradient overlay */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
-              {/* Badge */}
-              <span className="absolute top-3 left-3 bg-green-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
-                <Award className="w-3 h-3" />
-                Featured
-              </span>
-            </div>
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs bg-green-50 text-green-700 font-semibold px-2.5 py-1 rounded-full border border-green-200">
-                  Tractor
-                </span>
-                <div className="flex gap-0.5">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      className={`w-3 h-3 ${i < 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300 fill-gray-300'}`}
-                    />
-                  ))}
-                </div>
-              </div>
-              <h4 className="text-sm font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-200 line-clamp-2 mb-1.5">
-                {product.name}
-              </h4>
-              <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-                <MapPin className="h-3 w-3 flex-shrink-0" />
-                <span>{product.location || "Location not specified"}</span>
-              </div>
-              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                <p className="text-base font-bold text-gray-900">
-                  {product.price}
-                </p>
-                <button 
-                  className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200 flex items-center gap-1 shadow-md hover:shadow-lg"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    // Add to cart logic
-                  }}
-                >
-                  <ShoppingCart className="w-3 h-3" />
-                  Add
-                </button>
-              </div>
-            </div>
+        {/* ── Related Products Slider ── */}
+        <div className="mt-16">
+          {/* Header with decorative elements */}
+          <div className="flex items-center gap-4 mb-2">
+            <div className="h-1 w-10 bg-green-600 rounded-full"></div>
+            <h2 className="text-2xl font-bold text-gray-900">
+              Related <span className="text-green-600">Products</span>
+            </h2>
+            <div className="flex-1 h-px bg-gray-200"></div>
+            <Link
+              to="/tractors"
+              className="text-sm font-semibold text-green-600 hover:text-green-700 flex items-center gap-1 transition-colors whitespace-nowrap"
+            >
+              View All
+              <ChevronRight className="w-4 h-4" />
+            </Link>
           </div>
-        </Link>
-      ))}
-    </div>
-    <button
-      onClick={() => scrollRelated("right")}
-      className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-9 h-9 bg-white border-2 border-green-200 text-green-700 rounded-full shadow-lg hover:bg-green-50 hover:border-green-400 transition-all duration-300 ${
-        isScrollingRelated
-          ? "opacity-100 translate-x-0"
-          : "opacity-0 translate-x-2"
-      }`}
-    >
-      <ChevronRight className="h-4 w-4" />
-    </button>
-  </div>
+          <p className="text-gray-500 text-sm mb-6 ml-14">
+            Discover more tractors that might interest you
+          </p>
 
-  {/* Desktop View */}
-  <div className="hidden sm:block relative px-8 sm:px-10 lg:px-12">
-    <button
-      onClick={() => slideRelated("prev")}
-      className="absolute left-0 sm:left-1 lg:left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border-2 border-gray-200 cursor-pointer rounded-full shadow-md flex items-center justify-center hover:bg-green-50 hover:border-green-400 transition-all duration-300 hover:scale-110"
-    >
-      <ChevronLeft className="h-5 w-5 text-gray-700" />
-    </button>
-    <div className="overflow-hidden">
-      <div className="flex gap-4 sm:gap-5 transition-transform duration-500 ease-in-out">
-        {getVisibleRelated().map((product, idx) => (
-          <Link
-            key={`${product.id}-${relatedIndex}-${idx}`}
-            to={`/tractor/${product.id}`}
-            className="flex-shrink-0 group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-green-300 transition-all duration-300 w-full sm:w-[calc(50%-6px)] lg:w-[calc(25%-12px)]"
-          >
-            <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 h-48 overflow-hidden">
-              <img
-                src={product.image || "/mah.png"}
-                alt={product.name}
-                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-              <span className="absolute top-3 left-3 bg-gradient-to-r from-green-600 to-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
-                <Award className="w-3 h-3" />
-                Featured
-              </span>
-              <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/20">
-                <span className="bg-white/90 backdrop-blur-sm text-gray-900 font-semibold px-4 py-2 rounded-lg shadow-lg hover:bg-white transition-all transform group-hover:scale-105 flex items-center gap-2 text-sm">
-                  <Eye className="w-4 h-4" />
-                  Quick View
-                </span>
-              </div>
-            </div>
-            <div className="p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-xs bg-green-50 text-green-700 font-semibold px-3 py-1 rounded-full border border-green-200">
-                  Tractor
-                </span>
-                <div className="flex items-center gap-1">
-                  <div className="flex gap-0.5">
-                    {[...Array(5)].map((_, i) => (
-                      <Star
-                        key={i}
-                        className={`w-3.5 h-3.5 ${i < 4 ? 'fill-yellow-400 text-yellow-400' : 'text-gray-300 fill-gray-300'}`}
-                      />
-                    ))}
-                  </div>
-                  <span className="text-xs text-gray-400 ml-1">(24)</span>
-                </div>
-              </div>
-              <h4 className="text-sm font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-200 line-clamp-2 mb-1.5">
-                {product.name}
-              </h4>
-              <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-                <MapPin className="h-3 w-3 flex-shrink-0" />
-                <span>{product.location || "Location not specified"}</span>
-              </div>
-              <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                <div>
-                  <p className="text-base font-bold text-gray-900">
-                    {product.price}
-                  </p>
-                  <p className="text-xs text-gray-400 line-through">₹9,50,000</p>
-                </div>
-                <button 
-                  className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg transform hover:scale-105"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
-                    // Add to cart logic
-                  }}
+          {/* Mobile View */}
+          <div className="sm:hidden relative">
+            <button
+              onClick={() => scrollRelated("left")}
+              className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-9 h-9 bg-white border-2 border-green-200 text-green-700 rounded-full shadow-lg hover:bg-green-50 hover:border-green-400 transition-all duration-300 ${
+                isScrollingRelated
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 -translate-x-2"
+              }`}
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <div
+              ref={relatedScrollRef}
+              className="flex overflow-x-auto gap-4 pb-4 px-1 snap-x snap-mandatory scroll-smooth"
+              style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+            >
+              {tractor.relatedProducts.map((product) => (
+                <Link
+                  key={product.id}
+                  to={`/tractor/${product.id}`}
+                  className="snap-start w-[75vw] flex-shrink-0"
                 >
-                  <ShoppingCart className="w-3.5 h-3.5" />
-                  Add
-                </button>
+                  <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-green-300 transition-all duration-300">
+                    <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 h-44 overflow-hidden">
+                      <img
+                        src={product.image || "/mah.png"}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      {/* Gradient overlay */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+                      {/* Badge */}
+                      <span className="absolute top-3 left-3 bg-green-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
+                        <Award className="w-3 h-3" />
+                        Featured
+                      </span>
+                    </div>
+                    <div className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs bg-green-50 text-green-700 font-semibold px-2.5 py-1 rounded-full border border-green-200">
+                          Tractor
+                        </span>
+                        <div className="flex gap-0.5">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              className={`w-3 h-3 ${i < 4 ? "fill-yellow-400 text-yellow-400" : "text-gray-300 fill-gray-300"}`}
+                            />
+                          ))}
+                        </div>
+                      </div>
+                      <h4 className="text-sm font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-200 line-clamp-2 mb-1.5">
+                        {product.name}
+                      </h4>
+                      <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                        <MapPin className="h-3 w-3 flex-shrink-0" />
+                        <span>
+                          {product.location || "Location not specified"}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <p className="text-base font-bold text-gray-900">
+                          {product.price}
+                        </p>
+                        <button
+                          className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200 flex items-center gap-1 shadow-md hover:shadow-lg"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            // Add to cart logic
+                          }}
+                        >
+                          <ShoppingCart className="w-3 h-3" />
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+            <button
+              onClick={() => scrollRelated("right")}
+              className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-9 h-9 bg-white border-2 border-green-200 text-green-700 rounded-full shadow-lg hover:bg-green-50 hover:border-green-400 transition-all duration-300 ${
+                isScrollingRelated
+                  ? "opacity-100 translate-x-0"
+                  : "opacity-0 translate-x-2"
+              }`}
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          {/* Desktop View */}
+          <div className="hidden sm:block relative px-8 sm:px-10 lg:px-12">
+            <button
+              onClick={() => slideRelated("prev")}
+              className="absolute left-0 sm:left-1 lg:left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border-2 border-gray-200 cursor-pointer rounded-full shadow-md flex items-center justify-center hover:bg-green-50 hover:border-green-400 transition-all duration-300 hover:scale-110"
+            >
+              <ChevronLeft className="h-5 w-5 text-gray-700" />
+            </button>
+            <div className="overflow-hidden">
+              <div className="flex gap-4 sm:gap-5 transition-transform duration-500 ease-in-out">
+                {getVisibleRelated().map((product, idx) => (
+                  <Link
+                    key={`${product.id}-${relatedIndex}-${idx}`}
+                    to={`/tractor/${product.id}`}
+                    className="flex-shrink-0 group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-green-300 transition-all duration-300 w-full sm:w-[calc(50%-6px)] lg:w-[calc(25%-12px)]"
+                  >
+                    <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 h-48 overflow-hidden">
+                      <img
+                        src={product.image || "/mah.png"}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                      <span className="absolute top-3 left-3 bg-gradient-to-r from-green-600 to-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
+                        <Award className="w-3 h-3" />
+                        Featured
+                      </span>
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/20">
+                        <span className="bg-white/90 backdrop-blur-sm text-gray-900 font-semibold px-4 py-2 rounded-lg shadow-lg hover:bg-white transition-all transform group-hover:scale-105 flex items-center gap-2 text-sm">
+                          <Eye className="w-4 h-4" />
+                          Quick View
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-xs bg-green-50 text-green-700 font-semibold px-3 py-1 rounded-full border border-green-200">
+                          Tractor
+                        </span>
+                        <div className="flex items-center gap-1">
+                          <div className="flex gap-0.5">
+                            {[...Array(5)].map((_, i) => (
+                              <Star
+                                key={i}
+                                className={`w-3.5 h-3.5 ${i < 4 ? "fill-yellow-400 text-yellow-400" : "text-gray-300 fill-gray-300"}`}
+                              />
+                            ))}
+                          </div>
+                          <span className="text-xs text-gray-400 ml-1">
+                            (24)
+                          </span>
+                        </div>
+                      </div>
+                      <h4 className="text-sm font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-200 line-clamp-2 mb-1.5">
+                        {product.name}
+                      </h4>
+                      <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                        <MapPin className="h-3 w-3 flex-shrink-0" />
+                        <span>
+                          {product.location || "Location not specified"}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                        <div>
+                          <p className="text-base font-bold text-gray-900">
+                            {product.price}
+                          </p>
+                          <p className="text-xs text-gray-400 line-through">
+                            ₹9,50,000
+                          </p>
+                        </div>
+                        <button
+                          className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg transform hover:scale-105"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            // Add to cart logic
+                          }}
+                        >
+                          <ShoppingCart className="w-3.5 h-3.5" />
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  </Link>
+                ))}
               </div>
             </div>
-          </Link>
-        ))}
-      </div>
-    </div>
-    <button
-      onClick={() => slideRelated("next")}
-      className="absolute right-0 sm:right-1 lg:right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 cursor-pointer bg-white border-2 border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-green-50 hover:border-green-400 transition-all duration-300 hover:scale-110"
-    >
-      <ChevronRight className="h-5 w-5 text-gray-700" />
-    </button>
-  </div>
+            <button
+              onClick={() => slideRelated("next")}
+              className="absolute right-0 sm:right-1 lg:right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 cursor-pointer bg-white border-2 border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-green-50 hover:border-green-400 transition-all duration-300 hover:scale-110"
+            >
+              <ChevronRight className="h-5 w-5 text-gray-700" />
+            </button>
+          </div>
 
-  <div className="text-center mt-10">
-    <Link
-      to="/tractors"
-      className="inline-flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-3.5 rounded-xl font-semibold hover:shadow-xl hover:scale-105 transition-all duration-300"
-    >
-      <Eye className="w-4 h-4" />
-      View All Products
-      <ChevronRight className="w-4 h-4" />
-    </Link>
-  </div>
-</div>      </div>
+          <div className="text-center mt-10">
+            <Link
+              to="/tractors"
+              className="inline-flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-3.5 rounded-xl font-semibold hover:shadow-xl hover:scale-105 transition-all duration-300"
+            >
+              <Eye className="w-4 h-4" />
+              View All Products
+              <ChevronRight className="w-4 h-4" />
+            </Link>
+          </div>
+        </div>{" "}
+      </div>
 
       {/* Enquiry Modal */}
       <EnquiryModal
         isOpen={showEnquiryModal}
-         websiteVariantId={id}
+        websiteVariantId={id}
         onClose={() => setShowEnquiryModal(false)}
       />
     </div>
@@ -1690,11 +1655,9 @@ const ProductDetailsTab = ({ tractor }) => (
       <div>
         <DetailRow label="Horse Power" value={tractor.hp} />
         <DetailRow label="Cubic Capacity" value={tractor.cc} />
-      <DetailRow label="Engine Condition" value={tractor.engineCondition} />
-      
+        <DetailRow label="Engine Condition" value={tractor.engineCondition} />
       </div>
       <div>
-       
         <DetailRow label="RC Available" value={tractor.rc} />
         <DetailRow label="Stock Status" value={tractor.stockStatus} />
         <DetailRow label="Launch Year" value={tractor.launchYear} last />

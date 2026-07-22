@@ -42,8 +42,7 @@ const TractorShowcase = () => {
  useEffect(() => {
   const fetchData = async () => {
     try {
-      const response = await apiHelper.get("/website-variants");
-      console.log("API Response:", response);
+      const response = await apiHelper.get("/website-variants?status=ACTIVE");
 
       const tractorList = response.data || [];
 
@@ -80,7 +79,6 @@ const TractorShowcase = () => {
         });
 
         setNewTractors(updatedNewTractors);
-        console.log("Updated tractors from API:", updatedNewTractors);
       } else {
         setNewTractors([]);
       }
@@ -358,7 +356,6 @@ useEffect(() => {
           src={tractor.image || "/mah.png"}
           alt={tractor.name}
           onError={(e) => {
-            console.error("Image failed to load:", tractor.image);
             e.target.onerror = null;
             e.target.src = "/mah.png";
           }}

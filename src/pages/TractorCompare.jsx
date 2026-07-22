@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { Listbox } from "@headlessui/react";
 import {
@@ -16,112 +16,9 @@ import {
 import mah from "../assets/mahindra.png";
 import john from "../assets/johndeere.png";
 import swara from "../assets/swaraj.png";
+import apiHelper from "../utils/apiHelper";
 
-// Mock Database Matrix containing our structured Tractor Models and Variants
-const TRACTOR_DATABASE = {
-  "Mahindra 475 DI XP Plus": {
-    variants: {
-      "Standard 2WD": {
-        hp: "44 HP",
-        steering: "Mechanical / Power Steering (Optional)",
-        cabin: "No (Canopy Optional)",
-        clutch: "Single / Dual (Optional)",
-        dashboard: "Analog-Digital Combo",
-        seat: "Yes (Mechanical Adjustable)",
-        weights: "Optional (30 kg)",
-        price: "₹ 6.40 Lakh*",
-        image: mah,
-      },
-      "Power Plus 4WD": {
-        hp: "47 HP",
-        steering: "Power Steering",
-        cabin: "No",
-        clutch: "Dual Clutch",
-        dashboard: "Digital Dashboard",
-        seat: "Yes (Deluxe Adjustable)",
-        weights: "Included (60 kg)",
-        price: "₹ 7.25 Lakh*",
-        image: mah,
-      },
-    },
-  },
-  "John Deere 5050 D": {
-    variants: {
-      "GearPro Standard": {
-        hp: "50 HP",
-        steering: "Power Steering",
-        cabin: "No",
-        clutch: "Dual Clutch",
-        dashboard: "Digital Dashboard",
-        seat: "Yes (Adjustable)",
-        weights: "Optional",
-        price: "₹ 7.90 Lakh*",
-        image: john,
-      },
-      "AC Cabin Luxury Edition": {
-        hp: "50 HP",
-        steering: "Power Steering",
-        cabin: "Yes (Factory Fitted AC)",
-        clutch: "Dual Clutch",
-        dashboard: "Advanced Digital Dashboard",
-        seat: "Yes (Premium Suspension Adjustable)",
-        weights: "Included (90 kg)",
-        price: "₹ 10.50 Lakh*",
-        image: john,
-      },
-    },
-  },
-  "Swaraj 744 FE": {
-    variants: {
-      "5 Star MS": {
-        hp: "48 HP",
-        steering: "Mechanical Steering",
-        cabin: "No",
-        clutch: "Single Clutch",
-        dashboard: "Analog Dashboard",
-        seat: "Fixed Standard",
-        weights: "No",
-        price: "₹ 6.90 Lakh*",
-        image: swara,
-      },
-      "XT Power Steering": {
-        hp: "52 HP",
-        steering: "Power Steering",
-        cabin: "No",
-        clutch: "Dual Clutch",
-        dashboard: "Digital Dashboard",
-        seat: "Yes (Adjustable)",
-        weights: "Included (45 kg)",
-        price: "₹ 7.80 Lakh*",
-        image: swara,
-      },
-    },
-  },
-};
-
-const SHOWCASE_TRACTORS = [
-  {
-    name: "Eicher 380 Super DI",
-    hp: "40 HP",
-    rating: "4.6",
-    priceRange: "₹ 6.10 - 6.40 Lakh*",
-    image: mah,
-  },
-  {
-    name: "Massey Ferguson 241 DI",
-    hp: "42 HP",
-    rating: "4.8",
-    priceRange: "₹ 6.80 - 7.25 Lakh*",
-    image: john,
-  },
-  {
-    name: "New Holland 3630 TX Plus",
-    hp: "55 HP",
-    rating: "4.9",
-    priceRange: "₹ 7.95 - 8.50 Lakh*",
-    image: swara,
-  },
-];
+const BRANDS = ["Mahindra", "John Deere", "Swaraj"];
 
 const SUGGESTED_COMPARISONS = [
   {
@@ -158,50 +55,138 @@ const SUGGESTED_COMPARISONS = [
 
 export default function TractorCompare() {
   const compareSectionRef = useRef(null);
-  const [slots, setSlots] = useState([
-    { model: "", variant: "" },
-    { model: "", variant: "" },
-    { model: "", variant: "" },
-  ]);
 
   const [showComparison, setShowComparison] = useState(false);
+  const [brands, setBrands] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const handleModelChange = (index, modelValue) => {
+  const [showcaseTractors, setShowcaseTractors] = useState([]);
+  const [slots, setSlots] = useState([
+    {
+      brand: "",
+      model: "",
+      variant: "",
+      models: [],
+      variants: [],
+    },
+    {
+      brand: "",
+      model: "",
+      variant: "",
+      models: [],
+      variants: [],
+    },
+    {
+      brand: "",
+      model: "",
+      variant: "",
+      models: [],
+      variants: [],
+    },
+  ]);
+
+  useEffect(() => {
+    const fetchTrending = async () => {
+      const res = await apiHelper.get("/compare-tractor/trending");
+
+      setShowcaseTractors(res.data);
+    };
+
+    fetchTrending();
+  }, []);
+
+  useEffect(() => {
+    fetchCompareData();
+  }, []);
+
+  const fetchCompareData = async () => {
+    try {
+      setLoading(true);
+
+      const res = await await apiHelper.get("/compare-tractor/brands");
+
+      setBrands(res.data || []);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBrandChange = async (index, brandId) => {
     const updated = [...slots];
-    updated[index].model = modelValue;
+
+    updated[index].brand = brandId;
+    updated[index].model = "";
     updated[index].variant = "";
+    updated[index].models = [];
+    updated[index].variants = [];
+
     setSlots(updated);
-    setShowComparison(false);
+
+    const res = await apiHelper.get(
+      `/compare-tractor/brands/${brandId}/models`,
+    );
+
+    updated[index].models = res.data;
+
+    setSlots([...updated]);
   };
 
-  const handleVariantChange = (index, variantValue) => {
+  const handleModelChange = async (index, modelId) => {
     const updated = [...slots];
-    updated[index].variant = variantValue;
+
+    updated[index].model = modelId;
+    updated[index].variant = "";
+    updated[index].variants = [];
+
     setSlots(updated);
-    setShowComparison(false);
+
+    const res = await apiHelper.get(
+      `/compare-tractor/models/${modelId}/variants`,
+    );
+
+    updated[index].variants = res.data;
+
+    setSlots([...updated]);
   };
 
+  const handleVariantChange = async (index, variantId) => {
+    const updated = [...slots];
+
+    updated[index].variant = variantId;
+
+    const res = await apiHelper.get(`/compare-tractor/variant/${variantId}`);
+
+    console.log("API Response:", res.data);
+
+    updated[index].details = res.data;
+
+    console.log(res);
+
+    setSlots(updated);
+  };
   const clearSlot = (index) => {
     const updated = [...slots];
-    updated[index] = { model: "", variant: "" };
+    updated[index] = {
+      brand: "",
+      model: "",
+      variant: "",
+      models: [],
+      variants: [],
+    };
     setSlots(updated);
     const activeCount = updated.filter((s) => s.model && s.variant).length;
     if (activeCount < 2) setShowComparison(false);
   };
 
   const activeTractors = slots
-    .map((s, idx) => {
-      if (s.model && s.variant) {
-        return {
-          slotId: idx,
-          modelName: s.model,
-          variantName: s.variant,
-          ...TRACTOR_DATABASE[s.model].variants[s.variant],
-        };
-      }
-      return null;
-    })
-    .filter(Boolean);
+    .filter((s) => s.details)
+    .map((s) => ({
+      ...s.details,
+      modelName: s.models.find((m) => m.id === s.model)?.modelName,
+      variantName: s.variants.find((v) => v.id === s.variant)?.variantName,
+    }));
 
   const scrollToCompare = () => {
     const y =
@@ -241,9 +226,9 @@ export default function TractorCompare() {
             {slots.map((slot, index) => {
               const modelSelected = !!slot.model;
               const variantSelected = !!slot.variant;
-              const tractorDetails = variantSelected
-                ? TRACTOR_DATABASE[slot.model].variants[slot.variant]
-                : null;
+              const tractorDetails = slot.variants.find(
+                (v) => v.id === slot.variant,
+              );
 
               return (
                 <div
@@ -268,6 +253,57 @@ export default function TractorCompare() {
                     {/* Tractor Model - Headless UI Listbox */}
                     <div>
                       <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
+                        Brand
+                      </label>
+
+                      <Listbox
+                        value={slot.brand}
+                        onChange={(value) => handleBrandChange(index, value)}
+                      >
+                        <div className="relative">
+                          <Listbox.Button className="w-full p-2 bg-white border border-gray-300 rounded text-xs sm:text-sm text-left flex items-center justify-between">
+                            <span
+                              className={
+                                slot.brand ? "text-gray-800" : "text-gray-400"
+                              }
+                            >
+                              {brands.find((b) => b.id === slot.brand)
+                                ?.brandName || "Select Brand"}
+                            </span>
+
+                            <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
+                          </Listbox.Button>
+
+                          <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-auto py-1 text-xs sm:text-sm">
+                            {brands.map((brand) => (
+                              <Listbox.Option
+                                key={brand.id}
+                                value={brand.id}
+                                className={({ active, selected }) =>
+                                  `cursor-pointer px-3 py-2 flex items-center justify-between ${
+                                    active
+                                      ? "bg-green-50 text-green-700"
+                                      : "text-gray-700"
+                                  } ${selected ? "bg-green-100 font-medium" : ""}`
+                                }
+                              >
+                                {({ selected }) => (
+                                  <>
+                                    <span> {brand.brandName}</span>
+
+                                    {selected && (
+                                      <Check className="h-3.5 w-3.5 text-green-600" />
+                                    )}
+                                  </>
+                                )}
+                              </Listbox.Option>
+                            ))}
+                          </Listbox.Options>
+                        </div>
+                      </Listbox>
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
                         Tractor Model
                       </label>
                       <Listbox
@@ -281,15 +317,16 @@ export default function TractorCompare() {
                                 slot.model ? "text-gray-800" : "text-gray-400"
                               }
                             >
-                              {slot.model || "+ Add Tractor"}
+                              {slot.models.find((m) => m.id === slot.model)
+                                ?.modelName || "+ Add Tractor"}
                             </span>
                             <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
                           </Listbox.Button>
                           <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-auto py-1 text-xs sm:text-sm">
-                            {Object.keys(TRACTOR_DATABASE).map((modelName) => (
+                            {slot.models.map((model) => (
                               <Listbox.Option
-                                key={modelName}
-                                value={modelName}
+                                key={model.id}
+                                value={model.id}
                                 className={({ active, selected }) =>
                                   `cursor-pointer px-3 py-2 flex items-center justify-between ${
                                     active
@@ -300,7 +337,8 @@ export default function TractorCompare() {
                               >
                                 {({ selected }) => (
                                   <>
-                                    <span>{modelName}</span>
+                                    <span>{model.modelName}</span>
+
                                     {selected && (
                                       <Check className="h-3.5 w-3.5 text-green-600" />
                                     )}
@@ -334,17 +372,17 @@ export default function TractorCompare() {
                                     : "text-gray-400"
                                 }
                               >
-                                {slot.variant || "-- Variant --"}
+                                {slot.variants.find(
+                                  (v) => v.id === slot.variant,
+                                )?.variantName || "-- Variant --"}
                               </span>
                               <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
                             </Listbox.Button>
                             <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-auto py-1 text-xs sm:text-sm">
-                              {Object.keys(
-                                TRACTOR_DATABASE[slot.model].variants,
-                              ).map((vName) => (
+                              {slot.variants.map((variant) => (
                                 <Listbox.Option
-                                  key={vName}
-                                  value={vName}
+                                  key={variant.id}
+                                  value={variant.id}
                                   className={({ active, selected }) =>
                                     `cursor-pointer px-3 py-2 flex items-center justify-between ${
                                       active
@@ -355,7 +393,8 @@ export default function TractorCompare() {
                                 >
                                   {({ selected }) => (
                                     <>
-                                      <span>{vName}</span>
+                                      <span>{variant.variantName}</span>
+
                                       {selected && (
                                         <Check className="h-3.5 w-3.5 text-green-600" />
                                       )}
@@ -373,16 +412,16 @@ export default function TractorCompare() {
                     {tractorDetails ? (
                       <div className="w-full text-center">
                         <img
-                          src={tractorDetails.image}
-                          alt="Preview"
-                          className="h-16 sm:h-24 w-full object-contain mb-1 rounded"
+                          src={apiHelper.getImageUrl(tractorDetails.image)}
+                          className="h-20 object-contain mx-auto"
+                          alt={tractorDetails.variantName}
                         />
-                        <span className="text-[10px] sm:text-xs text-gray-600 font-semibold">
-                          {tractorDetails.hp}
-                        </span>
+                        <p className="text-xs mt-2">
+                          {tractorDetails.variantName}
+                        </p>
                       </div>
                     ) : (
-                      <div className="text-center text-gray-400 text-[11px] sm:text-xs py-2">
+                      <div className="text-center text-gray-400">
                         Empty Slot
                       </div>
                     )}
@@ -408,7 +447,7 @@ export default function TractorCompare() {
 
         {/* COMPARISON RESULTS MODULE */}
         {showComparison && activeTractors.length >= 2 && (
-          <div className="space-y-6 mb-12 animate-fadeIn">
+          <div className="pt-12 md:pt-16 lg:pt-20 pb-6 lg:pb-10 space-y-6 animate-fadeIn">
             {/* THE SPECIFICATION SHEET TABLE */}
             <section className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
               <div className="bg-green-900 text-white px-5 py-4 font-bold text-base flex items-center gap-2">
@@ -423,20 +462,23 @@ export default function TractorCompare() {
                       <th className="p-4 text-xs font-extrabold uppercase tracking-wider text-gray-600 w-1/4">
                         Core Parameters
                       </th>
+
                       {activeTractors.map((item, index) => (
                         <th
                           key={index}
-                          className="p-4 text-sm font-bold text-gray-900 border-l border-gray-200"
+                          className="p-4 text-sm font-bold text-gray-900 border-l "
                         >
                           <div className="flex flex-col items-center text-center">
                             <img
-                              src={item.image}
-                              alt={item.modelName}
+                              src={apiHelper.getImageUrl(item.frontView)}
+                              alt={item.productName}
                               className="h-24 object-contain mb-3 bg-white p-1 rounded border border-gray-100"
                             />
+
                             <span className="block text-green-700 text-base font-bold truncate max-w-full">
-                              {item.modelName}
+                              {item.productName}
                             </span>
+
                             <span className="block text-xs font-semibold text-green-800 mt-1 truncate max-w-full bg-green-100 px-2.5 py-0.5 rounded-full">
                               {item.variantName}
                             </span>
@@ -446,147 +488,94 @@ export default function TractorCompare() {
                     </tr>
                   </thead>
 
-                  <tbody className="divide-y divide-gray-100 text-sm">
+                  <tbody className="divide-y divide-gray-300 text-sm">
                     <tr>
-                      <td className="p-4 font-bold text-gray-900 bg-gray-50/50">
-                        Horse Power
-                      </td>
+                      <td className="p-4 font-bold bg-gray-50">Horse Power</td>
                       {activeTractors.map((item, idx) => (
-                        <td
-                          key={idx}
-                          className="p-4 font-semibold text-gray-800 text-center border-l border-gray-100"
-                        >
-                          {item.hp}
+                        <td key={idx} className="p-4 text-center border-l ">
+                          {item.horsePower}
                         </td>
                       ))}
                     </tr>
+
                     <tr>
-                      <td className="p-4 font-bold text-gray-900 bg-gray-50/50">
-                        Power Steering
-                      </td>
+                      <td className="p-4 font-bold bg-gray-50">Engine Type</td>
                       {activeTractors.map((item, idx) => (
-                        <td
-                          key={idx}
-                          className="p-4 text-gray-700 text-center border-l border-gray-100"
-                        >
-                          {item.steering}
+                        <td key={idx} className="p-4 text-center border-l">
+                          {item.engineType}
                         </td>
                       ))}
                     </tr>
+
                     <tr>
-                      <td className="p-4 font-bold text-gray-900 bg-gray-50/50">
-                        AC Cabin
-                      </td>
+                      <td className="p-4 font-bold bg-gray-50">Fuel Type</td>
                       {activeTractors.map((item, idx) => (
-                        <td
-                          key={idx}
-                          className="p-4 text-center border-l border-gray-100"
-                        >
-                          <span
-                            className={`px-2 py-0.5 rounded text-xs font-semibold ${item.cabin.toLowerCase().includes("yes") ? "bg-green-100 text-green-800" : "bg-green-50 text-green-700"}`}
-                          >
-                            {item.cabin}
-                          </span>
+                        <td key={idx} className="p-4 text-center border-l">
+                          {item.fuelType}
                         </td>
                       ))}
                     </tr>
+
                     <tr>
-                      <td className="p-4 font-bold text-gray-900 bg-gray-50/50">
-                        Dual Clutch
-                      </td>
+                      <td className="p-4 font-bold bg-gray-50">Cylinders</td>
                       {activeTractors.map((item, idx) => (
-                        <td
-                          key={idx}
-                          className="p-4 text-gray-700 text-center border-l border-gray-100"
-                        >
-                          {item.clutch}
+                        <td key={idx} className="p-4 text-center border-l">
+                          {item.numberOfCylinders}
                         </td>
                       ))}
                     </tr>
+
                     <tr>
-                      <td className="p-4 font-bold text-gray-900 bg-gray-50/50">
-                        Digital Dashboard
-                      </td>
+                      <td className="p-4 font-bold bg-gray-50">Clutch Type</td>
                       {activeTractors.map((item, idx) => (
-                        <td
-                          key={idx}
-                          className="p-4 text-gray-700 text-center border-l border-gray-100"
-                        >
-                          {item.dashboard}
+                        <td key={idx} className="p-4 text-center border-l">
+                          {item.clutchType}
                         </td>
                       ))}
                     </tr>
+
                     <tr>
-                      <td className="p-4 font-bold text-gray-900 bg-gray-50/50">
-                        Adjustable Seat
-                      </td>
+                      <td className="p-4 font-bold bg-gray-50">Gearbox</td>
                       {activeTractors.map((item, idx) => (
-                        <td
-                          key={idx}
-                          className="p-4 text-gray-700 text-center border-l border-gray-100"
-                        >
-                          {item.seat}
+                        <td key={idx} className="p-4 text-center border-l">
+                          {item.forwardGears}F + {item.reverseGears}R
                         </td>
                       ))}
                     </tr>
+
                     <tr>
-                      <td className="p-4 font-bold text-gray-900 bg-gray-50/50">
-                        Front Weights
+                      <td className="p-4 font-bold bg-gray-50">PTO Power</td>
+                      {activeTractors.map((item, idx) => (
+                        <td key={idx} className="p-4 text-center border-l">
+                          {item.ptoHp}
+                        </td>
+                      ))}
+                    </tr>
+
+                    <tr>
+                      <td className="p-4 font-bold bg-gray-50">
+                        Lifting Capacity
                       </td>
+                      {activeTractors.map((item, idx) => (
+                        <td key={idx} className="p-4 text-center border-l">
+                          {item.liftingCapacity}
+                        </td>
+                      ))}
+                    </tr>
+
+                    <tr>
+                      <td className="p-4 font-bold bg-gray-50">Price</td>
                       {activeTractors.map((item, idx) => (
                         <td
                           key={idx}
-                          className="p-4 text-gray-700 text-center border-l border-gray-100"
+                          className="p-4 text-center border-l font-semibold text-green-700"
                         >
-                          {item.weights}
+                          ₹ {item.exShowroomPrice}
                         </td>
                       ))}
                     </tr>
                   </tbody>
                 </table>
-              </div>
-            </section>
-
-            {/* HIGHLY HIGHLIGHTED PRICING SEGMENT */}
-            <section className="bg-gradient-to-r from-green-700 to-green-900 rounded-xl p-6 text-white shadow-lg">
-              <div className="mb-4">
-                <span className="uppercase tracking-widest text-[10px] font-extrabold bg-white/20 text-white px-2.5 py-1 rounded">
-                  Commercial Valuation
-                </span>
-                <h3 className="text-xl font-black mt-2 tracking-tight">
-                  Final Estimated Price Comparison
-                </h3>
-              </div>
-
-              <div
-                className={`grid gap-4 ${activeTractors.length === 2 ? "grid-cols-1 md:grid-cols-2" : "grid-cols-1 md:grid-cols-3"}`}
-              >
-                {activeTractors.map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="bg-white rounded-lg p-5 text-gray-900 shadow-md border-t-4 border-green-700 flex flex-col justify-between"
-                  >
-                    <div>
-                      <h4 className="text-xs font-bold text-gray-400 uppercase truncate">
-                        {item.modelName}
-                      </h4>
-                      <p className="text-sm font-semibold text-gray-600 truncate mb-3">
-                        {item.variantName}
-                      </p>
-                    </div>
-                    <div className="pt-3 border-t border-gray-100">
-                      <span className="text-xs text-gray-400 block font-semibold">
-                        Estimated Price
-                      </span>
-                      <div className="text-2xl font-black text-green-700 tracking-tight">
-                        {item.price}
-                      </div>
-                      <span className="text-[10px] text-gray-400 block mt-0.5">
-                        *Ex-Showroom Price
-                      </span>
-                    </div>
-                  </div>
-                ))}
               </div>
             </section>
           </div>
@@ -608,144 +597,44 @@ export default function TractorCompare() {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-            {SHOWCASE_TRACTORS.map((tractor, index) => (
-              <div
-                key={index}
-                className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-5 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
-              >
-                <div>
-                  <div className="relative bg-gray-50 rounded-lg sm:rounded-xl mb-3 flex items-center justify-center overflow-hidden aspect-[4/3] sm:aspect-square lg:aspect-[4/3]">
-                    <img
-                      src={tractor.image}
-                      alt={tractor.name}
-                      className="w-full h-full object-contain p-2 sm:p-3 lg:p-4 group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <span className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 bg-white/95 backdrop-blur-sm text-green-700 px-1.5 sm:px-2 py-0.5 rounded-md sm:rounded-lg text-[10px] sm:text-xs font-bold flex items-center gap-0.5 sm:gap-1 shadow-sm border border-white/50">
-                      <Star className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-green-700 text-green-700" />
-                      {tractor.rating}
-                    </span>
-                  </div>
+           {showcaseTractors.map((tractor, index) => (
+  <div key={index} className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-5 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group">
+    <div>
+      <div className="relative bg-gray-50 rounded-lg sm:rounded-xl mb-3 flex items-center justify-center overflow-hidden aspect-[4/3] sm:aspect-square lg:aspect-[4/3]">
+        <img
+          src={apiHelper.getImageUrl(tractor.frontView)}
+          alt={tractor.productName}
+          className="w-full h-full object-contain p-2 sm:p-3 lg:p-4 group-hover:scale-105 transition-transform duration-500"
+        />
+      </div>
 
-                  <h3 className="font-bold text-gray-900 text-xs sm:text-sm lg:text-base truncate mb-1.5 sm:mb-2">
-                    {tractor.name}
-                  </h3>
-                  <div className="flex items-center gap-2 mb-2 sm:mb-3">
-                    <span className="text-[9px] sm:text-[10px] lg:text-[11px] font-semibold bg-gray-100 text-gray-600 px-1.5 sm:px-2 py-0.5 rounded-md">
-                      {tractor.hp} Engine
-                    </span>
-                  </div>
-                </div>
+      <h3 className="font-bold text-gray-900 text-xs sm:text-sm lg:text-base truncate mb-1.5 sm:mb-2">
+        {tractor.productName}
+      </h3>
+      <div className="flex items-center gap-2 mb-2 sm:mb-3">
+        <span className="text-[9px] sm:text-[10px] lg:text-[11px] font-semibold bg-gray-100 text-gray-600 px-1.5 sm:px-2 py-0.5 rounded-md">
+          {tractor.horsePower} HP
+        </span>
+      </div>
+    </div>
 
-                <div className="pt-2 sm:pt-3 border-t border-gray-100 flex items-center justify-between gap-1.5 sm:gap-2">
-                  <div className="min-w-0">
-                    <span className="text-[9px] sm:text-[10px] text-gray-400 block uppercase font-semibold tracking-wider">
-                      Est. Range
-                    </span>
-                    <span className="text-xs sm:text-sm lg:text-base font-bold text-green-700 truncate block">
-                      {tractor.priceRange}
-                    </span>
-                  </div>
-                  <Link to={`/tractor/${tractor.id}`} className="flex-shrink-0">
-                    <button className="bg-green-50 text-green-700 hover:bg-green-700 hover:text-white font-bold text-[10px] sm:text-xs lg:text-sm cursor-pointer py-1.5 sm:py-2 px-2 sm:px-3 lg:px-4 rounded-md sm:rounded-lg transition-all duration-200 hover:shadow-md whitespace-nowrap">
-                      View Details
-                    </button>
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-        </section>
-        {/* --- POPULAR COMPARISON HANDPICKS --- */}
-        <section className="mt-12   mb-12">
-          <div className="mb-6">
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-              Compare to buy{" "}
-              <span className="text-transparent bg-clip-text bg-green-600">
-                {" "}
-                the right tractor{" "}
-              </span>
-            </h2>
-            <div className="mt-2 border-b border-gray-200">
-              <span className="inline-block text-sm font-semibold text-green-700 border-b-2 border-green-700 pb-2 px-1">
-                Tractor
-              </span>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
-            {SUGGESTED_COMPARISONS.map((pair, index) => (
-              <div
-                key={index}
-                className="bg-white border border-gray-100 rounded-xl p-2.5 sm:p-4 shadow-xs flex flex-col justify-between"
-              >
-                <div>
-                  {/* Edge-to-edge split layout container */}
-                  <div className="relative border border-gray-200 rounded-lg overflow-hidden mb-3 w-full h-24 sm:h-36">
-                    <div className="grid grid-cols-2 gap-0 h-full w-full relative">
-                      {/* Left Side */}
-                      <div className="w-full h-full flex items-center justify-center bg-cover bg-center">
-                        <img
-                          src={pair.left.image}
-                          alt={pair.left.name}
-                          className="w-full h-full object-cover relative z-10"
-                        />
-                      </div>
-
-                      {/* Right Side */}
-                      <div className="w-full h-full flex items-center justify-center bg-cover bg-center">
-                        <img
-                          src={pair.right.image}
-                          alt={pair.right.name}
-                          className="w-full h-full object-cover relative z-10"
-                        />
-                      </div>
-                    </div>
-
-                    {/* Overlaid Center VS Badge */}
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-900 text-white text-[9px] sm:text-[10px] font-black w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center border-2 border-white shadow-md z-20 select-none uppercase">
-                      vs
-                    </div>
-                  </div>
-
-                  {/* Left-Aligned / Right-Aligned labels */}
-                  <div className="grid grid-cols-2 gap-1 mb-3 px-0.5 text-xs sm:text-sm">
-                    <div className="text-left">
-                      <p className="font-semibold text-gray-800 truncate line-clamp-1">
-                        {pair.left.name}
-                      </p>
-                      <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5 sm:mt-1">
-                        From{" "}
-                        <span className="font-semibold text-gray-700">
-                          {pair.left.price}
-                        </span>
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-gray-800 truncate line-clamp-1">
-                        {pair.right.name}
-                      </p>
-                      <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5 sm:mt-1">
-                        From{" "}
-                        <span className="font-semibold text-gray-700">
-                          {pair.right.price}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Action comparison button wrapper */}
-                <div className="mt-1">
-                  <button
-                    onClick={scrollToCompare}
-                    className="w-full cursor-pointer border border-green-200 bg-white hover:bg-green-50 text-green-700 transition-colors duration-150 text-[10px] sm:text-xs font-semibold py-1.5 px-2 rounded-md text-center truncate"
-                  >
-                    {pair.left.name.split(" ")[0]}{" "}
-                    {pair.left.name.split(" ")[1] || ""} vs {pair.right.name}
-                  </button>
-                </div>
-              </div>
-            ))}
+    <div className="pt-2 sm:pt-3 border-t border-gray-100 flex items-center justify-between gap-1.5 sm:gap-2">
+      <div className="min-w-0">
+        <span className="text-[9px] sm:text-[10px] text-gray-400 block uppercase font-semibold tracking-wider">
+          Ex-Showroom
+        </span>
+        <span className="text-xs sm:text-sm lg:text-base font-bold text-green-700 truncate block">
+          ₹ {tractor.exShowroomPrice}
+        </span>
+      </div>
+      <Link to={`/tractor/${tractor.id}`} className="flex-shrink-0">
+        <button className="bg-green-50 text-green-700 hover:bg-green-700 hover:text-white font-bold text-[10px] sm:text-xs lg:text-sm cursor-pointer py-1.5 sm:py-2 px-2 sm:px-3 lg:px-4 rounded-md sm:rounded-lg transition-all duration-200 hover:shadow-md whitespace-nowrap">
+          View Details
+        </button>
+      </Link>
+    </div>
+  </div>
+))}
           </div>
         </section>
       </main>
