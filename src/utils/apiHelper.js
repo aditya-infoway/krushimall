@@ -18,10 +18,7 @@ api.interceptors.request.use(
     }
 
     // Website user routes
-    else if (
-      url === "/webauth/me" ||
-      url === "/webauth/profile"
-    ) {
+    else if (url === "/webauth/me" || url === "/webauth/profile") {
       token = localStorage.getItem("webToken");
     }
 
@@ -31,12 +28,8 @@ api.interceptors.request.use(
 
     return config;
   },
-  (error) => Promise.reject(error)
+  (error) => Promise.reject(error),
 );
-
-
-
-
 
 const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/api$/, "");
 
@@ -48,9 +41,9 @@ const apiHelper = {
   // },
 
   get: async (url, config = {}) => {
-  const response = await api.get(url, config);
-  return response.data;
-},
+    const response = await api.get(url, config);
+    return response.data;
+  },
 
   // POST (Create)
   post: async (url, data = {}, config = {}) => {
@@ -109,7 +102,6 @@ const apiHelper = {
   getImageUrl(path) {
     return this.image(path);
   },
-
 };
 
 export default apiHelper;
