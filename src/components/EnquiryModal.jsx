@@ -114,16 +114,9 @@ const EnquiryModal = ({ isOpen: externalIsOpen, onClose,websiteVariantId, }) => 
   };
 
 
-console.log({
-  websiteVariantId,
-  fullName: formData.name,
-  email: formData.email,
-  mobileNumber: formData.phone,
-  message: formData.message,
-});
+
 
  const handleSubmit = async (e) => {
-  console.log("websiteVariantId =", websiteVariantId);
   e.preventDefault();
 
   try {

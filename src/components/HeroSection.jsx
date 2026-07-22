@@ -228,7 +228,6 @@ const HeroSection = () => {
       setLoading((prev) => ({ ...prev, years: true }));
       try {
         const response = await apiHelper.get("/model-year");
-        console.log("Years API Response:", response);
 
         let yearsData = [];
         if (response && response.data && Array.isArray(response.data)) {
