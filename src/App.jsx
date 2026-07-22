@@ -36,6 +36,7 @@ import BecomeVendor from "./pages/BecomeVendor";
 import VendorProfile from "./pages/VendorProfile";
 import VendorLogin from "./pages/VendorLogin";
 import WebsiteVariant from "./pages/websitevariant/index.jsx";
+import VendorFollowup from "./pages/Vendorfollowup.jsx";
 
 function App() {
   return (
@@ -71,6 +72,7 @@ function App() {
                   <Route path="/become-vendor" element={<BecomeVendor />} />
                   <Route path="/vendor-profile" element={<VendorProfile />} />
                   <Route path="/vendor-login" element={<VendorLogin />} />
+                  <Route path="/vendor/followup/:id" element={<VendorFollowup />} />
                   <Route path="/register" element={<Register />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route

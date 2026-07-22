@@ -1326,7 +1326,7 @@ const TractorDetails = () => {
                     onClick={() => setShowEnquiryModal(true)}
                     className="bg-green-600 text-white cursor-pointer px-4 py-1.5 rounded-lg text-sm font-semibold hover:shadow-lg transition-all"
                   >
-                    Enquiry
+                    Inquiry
                   </button>
                 </div>
               </div>

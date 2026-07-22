@@ -163,6 +163,10 @@ const VendorProfile = () => {
   const [showSaveSuccess, setShowSaveSuccess] = useState(false);
   const [loading, setLoading] = useState(true);
   const [loadingProducts, setLoadingProducts] = useState(false);
+  const [enquiries, setEnquiries] = useState([]);
+  const [loadingEnquiries, setLoadingEnquiries] = useState(false);
+  const [todayFollowups, setTodayFollowups] = useState([]);
+  const [loadingTodayFollowups, setLoadingTodayFollowups] = useState(false);
 
   const [searchParams] = useSearchParams();
 
@@ -218,8 +222,25 @@ const VendorProfile = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  const totalPages = Math.ceil(products.length / itemsPerPage);
-  const paginatedProducts = products.slice(
+  const totalPages = Math.ceil((products?.length || 0) / itemsPerPage);
+
+  const paginatedProducts = (products || []).slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
+  const enquiryTotalPages = Math.ceil((enquiries?.length || 0) / itemsPerPage);
+
+  const paginatedEnquiries = (enquiries || []).slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
+  const todayFollowupTotalPages = Math.ceil(
+    (todayFollowups?.length || 0) / itemsPerPage,
+  );
+
+  const paginatedTodayFollowups = (todayFollowups || []).slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
@@ -371,11 +392,54 @@ const VendorProfile = () => {
   // Tabs for vendor
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
-
-    { id: "products", label: "Products", icon: Package },
-
-     { id: "enquiries", label: "Enquiries", icon: MessageSquare },
+    { id: "products", label: "New Vehicle", icon: Package },
+    { id: "enquiries", label: "Inquiry Register", icon: MessageSquare },
+    { id: "todayFollowup", label: "Today Follow up", icon: Clock },
   ];
+  const fetchEnquiries = async () => {
+    try {
+      setLoadingEnquiries(true);
+
+      const res = await apiHelper.get("/vendor-web/website-enquiry");
+
+      console.log(res);
+
+      setEnquiries(Array.isArray(res) ? res : []);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoadingEnquiries(false);
+    }
+  };
+
+  const fetchTodayFollowups = async () => {
+    try {
+      setLoadingTodayFollowups(true);
+
+      const res = await apiHelper.get(
+        "/vendor-web/website-enquiry-followup/today",
+      );
+
+      console.log("Today Followup Response:", res);
+      setTodayFollowups(res.data || []);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoadingTodayFollowups(false);
+    }
+  };
+
+  useEffect(() => {
+    setCurrentPage(1);
+
+    if (activeTab === "enquiries") {
+      fetchEnquiries();
+    }
+
+    if (activeTab === "todayFollowup") {
+      fetchTodayFollowups();
+    }
+  }, [activeTab]);
 
   const handleSave = async () => {
     try {
@@ -1089,8 +1153,6 @@ const VendorProfile = () => {
                     <p className="text-sm text-gray-500 mb-6">
                       Start selling by adding your first product
                     </p>
-
-                   
                   </div>
                 ) : (
                   <div className="overflow-x-auto">
@@ -1108,7 +1170,10 @@ const VendorProfile = () => {
 
                       <tbody>
                         {paginatedProducts.map((item, index) => (
-                          <tr key={item.id} className="border-t whitespace-nowrap ">
+                          <tr
+                            key={item.id}
+                            className="border-t whitespace-nowrap "
+                          >
                             <td className="px-4 py-3 text-gray-500">
                               {(currentPage - 1) * itemsPerPage + index + 1}
                             </td>
@@ -1199,6 +1264,344 @@ const VendorProfile = () => {
                 )}
               </div>
             )}
+
+            {/* Enquiries Tab */}
+            {activeTab === "enquiries" && (
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">
+                      Your Inquiries{" "}
+                      {enquiries.length > 0 && `(${enquiries.length})`}
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Manage customer inquiries
+                    </p>
+                  </div>
+                </div>
+
+                {loadingEnquiries ? (
+                  <div className="text-center py-10">Loading...</div>
+                ) : enquiries.length === 0 ? (
+                  <div className="text-center py-12">
+                    <MessageSquare className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      No Inquiries Yet
+                    </h3>
+
+                    <p className="text-sm text-gray-500">
+                      Customer inquiries will appear here.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-xl border border-gray-200">
+                    <table className="min-w-full">
+                      <thead className="bg-gray-50">
+                        <tr className="whitespace-nowrap">
+                          <th className="px-4 py-3 text-left">Sr. No.</th>
+                          <th className="px-4 py-3 text-left">Customer Name</th>
+                          <th className="px-4 py-3 text-left">Email</th>
+                          <th className="px-4 py-3 text-left">Mobile</th>
+                          <th className="px-4 py-3 text-left">Product</th>
+                          <th className="px-4 py-3 text-left">Message</th>
+                          <th className="px-4 py-3 text-left">Date</th>
+                          <th className="px-4 py-3 text-left">Status</th>
+                          <th className="px-4 py-3 text-center">Action</th>
+                        </tr>
+                      </thead>
+
+                      <tbody className="divide-y divide-gray-200">
+                        {paginatedEnquiries.map((item, index) => (
+                          <tr
+                            key={item.id}
+                            className="border-t whitespace-nowrap"
+                          >
+                            <td className="px-4 py-3 text-gray-500">
+                              {(currentPage - 1) * itemsPerPage + index + 1}
+                            </td>
+
+                            <td className="px-4 py-3 font-medium">
+                              {item.fullName}
+                            </td>
+
+                            <td className="px-4 py-3 text-gray-600">
+                              {item.email}
+                            </td>
+
+                            <td className="px-4 py-3">{item.mobileNumber}</td>
+
+                            <td className="px-4 py-3">
+                              {item.websiteVariant?.productName || "-"}
+                            </td>
+
+                            <td
+                              className="px-4 py-3 max-w-xs truncate"
+                              title={item.message}
+                            >
+                              {item.message || "-"}
+                            </td>
+
+                            <td className="px-4 py-3">
+                              {new Date(item.createdAt).toLocaleDateString()}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  item.followupStage === "DELAY"
+                                    ? "bg-red-100 text-red-700"
+                                    : item.followupStage === "ATTEND"
+                                      ? "bg-blue-100 text-blue-700"
+                                      : "bg-yellow-100 text-yellow-700"
+                                }`}
+                              >
+                                {item.followupStage}
+                              </span>
+                            </td>
+
+                            <td className="px-4 py-3">
+                              <div className="flex justify-center">
+                                <button
+                                  onClick={() =>
+                                    navigate(`/vendor/followup/${item.id}`)
+                                  }
+                                  className="px-3 py-1 cursor-pointer bg-green-600 hover:bg-green-700 text-white rounded-lg"
+                                >
+                                  Follow Up
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+
+                    {enquiryTotalPages > 1 && (
+                      <div className="flex items-center justify-between mt-4 px-1">
+                        <p className="text-xs text-gray-500">
+                          Showing {(currentPage - 1) * itemsPerPage + 1}–
+                          {Math.min(
+                            currentPage * itemsPerPage,
+                            enquiries.length,
+                          )}{" "}
+                          of {enquiries.length} enquiries
+                        </p>
+
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() =>
+                              setCurrentPage((p) => Math.max(1, p - 1))
+                            }
+                            disabled={currentPage === 1}
+                            className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+                          >
+                            Previous
+                          </button>
+
+                          {Array.from(
+                            { length: enquiryTotalPages },
+                            (_, i) => i + 1,
+                          ).map((page) => (
+                            <button
+                              key={page}
+                              onClick={() => setCurrentPage(page)}
+                              className={`w-8 h-8 text-sm rounded-lg ${
+                                currentPage === page
+                                  ? "bg-green-600 text-white"
+                                  : "border border-gray-200 text-gray-600"
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          ))}
+
+                          <button
+                            onClick={() =>
+                              setCurrentPage((p) =>
+                                Math.min(enquiryTotalPages, p + 1),
+                              )
+                            }
+                            disabled={currentPage === enquiryTotalPages}
+                            className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+                          >
+                            Next
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Today Follow-up Tab */}
+            {activeTab === "todayFollowup" && (
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:p-8">
+                <div className="flex items-center justify-between mb-6">
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">
+                      Today's Follow-ups{" "}
+                      {todayFollowups.length > 0 &&
+                        `(${todayFollowups.length})`}
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">
+                      Calls scheduled for today
+                    </p>
+                  </div>
+                </div>
+
+                {loadingTodayFollowups ? (
+                  <div className="text-center py-10">Loading...</div>
+                ) : todayFollowups.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Clock className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      No Follow-ups Today
+                    </h3>
+                    <p className="text-sm text-gray-500">
+                      Calls scheduled for today will show up here.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto rounded-xl border border-gray-200">
+                    <table className="min-w-full">
+                      <thead className="bg-gray-50">
+                        <tr className="whitespace-nowrap">
+                          <th className="px-4 py-3 text-left">Sr. No.</th>
+                          <th className="px-4 py-3 text-left">Name</th>
+                          <th className="px-4 py-3 text-left">Number</th>
+                          <th className="px-4 py-3 text-left">Call Response</th>
+                          <th className="px-4 py-3 text-left">
+                            Follow-up Date
+                          </th>
+                          <th className="px-4 py-3 text-left">Time</th>
+                          <th className="px-4 py-3 text-center">Action</th>
+                        </tr>
+                      </thead>
+
+                      <tbody className="divide-y divide-gray-200">
+                        {paginatedTodayFollowups.map((item, index) => (
+                          <tr key={item.id} className="whitespace-nowrap">
+                            <td className="px-4 py-3 text-gray-500">
+                              {(currentPage - 1) * itemsPerPage + index + 1}
+                            </td>
+
+                            <td className="px-4 py-3 font-medium">
+                              {item.fullName || item.enquiry?.fullName || "-"}
+                            </td>
+
+                            <td className="px-4 py-3 text-gray-600">
+                              {item.mobileNumber ||
+                                item.enquiry?.mobileNumber ||
+                                "-"}
+                            </td>
+
+                            <td className="px-4 py-3">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                  item.callResponse === "Connected"
+                                    ? "bg-green-100 text-green-700"
+                                    : item.callResponse === "Not Connected" ||
+                                        item.callResponse === "Rejected"
+                                      ? "bg-red-100 text-red-700"
+                                      : item.callResponse === "Call Back"
+                                        ? "bg-orange-100 text-orange-700"
+                                        : "bg-blue-100 text-blue-700"
+                                }`}
+                              >
+                                {item.callResponse || "New"}
+                              </span>
+                            </td>
+
+                            <td className="px-4 py-3">
+                              {item.nextScheduledDate
+                                ? new Date(
+                                    item.nextScheduledDate,
+                                  ).toLocaleDateString("en-GB")
+                                : "-"}
+                            </td>
+
+                            <td className="px-4 py-3">
+                              {item.callTime || "-"}
+                            </td>
+
+                            <td className="px-4 py-3">
+                              <div className="flex justify-center">
+                                <button
+                                  onClick={() =>
+                                    navigate(
+                                      `/vendor/followup/${item.enquiryId || item.id}`,
+                                    )
+                                  }
+                                  className="px-3 py-1 cursor-pointer bg-green-600 hover:bg-green-700 text-white rounded-lg"
+                                >
+                                  Follow Up
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+
+                    {todayFollowupTotalPages > 1 && (
+                      <div className="flex items-center justify-between mt-4 px-1">
+                        <p className="text-xs text-gray-500">
+                          Showing {(currentPage - 1) * itemsPerPage + 1}–
+                          {Math.min(
+                            currentPage * itemsPerPage,
+                            todayFollowups.length,
+                          )}{" "}
+                          of {todayFollowups.length} follow-ups
+                        </p>
+
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() =>
+                              setCurrentPage((p) => Math.max(1, p - 1))
+                            }
+                            disabled={currentPage === 1}
+                            className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+                          >
+                            Previous
+                          </button>
+
+                          {Array.from(
+                            { length: todayFollowupTotalPages },
+                            (_, i) => i + 1,
+                          ).map((page) => (
+                            <button
+                              key={page}
+                              onClick={() => setCurrentPage(page)}
+                              className={`w-8 h-8 text-sm rounded-lg ${
+                                currentPage === page
+                                  ? "bg-green-600 text-white"
+                                  : "border border-gray-200 text-gray-600"
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          ))}
+
+                          <button
+                            onClick={() =>
+                              setCurrentPage((p) =>
+                                Math.min(todayFollowupTotalPages, p + 1),
+                              )
+                            }
+                            disabled={currentPage === todayFollowupTotalPages}
+                            className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40"
+                          >
+                            Next
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Orders Tab */}
             {activeTab === "orders" && (
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:p-8">
