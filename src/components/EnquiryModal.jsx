@@ -380,7 +380,7 @@ console.log({
                 <button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-2 sm:py-2.5 rounded-lg transition-all duration-500 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed text-sm relative overflow-hidden group/btn shadow-md hover:shadow-lg active:scale-[0.98]"
+                  className="w-full cursor-pointer bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-2 sm:py-2.5 rounded-lg transition-all duration-500 flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed text-sm relative overflow-hidden group/btn shadow-md hover:shadow-lg active:scale-[0.98]"
                 >
                   {/* Button shine effect */}
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent -translate-x-full group-hover/btn:translate-x-full transition-transform duration-700" />
@@ -393,7 +393,7 @@ console.log({
                   ) : (
                     <>
                       <Send className="h-3.5 w-3.5 relative z-10 group-hover/btn:translate-x-0.5 transition-transform duration-300" />
-                      <span className="relative z-10 group-hover/btn:translate-x-0.5 transition-transform duration-300">Submit Enquiry</span>
+                      <span className="relative z-10 group-hover/btn:translate-x-0.5 transition-transform duration-300">Submit Inquiry</span>
                       <Sparkles className="h-3 w-3 relative z-10 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
                     </>
                   )}
