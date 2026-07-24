@@ -34,9 +34,6 @@ import {
   X,
 } from "lucide-react";
 import apiHelper from "../utils/apiHelper";
-import mah from "../assets/mahindra.png";
-import john from "../assets/johndeere.png";
-import swara from "../assets/swaraj.png";
 import TractorCategory from "../components/TractorCategory";
 
 const NewTractors = () => {
@@ -77,6 +74,34 @@ const NewTractors = () => {
     priceRange: [0, 1000000],
     sortBy: "popular",
   });
+
+  const [comparisonPairs, setComparisonPairs] = useState([]);
+  const [comparisonsLoading, setComparisonsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTrendingComparisons = async () => {
+      try {
+        setComparisonsLoading(true);
+        const response = await apiHelper.get("/compare-tractor/trending");
+        const tractors = response?.data || response || [];
+
+        const pairs = [];
+        for (let i = 0; i < tractors.length && pairs.length < 3; i++) {
+          for (let j = i + 1; j < tractors.length && pairs.length < 3; j++) {
+            pairs.push({ left: tractors[i], right: tractors[j] });
+          }
+        }
+        setComparisonPairs(pairs);
+      } catch (error) {
+        console.error("Failed to fetch trending comparisons:", error);
+        setComparisonPairs([]);
+      } finally {
+        setComparisonsLoading(false);
+      }
+    };
+
+    fetchTrendingComparisons();
+  }, []);
 
   // Add this function after clearFilters:
   const applyFilters = () => {
@@ -172,50 +197,49 @@ const NewTractors = () => {
     fetchFilterOptions();
   }, []);
 
-
   useEffect(() => {
-  const fetchPopularBrands = async () => {
-    try {
-      setBrandsLoading(true);
-      const response = await apiHelper.get("/brand");
-      console.log("Full API Response:", response);
-      
-      let brandsData = [];
-      if (response && response.data && Array.isArray(response.data)) {
-        brandsData = response.data;
-      } else if (Array.isArray(response)) {
-        brandsData = response;
+    const fetchPopularBrands = async () => {
+      try {
+        setBrandsLoading(true);
+        const response = await apiHelper.get("/brand");
+        console.log("Full API Response:", response);
+
+        let brandsData = [];
+        if (response && response.data && Array.isArray(response.data)) {
+          brandsData = response.data;
+        } else if (Array.isArray(response)) {
+          brandsData = response;
+        }
+
+        console.log("Brands Data:", brandsData);
+        console.log("First Brand:", brandsData[0]);
+
+        // Map brands with their logo URLs from the API
+        const activeBrands = brandsData
+          .filter((brand) => brand.status === "ACTIVE")
+          .map((item) => {
+            const logoUrl = apiHelper.image(item.image);
+            console.log(`Brand: ${item.brandName}, Logo URL: ${logoUrl}`);
+
+            return {
+              name: item.brandName || item.name || "Unknown",
+              logo: logoUrl,
+              id: item.id || item.brandId,
+            };
+          });
+
+        console.log("Active Brands with Logos:", activeBrands);
+        setPopularBrands(activeBrands);
+      } catch (error) {
+        console.error("Failed to fetch popular brands:", error);
+        setPopularBrands([]);
+      } finally {
+        setBrandsLoading(false);
       }
-      
-      console.log("Brands Data:", brandsData);
-      console.log("First Brand:", brandsData[0]);
+    };
 
-      // Map brands with their logo URLs from the API
-      const activeBrands = brandsData
-        .filter(brand => brand.status === "ACTIVE")
-        .map(item => {
-          const logoUrl = apiHelper.image(item.image);
-          console.log(`Brand: ${item.brandName}, Logo URL: ${logoUrl}`);
-          
-          return {
-            name: item.brandName || item.name || "Unknown",
-            logo: logoUrl,
-            id: item.id || item.brandId
-          };
-        });
-
-      console.log("Active Brands with Logos:", activeBrands);
-      setPopularBrands(activeBrands);
-    } catch (error) {
-      console.error("Failed to fetch popular brands:", error);
-      setPopularBrands([]);
-    } finally {
-      setBrandsLoading(false);
-    }
-  };
-
-  fetchPopularBrands();
-}, []);
+    fetchPopularBrands();
+  }, []);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -255,39 +279,6 @@ const NewTractors = () => {
       }, 3000);
     }, 1500);
   };
-
-  const SUGGESTED_COMPARISONS = [
-    {
-      title: "Mahindra 475 DI XP PLUS Comparison with similar tractors",
-      left: {
-        name: "Mahindra 475 DI XP P...",
-        price: "₹ 6.40 Lakh*",
-        image: mah,
-      },
-      right: { name: "Mahindra 575 DI", price: "₹ 6.95 Lakh*", image: swara },
-      buttonText: "Mahindra 475 DI XP PLUS vs Mahindra 575 DI",
-    },
-    {
-      title: "Popular Cross-Brand Matches",
-      left: {
-        name: "Mahindra 475 DI XP P...",
-        price: "₹ 6.40 Lakh*",
-        image: mah,
-      },
-      right: { name: "Swaraj 724 XM", price: "₹ 5.09 Lakh*", image: john },
-      buttonText: "Compare Now",
-    },
-    {
-      title: "Top Heavy Duty Alternatives",
-      left: {
-        name: "John Deere 5050 D",
-        price: "₹ 7.90 Lakh*",
-        image: john,
-      },
-      right: { name: "Swaraj 744 FE", price: "₹ 7.80 Lakh*", image: swara },
-      buttonText: "Compare Now",
-    },
-  ];
 
   const FAQ_DATA = [
     {
@@ -346,155 +337,77 @@ const NewTractors = () => {
     setOpenIndex(openIndex === index ? null : index);
   };
 
-  const popularTractors = [
-    {
-      id: 2,
-      name: "Mahindra 575 DI",
-      brand: "Mahindra",
-      price: 685000,
-      hp: "45 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Delhi",
-      image: "/mah.png",
-      rating: 4.8,
-    },
-    {
-      id: 3,
-      name: "John Deere 5310",
-      brand: "John Deere",
-      price: 895000,
-      hp: "55 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Jaipur, RJ",
-      image: "/mah.png",
-      rating: 4.9,
-    },
-    {
-      id: 7,
-      name: "Mahindra Arjun 605",
-      brand: "Mahindra",
-      price: 925000,
-      hp: "60 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Nagpur, MH",
-      image: "/mah.png",
-      rating: 4.9,
-    },
-    {
-      id: 11,
-      name: "Farmtrac 60 Powermaxx",
-      brand: "Farmtrac",
-      price: 715000,
-      hp: "50 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Ahmedabad, GJ",
-      image: "/mah.png",
-      rating: 4.6,
-    },
-    {
-      id: 1,
-      name: "Swaraj 744 FE",
-      brand: "Swaraj",
-      price: 725000,
-      hp: "48 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Pune, MH",
-      image: "/mah.png",
-      rating: 4.7,
-    },
-    {
-      id: 5,
-      name: "New Holland 3630 TX",
-      brand: "New Holland",
-      price: 775000,
-      hp: "50 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Lucknow, UP",
-      image: "/mah.png",
-      rating: 4.8,
-    },
-  ];
+  const [popularTractors, setPopularTractors] = useState([]);
+  const [popularLoading, setPopularLoading] = useState(true);
 
-  const latestTractors = [
-    {
-      id: 1,
-      name: "Swaraj 744 FE",
-      brand: "Swaraj",
-      price: 725000,
-      hp: "48 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Pune, MH",
-      image: "/mah.png",
-      rating: 4.7,
-    },
-    {
-      id: 4,
-      name: "TAFE 5900 DI",
-      brand: "TAFE",
-      price: 595000,
-      hp: "42 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Chennai, TN",
-      image: "/mah.png",
-      rating: 4.6,
-    },
-    {
-      id: 8,
-      name: "Escorts Powertrac 439",
-      brand: "Escorts",
-      price: 545000,
-      hp: "41 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Faridabad, HR",
-      image: "/mah.png",
-      rating: 4.4,
-    },
-    {
-      id: 10,
-      name: "Eicher 380 Super DI",
-      brand: "Eicher",
-      price: 525000,
-      hp: "40 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Indore, MP",
-      image: "/mah.png",
-      rating: 4.5,
-    },
-    {
-      id: 12,
-      name: "Preet 3549",
-      brand: "Preet",
-      price: 585000,
-      hp: "49 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Chandigarh",
-      image: "/mah.png",
-      rating: 4.4,
-    },
-    {
-      id: 2,
-      name: "Mahindra 575 DI",
-      brand: "Mahindra",
-      price: 685000,
-      hp: "45 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Delhi",
-      image: "/mah.png",
-      rating: 4.8,
-    },
-  ];
+  const [latestTractors, setLatestTractors] = useState([]);
+  const [latestLoading, setLatestLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPopularTractors = async () => {
+      try {
+        setPopularLoading(true);
+
+        const response = await apiHelper.get("/website-variants/popular");
+
+        const variants = response?.data || response || [];
+
+        const mapped = variants.map((v) => ({
+          id: v.id,
+          name: v.productName,
+          brand: v.brand?.brandName || "Unknown",
+          price: v.exShowroomPrice || 0,
+          hp: v.horsePower ? `${v.horsePower} HP` : "-",
+          fuel: v.fuelType || "-",
+          year: new Date(v.createdAt).getFullYear(),
+          location: [v.city, v.state].filter(Boolean).join(", "),
+          image: apiHelper.image(v.frontView),
+          rating: 4.5,
+        }));
+
+        setPopularTractors(mapped);
+      } catch (error) {
+        console.error("Failed to fetch popular tractors:", error);
+        setPopularTractors([]);
+      } finally {
+        setPopularLoading(false);
+      }
+    };
+
+    fetchPopularTractors();
+  }, []);
+
+  useEffect(() => {
+    const fetchLatestTractors = async () => {
+      try {
+        setLatestLoading(true);
+        const response = await apiHelper.get("/website-variants/latest");
+        const variants = response?.data || response || [];
+
+        const mapped = variants.map((v) => ({
+          id: v.id,
+          name: v.productName,
+          brand: v.brand?.brandName || "Unknown",
+          price: v.exShowroomPrice || 0,
+          hp: v.horsePower ? `${v.horsePower} HP` : "-",
+          fuel: v.fuelType || "-",
+          year: new Date(v.createdAt).getFullYear(),
+          location: [v.city, v.state].filter(Boolean).join(", "),
+          image: apiHelper.image(v.frontView),
+          rating: 4.5,
+        }));
+
+        setLatestTractors(mapped);
+      } catch (error) {
+        console.error("Failed to fetch latest tractors:", error);
+        setLatestTractors([]);
+      } finally {
+        setLatestLoading(false);
+      }
+    };
+
+    fetchLatestTractors();
+  }, []);
 
   const upcomingTractors = [
     {
@@ -584,67 +497,6 @@ const NewTractors = () => {
     "Constant Mesh",
   ];
 
-  // useEffect(() => {
-  //   const fetchFilterOptions = async () => {
-  //     try {
-  //       // Fetch brands
-  //       const brandResponse = await apiHelper.get("/brand");
-  //       let brandsData = [];
-  //       if (brandResponse && brandResponse.data && Array.isArray(brandResponse.data)) {
-  //         brandsData = brandResponse.data;
-  //       } else if (Array.isArray(brandResponse)) {
-  //         brandsData = brandResponse;
-  //       }
-
-  //       const brands = brandsData
-  //         .filter(brand => brand.status === "ACTIVE")
-  //         .map(item => item.brandName || item.name || "Unknown");
-
-  //       setBrandOptions(["All Brands", ...brands]);
-
-  //       // Fetch categories
-  //       const categoryResponse = await apiHelper.get("/category");
-  //       let categoriesData = [];
-  //       if (categoryResponse && categoryResponse.data && Array.isArray(categoryResponse.data)) {
-  //         categoriesData = categoryResponse.data;
-  //       } else if (Array.isArray(categoryResponse)) {
-  //         categoriesData = categoryResponse;
-  //       }
-
-  //       const categories = categoriesData
-  //         .filter(cat => cat.status === "ACTIVE")
-  //         .map(item => item.categoryName || item.name || "Unknown");
-
-  //       setCategoryOptions(["All Categories", ...categories]);
-
-  //       // Fetch HP options from tractors
-  //       const tractorResponse = await apiHelper.get("/tractor");
-  //       let tractorsData = [];
-  //       if (tractorResponse && tractorResponse.data && Array.isArray(tractorResponse.data)) {
-  //         tractorsData = tractorResponse.data;
-  //       } else if (Array.isArray(tractorResponse)) {
-  //         tractorsData = tractorResponse;
-  //       }
-
-  //       const hpValues = tractorsData
-  //         .map(t => t.hp)
-  //         .filter(hp => hp)
-  //         .sort((a, b) => {
-  //           const numA = parseInt(a);
-  //           const numB = parseInt(b);
-  //           return numA - numB;
-  //         });
-
-  //       setHpOptions(["All HP", ...new Set(hpValues)]);
-
-  //     } catch (error) {
-  //       console.error("Failed to fetch filter options:", error);
-  //     }
-  //   };
-
-  //   fetchFilterOptions();
-  // }, []);
-
   const maxPrice = 1000000;
 
   const clearFilters = () => {
@@ -679,19 +531,27 @@ const NewTractors = () => {
   useEffect(() => {
     intervalRef.current = setInterval(() => {
       if (window.innerWidth >= 640) {
-        setPopularIndex((prev) => (prev + 1) % popularTractors.length);
-        setLatestIndex((prev) => (prev + 1) % latestTractors.length);
+        setPopularIndex((prev) =>
+          popularTractors.length ? (prev + 1) % popularTractors.length : 0,
+        );
+        setLatestIndex((prev) =>
+          latestTractors.length ? (prev + 1) % latestTractors.length : 0,
+        );
         setUpcomingIndex((prev) => (prev + 1) % upcomingTractors.length);
       }
     }, 3000);
     return () => clearInterval(intervalRef.current);
-  }, []);
+  }, [latestTractors, popularTractors]); // add latestTractors as a dependency
 
   const getVisibleTractors = (tractors, startIndex) => {
+    if (!tractors || tractors.length === 0) return [];
+
     const visible = [];
-    for (let i = 0; i < cardsToShow; i++) {
+
+    for (let i = 0; i < Math.min(cardsToShow, tractors.length); i++) {
       visible.push(tractors[(startIndex + i) % tractors.length]);
     }
+
     return visible;
   };
 
@@ -1574,15 +1434,25 @@ const NewTractors = () => {
         </div>
 
         <div className="mb-8 md:mb-14 lg:mb-20">
-          <SliderSection
-            title="Latest Tractor"
-            subtitle="Just arrived in showroom"
-            tractors={latestTractors}
-            index={latestIndex}
-            setIndex={setLatestIndex}
-            linkTo="/tractors?type=new&section=latest"
-            badgeColor="bg-green-700"
-          />
+          {latestLoading ? (
+            <div className="flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
+            </div>
+          ) : latestTractors.length === 0 ? (
+            <p className="text-center text-gray-500 py-8">
+              No tractors available
+            </p>
+          ) : (
+            <SliderSection
+              title="Latest Tractor"
+              subtitle="Just arrived in showroom"
+              tractors={latestTractors}
+              index={latestIndex}
+              setIndex={setLatestIndex}
+              linkTo="/tractors?type=new&section=latest"
+              badgeColor="bg-green-700"
+            />
+          )}
         </div>
 
         <SliderSection
@@ -1630,7 +1500,6 @@ const NewTractors = () => {
                         onError={(e) => {
                           e.target.style.display = "none";
                           e.target.nextSibling.style.display = "flex";
-                          
                         }}
                       />
                       <span className="text-base sm:text-lg font-black text-green-700 hidden">
@@ -1652,8 +1521,9 @@ const NewTractors = () => {
           </div>
         </div>
       </div>
-      {/* --- POPULAR COMPARISON HANDPICKS --- */}
 
+
+      {/* --- POPULAR COMPARISON HANDPICKS --- */}
       <div className="border-t border-gray-200 w-full">
         <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-16 md:pt-20 lg:pt-24 mx-auto">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
@@ -1669,68 +1539,82 @@ const NewTractors = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 xl:gap-5 pb-4">
-            {SUGGESTED_COMPARISONS.map((pair, index) => (
-              <div
-                key={index}
-                className="bg-white border border-gray-100 rounded-xl p-2.5 sm:p-4 shadow-xs flex flex-col justify-between"
-              >
-                <div>
-                  <div className="relative border border-gray-200 rounded-lg overflow-hidden mb-3 w-full h-24 sm:h-36">
-                    <div className="grid grid-cols-2 gap-0 h-full w-full relative">
-                      <div className="w-full h-full flex items-center justify-center bg-cover bg-center">
-                        <img
-                          src={pair.left.image}
-                          alt={pair.left.name}
-                          className="w-full h-full object-cover relative z-10"
-                        />
-                      </div>
-                      <div className="w-full h-full flex items-center justify-center bg-cover bg-center">
-                        <img
-                          src={pair.right.image}
-                          alt={pair.right.name}
-                          className="w-full h-full object-cover relative z-10"
-                        />
-                      </div>
-                    </div>
-                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-900 text-white text-[9px] sm:text-[10px] font-black w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center border-2 border-white shadow-md z-20 select-none uppercase">
-                      vs
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-1 mb-3 px-0.5 text-xs sm:text-sm">
-                    <div className="text-left">
-                      <p className="font-semibold text-gray-800 truncate line-clamp-1">
-                        {pair.left.name}
-                      </p>
-                      <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5 sm:mt-1">
-                        From{" "}
-                        <span className="font-semibold text-gray-700">
-                          {pair.left.price}
-                        </span>
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-semibold text-gray-800 truncate line-clamp-1">
-                        {pair.right.name}
-                      </p>
-                      <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5 sm:mt-1">
-                        From{" "}
-                        <span className="font-semibold text-gray-700">
-                          {pair.right.price}
-                        </span>
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-1">
-                  <Link to="/tractorcompare">
-                    <button className="w-full cursor-pointer border border-green-200 bg-white hover:bg-green-50 text-green-700 transition-colors duration-150 text-[10px] sm:text-xs font-semibold py-1.5 px-2 rounded-md text-center truncate">
-                      {pair.left.name.split(" ")[0]}{" "}
-                      {pair.left.name.split(" ")[1] || ""} vs {pair.right.name}
-                    </button>
-                  </Link>
-                </div>
+            {comparisonsLoading ? (
+              <div className="col-span-full flex justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
               </div>
-            ))}
+            ) : comparisonPairs.length === 0 ? (
+              <p className="col-span-full text-center text-gray-500 py-8">
+                No comparisons available right now
+              </p>
+            ) : (
+              comparisonPairs.map((pair, index) => (
+                <div
+                  key={index}
+                  className="bg-white border border-gray-100 rounded-xl p-2.5 sm:p-4 shadow-xs flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="relative border border-gray-200 rounded-lg overflow-hidden mb-3 w-full h-24 sm:h-36">
+                      <div className="grid grid-cols-2 gap-0 h-full w-full relative">
+                        <div className="w-full h-full flex items-center justify-center bg-cover bg-center">
+                          <img
+                            src={apiHelper.image(pair.left.frontView)}
+                            alt={pair.left.productName}
+                            className="w-full h-full object-cover relative z-10"
+                          />
+                        </div>
+                        <div className="w-full h-full flex items-center justify-center bg-cover bg-center">
+                          <img
+                            src={apiHelper.image(pair.right.frontView)}
+                            alt={pair.right.productName}
+                            className="w-full h-full object-cover relative z-10"
+                          />
+                        </div>
+                      </div>
+                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-900 text-white text-[9px] sm:text-[10px] font-black w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center border-2 border-white shadow-md z-20 select-none uppercase">
+                        vs
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-1 mb-3 px-0.5 text-xs sm:text-sm">
+                      <div className="text-left">
+                        <p className="font-semibold text-gray-800 truncate line-clamp-1">
+                          {pair.left.productName}
+                        </p>
+                        <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5 sm:mt-1">
+                          From{" "}
+                          <span className="font-semibold text-gray-700">
+                            ₹{(pair.left.exShowroomPrice / 100000).toFixed(2)}{" "}
+                            Lakh*
+                          </span>
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-semibold text-gray-800 truncate line-clamp-1">
+                          {pair.right.productName}
+                        </p>
+                        <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5 sm:mt-1">
+                          From{" "}
+                          <span className="font-semibold text-gray-700">
+                            ₹{(pair.right.exShowroomPrice / 100000).toFixed(2)}{" "}
+                            Lakh*
+                          </span>
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="mt-1">
+                    <Link
+                      to={`/tractorcompare?v1=${pair.left.id}&v2=${pair.right.id}`}
+                    >
+                      <button className="w-full cursor-pointer border border-green-200 bg-white hover:bg-green-50 text-green-700 transition-colors duration-150 text-[10px] sm:text-xs font-semibold py-1.5 px-2 rounded-md text-center truncate">
+                        {pair.left.productName.split(" ").slice(0, 2).join(" ")}{" "}
+                        vs {pair.right.productName}
+                      </button>
+                    </Link>
+                  </div>
+                </div>
+              ))
+            )}
           </div>
         </div>
       </div>
