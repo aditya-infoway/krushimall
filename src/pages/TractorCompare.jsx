@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Listbox } from "@headlessui/react";
 import {
   Tractor,
@@ -12,11 +12,13 @@ import {
   ArrowRight,
   Check,
   ChevronDown,
+  ArrowLeft,
 } from "lucide-react";
 import mah from "../assets/mahindra.png";
 import john from "../assets/johndeere.png";
 import swara from "../assets/swaraj.png";
 import apiHelper from "../utils/apiHelper";
+import { useSearchParams } from "react-router-dom";
 
 const BRANDS = ["Mahindra", "John Deere", "Swaraj"];
 
@@ -55,6 +57,8 @@ const SUGGESTED_COMPARISONS = [
 
 export default function TractorCompare() {
   const compareSectionRef = useRef(null);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
 
   const [showComparison, setShowComparison] = useState(false);
   const [brands, setBrands] = useState([]);
@@ -84,6 +88,59 @@ export default function TractorCompare() {
       variants: [],
     },
   ]);
+
+  useEffect(() => {
+    const loadFromQueryParams = async () => {
+      const variantIds = [
+        searchParams.get("v1"),
+        searchParams.get("v2"),
+        searchParams.get("v3"),
+      ].filter(Boolean);
+
+      if (variantIds.length === 0) return;
+
+      const updated = [...slots];
+
+      for (let i = 0; i < variantIds.length && i < updated.length; i++) {
+        const variantId = variantIds[i];
+
+        try {
+          const detailsRes = await apiHelper.get(
+            `/compare-tractor/variant/${variantId}`,
+          );
+          const details = detailsRes.data;
+
+          const [modelsRes, variantsRes] = await Promise.all([
+            apiHelper.get(`/compare-tractor/brands/${details.brandId}/models`),
+            apiHelper.get(
+              `/compare-tractor/models/${details.modelId}/variants`,
+            ),
+          ]);
+
+          updated[i] = {
+            brand: details.brandId,
+            model: details.modelId,
+            variant: Number(variantId),
+            models: modelsRes.data || [],
+            variants: variantsRes.data || [],
+            details,
+          };
+        } catch (err) {
+          console.error("Failed to auto-load comparison slot:", err);
+        }
+      }
+
+      setSlots(updated);
+
+      if (variantIds.length >= 2) {
+        setShowComparison(true);
+        setTimeout(scrollToCompare, 300);
+      }
+    };
+
+    loadFromQueryParams();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   useEffect(() => {
     const fetchTrending = async () => {
@@ -180,13 +237,13 @@ export default function TractorCompare() {
     if (activeCount < 2) setShowComparison(false);
   };
 
-  const activeTractors = slots
-    .filter((s) => s.details)
-    .map((s) => ({
-      ...s.details,
-      modelName: s.models.find((m) => m.id === s.model)?.modelName,
-      variantName: s.variants.find((v) => v.id === s.variant)?.variantName,
-    }));
+const activeTractors = slots
+  .filter((s) => s.details)
+  .map((s) => ({
+    ...s.details,
+    modelName: s.models.find((m) => m.id === s.model)?.modelName,
+    variantName: s.variants.find((v) => v.id === s.variant)?.variant?.variantName,
+  }));
 
   const scrollToCompare = () => {
     const y =
@@ -205,10 +262,19 @@ export default function TractorCompare() {
     <div className="min-h-screen bg-gray-50 text-gray-800 font-sans antialiased">
       <main className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-6 lg:pb-10">
         {/* TOP CONFIGURATOR WORKSPACE */}
-        <section
-          ref={compareSectionRef}
-          className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm "
-        >
+      <section
+  ref={compareSectionRef}
+  className="relative bg-white border border-gray-200 rounded-xl p-4 sm:p-6 shadow-sm"
+>
+  <div className="absolute top-4 right-4 sm:top-6 sm:right-6">
+  <button
+    onClick={() => navigate(-1)}
+    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-gray-700 hover:bg-green-50 hover:border-green-600 hover:text-green-700 transition-all cursor-pointer text-sm font-medium"
+  >
+    <ArrowLeft className="w-4 h-4" />
+    Back
+  </button>
+</div>
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-2.5">
             Compare{" "}
             <span className="text-transparent bg-clip-text bg-green-600">
@@ -365,17 +431,11 @@ export default function TractorCompare() {
                         >
                           <div className="relative">
                             <Listbox.Button className="w-full p-2 bg-white border border-green-300 rounded text-xs sm:text-sm text-left focus:border-green-500 outline-none transition font-semibold flex items-center justify-between">
-                              <span
-                                className={
-                                  slot.variant
-                                    ? "text-gray-800"
-                                    : "text-gray-400"
-                                }
-                              >
-                                {slot.variants.find(
-                                  (v) => v.id === slot.variant,
-                                )?.variantName || "-- Variant --"}
-                              </span>
+                             <span
+  className={slot.variant ? "text-gray-800" : "text-gray-400"}
+>
+  {slot.variants.find((v) => v.id === slot.variant)?.productName || "-- Variant --"}
+</span>
                               <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
                             </Listbox.Button>
                             <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-auto py-1 text-xs sm:text-sm">
@@ -391,15 +451,20 @@ export default function TractorCompare() {
                                     } ${selected ? "bg-green-100 font-medium" : ""}`
                                   }
                                 >
-                                  {({ selected }) => (
-                                    <>
-                                      <span>{variant.variantName}</span>
+                                 {({ selected }) => (
+  <>
+    <span>
+      {variant.productName}{" "}
+      {variant.variant?.variantName && (
+        <span className="text-gray-400">
+          ({variant.variant.variantName})
+        </span>
+      )}
+    </span>
 
-                                      {selected && (
-                                        <Check className="h-3.5 w-3.5 text-green-600" />
-                                      )}
-                                    </>
-                                  )}
+    {selected && <Check className="h-3.5 w-3.5 text-green-600" />}
+  </>
+)}
                                 </Listbox.Option>
                               ))}
                             </Listbox.Options>
@@ -409,22 +474,25 @@ export default function TractorCompare() {
                     )}
                   </div>
                   <div className="mt-3 pt-3 border-t border-gray-100 flex flex-col items-center justify-center min-h-[70px] sm:min-h-[90px]">
-                    {tractorDetails ? (
-                      <div className="w-full text-center">
-                        <img
-                          src={apiHelper.getImageUrl(tractorDetails.image)}
-                          className="h-20 object-contain mx-auto"
-                          alt={tractorDetails.variantName}
-                        />
-                        <p className="text-xs mt-2">
-                          {tractorDetails.variantName}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="text-center text-gray-400">
-                        Empty Slot
-                      </div>
-                    )}
+                  {tractorDetails ? (
+  <div className="w-full text-center">
+    <img
+      src={apiHelper.getImageUrl(tractorDetails.frontView)}
+      className="h-20 object-contain mx-auto"
+      alt={tractorDetails.productName}
+    />
+    <p className="text-xs mt-2 font-semibold">
+      {tractorDetails.productName}
+    </p>
+    {tractorDetails.variant?.variantName && (
+      <p className="text-[10px] text-gray-400">
+        {tractorDetails.variant.variantName}
+      </p>
+    )}
+  </div>
+) : (
+  <div className="text-center text-gray-400">Empty Slot</div>
+)}
                   </div>
                 </div>
               );
@@ -597,44 +665,47 @@ export default function TractorCompare() {
           </div>
 
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 lg:gap-6">
-           {showcaseTractors.map((tractor, index) => (
-  <div key={index} className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-5 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group">
-    <div>
-      <div className="relative bg-gray-50 rounded-lg sm:rounded-xl mb-3 flex items-center justify-center overflow-hidden aspect-[4/3] sm:aspect-square lg:aspect-[4/3]">
-        <img
-          src={apiHelper.getImageUrl(tractor.frontView)}
-          alt={tractor.productName}
-          className="w-full h-full object-contain p-2 sm:p-3 lg:p-4 group-hover:scale-105 transition-transform duration-500"
-        />
-      </div>
+            {showcaseTractors.map((tractor, index) => (
+              <div
+                key={index}
+                className="bg-white border border-gray-200 rounded-xl sm:rounded-2xl p-3 sm:p-4 lg:p-5 shadow-sm hover:shadow-lg transition-all duration-300 flex flex-col justify-between group"
+              >
+                <div>
+                  <div className="relative bg-gray-50 rounded-lg sm:rounded-xl mb-3 flex items-center justify-center overflow-hidden aspect-[4/3] sm:aspect-square lg:aspect-[4/3]">
+                    <img
+                      src={apiHelper.getImageUrl(tractor.frontView)}
+                      alt={tractor.productName}
+                      className="w-full h-full object-contain p-2 sm:p-3 lg:p-4 group-hover:scale-105 transition-transform duration-500"
+                    />
+                  </div>
 
-      <h3 className="font-bold text-gray-900 text-xs sm:text-sm lg:text-base truncate mb-1.5 sm:mb-2">
-        {tractor.productName}
-      </h3>
-      <div className="flex items-center gap-2 mb-2 sm:mb-3">
-        <span className="text-[9px] sm:text-[10px] lg:text-[11px] font-semibold bg-gray-100 text-gray-600 px-1.5 sm:px-2 py-0.5 rounded-md">
-          {tractor.horsePower} HP
-        </span>
-      </div>
-    </div>
+                  <h3 className="font-bold text-gray-900 text-xs sm:text-sm lg:text-base truncate mb-1.5 sm:mb-2">
+                    {tractor.productName}
+                  </h3>
+                  <div className="flex items-center gap-2 mb-2 sm:mb-3">
+                    <span className="text-[9px] sm:text-[10px] lg:text-[11px] font-semibold bg-gray-100 text-gray-600 px-1.5 sm:px-2 py-0.5 rounded-md">
+                      {tractor.horsePower} HP
+                    </span>
+                  </div>
+                </div>
 
-    <div className="pt-2 sm:pt-3 border-t border-gray-100 flex items-center justify-between gap-1.5 sm:gap-2">
-      <div className="min-w-0">
-        <span className="text-[9px] sm:text-[10px] text-gray-400 block uppercase font-semibold tracking-wider">
-          Ex-Showroom
-        </span>
-        <span className="text-xs sm:text-sm lg:text-base font-bold text-green-700 truncate block">
-          ₹ {tractor.exShowroomPrice}
-        </span>
-      </div>
-      <Link to={`/tractor/${tractor.id}`} className="flex-shrink-0">
-        <button className="bg-green-50 text-green-700 hover:bg-green-700 hover:text-white font-bold text-[10px] sm:text-xs lg:text-sm cursor-pointer py-1.5 sm:py-2 px-2 sm:px-3 lg:px-4 rounded-md sm:rounded-lg transition-all duration-200 hover:shadow-md whitespace-nowrap">
-          View Details
-        </button>
-      </Link>
-    </div>
-  </div>
-))}
+                <div className="pt-2 sm:pt-3 border-t border-gray-100 flex items-center justify-between gap-1.5 sm:gap-2">
+                  <div className="min-w-0">
+                    <span className="text-[9px] sm:text-[10px] text-gray-400 block uppercase font-semibold tracking-wider">
+                      Ex-Showroom
+                    </span>
+                    <span className="text-xs sm:text-sm lg:text-base font-bold text-green-700 truncate block">
+                      ₹ {tractor.exShowroomPrice}
+                    </span>
+                  </div>
+                  <Link to={`/tractor/${tractor.id}`} className="flex-shrink-0">
+                    <button className="bg-green-50 text-green-700 hover:bg-green-700 hover:text-white font-bold text-[10px] sm:text-xs lg:text-sm cursor-pointer py-1.5 sm:py-2 px-2 sm:px-3 lg:px-4 rounded-md sm:rounded-lg transition-all duration-200 hover:shadow-md whitespace-nowrap">
+                      View Details
+                    </button>
+                  </Link>
+                </div>
+              </div>
+            ))}
           </div>
         </section>
       </main>

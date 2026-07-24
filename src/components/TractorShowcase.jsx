@@ -21,9 +21,6 @@ import {
   Shield,
   ShoppingCart,
 } from "lucide-react";
-import mah from "../assets/mahindra.png";
-import john from "../assets/johndeere.png";
-import swara from "../assets/swaraj.png";
 import logo from "../assets/johnlogo.png";
 import apiHelper from "../utils/apiHelper";
 
@@ -39,59 +36,58 @@ const TractorShowcase = () => {
   const newTimerRef = useRef(null);
   const usedTimerRef = useRef(null);
 
- useEffect(() => {
-  const fetchData = async () => {
-    try {
-      const response = await apiHelper.get("/website-variants?status=ACTIVE");
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await apiHelper.get("/website-variants?status=ACTIVE");
 
-      const tractorList = response.data || [];
+        const tractorList = response.data || [];
 
-      if (tractorList.length > 0) {
-        const updatedNewTractors = tractorList.map((apiTractor) => {
-          // ✅ Use apiHelper.image() - no baseUrl needed!
-          const imageUrl = apiTractor.frontView 
-            ? apiHelper.image(apiTractor.frontView) 
-            : "/mah.png";
+        if (tractorList.length > 0) {
+          const updatedNewTractors = tractorList.map((apiTractor) => {
+            // ✅ Use apiHelper.image() - no baseUrl needed!
+            const imageUrl = apiTractor.frontView
+              ? apiHelper.image(apiTractor.frontView)
+              : "/mah.png";
 
-          return {
-            id: apiTractor.id || Math.random(),
-            brand: apiTractor.brand?.brandName ||
-                   apiTractor.brandName ||
-                   apiTractor.brand ||
-                   "Unknown Brand",
-            name: apiTractor.productName ||
-                  apiTractor.name ||
-                  "Unknown Tractor",
-            price: typeof (apiTractor.exShowroomPrice || apiTractor.price) === "number"
-              ? `₹${(apiTractor.exShowroomPrice || apiTractor.price).toLocaleString("en-IN")}`
-              : apiTractor.exShowroomPrice ||
-                apiTractor.price ||
-                "₹0",
-            location: apiTractor.city ||
-                     apiTractor.district ||
-                     apiTractor.state ||
-                     "Location",
-            image: imageUrl, // ✅ Now uses apiHelper.image()
-            badge: apiTractor.badge || undefined,
-            rating: apiTractor.rating || undefined,
-            verified: apiTractor.verified || undefined,
-          };
-        });
+            return {
+              id: apiTractor.id || Math.random(),
+              brand:
+                apiTractor.brand?.brandName ||
+                apiTractor.brandName ||
+                apiTractor.brand ||
+                "Unknown Brand",
+              name:
+                apiTractor.productName || apiTractor.name || "Unknown Tractor",
+              price:
+                typeof (apiTractor.exShowroomPrice || apiTractor.price) ===
+                "number"
+                  ? `₹${(apiTractor.exShowroomPrice || apiTractor.price).toLocaleString("en-IN")}`
+                  : apiTractor.exShowroomPrice || apiTractor.price || "₹0",
+              location:
+                apiTractor.city ||
+                apiTractor.district ||
+                apiTractor.state ||
+                "Location",
+              image: imageUrl, // ✅ Now uses apiHelper.image()
+              badge: apiTractor.badge || undefined,
+              rating: apiTractor.rating || undefined,
+              verified: apiTractor.verified || undefined,
+            };
+          });
 
-        setNewTractors(updatedNewTractors);
-      } else {
+          setNewTractors(updatedNewTractors);
+        } else {
+          setNewTractors([]);
+        }
+      } catch (error) {
+        console.error("Error fetching tractors:", error);
         setNewTractors([]);
       }
-    } catch (error) {
-      console.error("Error fetching tractors:", error);
-      setNewTractors([]);
-    }
-  };
+    };
 
-  fetchData();
-}, []);
-
- 
+    fetchData();
+  }, []);
 
   const allUsedTractors = [
     {
@@ -232,38 +228,40 @@ const TractorShowcase = () => {
     },
   ];
 
-  const SUGGESTED_COMPARISONS = [
-    {
-      title: "Mahindra 475 DI XP PLUS Comparison with similar tractors",
-      left: {
-        name: "Mahindra 475 DI XP P...",
-        price: "₹ 6.40 Lakh*",
-        image: mah,
-      },
-      right: { name: "Mahindra 575 DI", price: "₹ 6.95 Lakh*", image: swara },
-      buttonText: "Mahindra 475 DI XP PLUS vs Mahindra 575 DI",
-    },
-    {
-      title: "Popular Cross-Brand Matches",
-      left: {
-        name: "Mahindra 475 DI XP P...",
-        price: "₹ 6.40 Lakh*",
-        image: mah,
-      },
-      right: { name: "Swaraj 724 XM", price: "₹ 5.09 Lakh*", image: john },
-      buttonText: "Compare Now",
-    },
-    {
-      title: "Top Heavy Duty Alternatives",
-      left: {
-        name: "John Deere 5050 D",
-        price: "₹ 7.90 Lakh*",
-        image: john,
-      },
-      right: { name: "Swaraj 744 FE", price: "₹ 7.80 Lakh*", image: swara },
-      buttonText: "Compare Now",
-    },
-  ];
+  const [comparisonPairs, setComparisonPairs] = useState([]);
+  const [comparisonsLoading, setComparisonsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTrendingComparisons = async () => {
+      try {
+        setComparisonsLoading(true);
+
+        const response = await apiHelper.get("/compare-tractor/trending");
+
+        const tractors = response?.data || response || [];
+
+        const pairs = [];
+
+        for (let i = 0; i < tractors.length && pairs.length < 3; i++) {
+          for (let j = i + 1; j < tractors.length && pairs.length < 3; j++) {
+            pairs.push({
+              left: tractors[i],
+              right: tractors[j],
+            });
+          }
+        }
+
+        setComparisonPairs(pairs);
+      } catch (error) {
+        console.error(error);
+        setComparisonPairs([]);
+      } finally {
+        setComparisonsLoading(false);
+      }
+    };
+
+    fetchTrendingComparisons();
+  }, []);
 
   const toggleWishlist = (id, e) => {
     e.preventDefault();
@@ -283,44 +281,40 @@ const TractorShowcase = () => {
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
+  const getVisibleTractors = (tractors, startIndex) => {
+    if (!tractors || tractors.length === 0) return [];
 
+    // ✅ Show only the actual number of tractors (max 4)
+    const totalToShow = Math.min(cardsToShow, tractors.length);
+    const visible = [];
 
-const getVisibleTractors = (tractors, startIndex) => {
-  if (!tractors || tractors.length === 0) return [];
-  
-  // ✅ Show only the actual number of tractors (max 4)
-  const totalToShow = Math.min(cardsToShow, tractors.length);
-  const visible = [];
-  
-  for (let i = 0; i < totalToShow; i++) {
-    const index = (startIndex + i) % tractors.length;
-    visible.push(tractors[index]);
-  }
-  return visible;
-};
-
-// Auto-slide for DESKTOP ONLY
-useEffect(() => {
-  intervalRef.current = setInterval(() => {
-    if (window.innerWidth >= 640) {
-      // ✅ Only auto-slide if we have more tractors than cards to show
-      if (newTractors.length > cardsToShow) {
-        setNewIndex(
-          (prev) => (prev + 1) % Math.ceil(newTractors.length / cardsToShow)
-        );
-      }
-      if (allUsedTractors.length > cardsToShow) {
-        setUsedIndex(
-          (prev) =>
-            (prev + 1) % Math.ceil(allUsedTractors.length / cardsToShow)
-        );
-      }
+    for (let i = 0; i < totalToShow; i++) {
+      const index = (startIndex + i) % tractors.length;
+      visible.push(tractors[index]);
     }
-  }, 3000);
-  return () => clearInterval(intervalRef.current);
-}, [cardsToShow, newTractors.length]);
+    return visible;
+  };
 
-
+  // Auto-slide for DESKTOP ONLY
+  useEffect(() => {
+    intervalRef.current = setInterval(() => {
+      if (window.innerWidth >= 640) {
+        // ✅ Only auto-slide if we have more tractors than cards to show
+        if (newTractors.length > cardsToShow) {
+          setNewIndex(
+            (prev) => (prev + 1) % Math.ceil(newTractors.length / cardsToShow),
+          );
+        }
+        if (allUsedTractors.length > cardsToShow) {
+          setUsedIndex(
+            (prev) =>
+              (prev + 1) % Math.ceil(allUsedTractors.length / cardsToShow),
+          );
+        }
+      }
+    }, 3000);
+    return () => clearInterval(intervalRef.current);
+  }, [cardsToShow, newTractors.length]);
 
   const slideNext = (setIndex, length) => {
     setIndex((prev) => {
@@ -348,7 +342,7 @@ useEffect(() => {
   const TractorCard = ({ tractor, isUsed = false, className = "" }) => (
     <Link
       to={`/tractor/${tractor.id}`}
-     className={`group bg-white rounded-2xl border-2 border-gray-200 hover:border-green-400 shadow-sm hover:shadow-2xl hover:shadow-green-100/50 transition-all duration-500 flex flex-col flex-shrink-0 hover:-translate-y-2 cursor-pointer h-full ${className}`}
+      className={`group bg-white rounded-2xl border-2 border-gray-200 hover:border-green-400 shadow-sm hover:shadow-2xl hover:shadow-green-100/50 transition-all duration-500 flex flex-col flex-shrink-0 hover:-translate-y-2 cursor-pointer h-full ${className}`}
     >
       {/* Image Section - Fixed height */}
       <div className="relative h-36 sm:h-44 overflow-hidden bg-gradient-to-br from-green-50 to-white flex-shrink-0 rounded-t-2xl">
@@ -651,27 +645,30 @@ useEffect(() => {
           </div>
 
           {/* New Tractors Section */}
-         {/* New Tractors Section */}
-<div className="my-12 md:my-16 lg:mb-10">
-  {newTractors.length > 0 ? (
-    <SliderSection
-      title="New Tractors"
-      icon={Tractor}
-      iconGradient="from-green-600 to-green-700"
-      tractors={newTractors}
-      index={newIndex}
-      setIndex={setNewIndex}
-      isUsed={false}
-      linkTo="/tractors"
-    />
-  ) : (
-    <div className="text-center py-12 bg-white rounded-2xl border-2 border-gray-200">
-      <Tractor className="h-16 w-16 text-gray-400 mx-auto mb-4" />
-      <h3 className="text-xl font-semibold text-gray-600 mb-2">No Tractors Available</h3>
-      <p className="text-gray-500">New tractors will appear here once added to the database.</p>
-    </div>
-  )}
-</div>
+          <div className="my-12 md:my-16 lg:mb-10">
+            {newTractors.length > 0 ? (
+              <SliderSection
+                title="New Tractors"
+                icon={Tractor}
+                iconGradient="from-green-600 to-green-700"
+                tractors={newTractors}
+                index={newIndex}
+                setIndex={setNewIndex}
+                isUsed={false}
+                linkTo="/tractors"
+              />
+            ) : (
+              <div className="text-center py-12 bg-white rounded-2xl border-2 border-gray-200">
+                <Tractor className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                  No Tractors Available
+                </h3>
+                <p className="text-gray-500">
+                  New tractors will appear here once added to the database.
+                </p>
+              </div>
+            )}
+          </div>
 
           {/* Used Tractors Section */}
           <SliderSection
@@ -708,79 +705,96 @@ useEffect(() => {
 
             {/* Comparison Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 ">
-              {SUGGESTED_COMPARISONS.map((pair, index) => (
-                <div
-                  key={index}
-                  className="bg-white border border-gray-100 rounded-xl p-2.5 sm:p-4 shadow-xs flex flex-col justify-between"
-                >
-                  <div>
-                    {/* Edge-to-edge split layout container */}
-                    <div className="relative border border-gray-200 rounded-lg overflow-hidden mb-3 w-full h-24 sm:h-36">
-                      <div className="grid grid-cols-2 gap-0 h-full w-full relative">
-                        {/* Left Side */}
-                        <div className="w-full h-full flex items-center justify-center bg-cover bg-center">
-                          <img
-                            src={pair.left.image}
-                            alt={pair.left.name}
-                            className="w-full h-full object-cover relative z-10"
-                          />
-                        </div>
-
-                        {/* Right Side */}
-                        <div className="w-full h-full flex items-center justify-center bg-cover bg-center">
-                          <img
-                            src={pair.right.image}
-                            alt={pair.right.name}
-                            className="w-full h-full object-cover relative z-10"
-                          />
-                        </div>
-                      </div>
-
-                      {/* Overlaid Center VS Badge */}
-                      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-900 text-white text-[9px] sm:text-[10px] font-black w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center border-2 border-white shadow-md z-20 select-none uppercase">
-                        vs
-                      </div>
-                    </div>
-
-                    {/* Left-Aligned / Right-Aligned labels */}
-                    <div className="grid grid-cols-2 gap-1 mb-3 px-0.5 text-xs sm:text-sm">
-                      <div className="text-left">
-                        <p className="font-semibold text-gray-800 truncate line-clamp-1">
-                          {pair.left.name}
-                        </p>
-                        <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5 sm:mt-1">
-                          From{" "}
-                          <span className="font-semibold text-gray-700">
-                            {pair.left.price}
-                          </span>
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="font-semibold text-gray-800 truncate line-clamp-1">
-                          {pair.right.name}
-                        </p>
-                        <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5 sm:mt-1">
-                          From{" "}
-                          <span className="font-semibold text-gray-700">
-                            {pair.right.price}
-                          </span>
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Action comparison button wrapper */}
-                  <div className="mt-1">
-                    <Link to="/tractorcompare">
-                      <button className="w-full cursor-pointer border border-green-200 bg-white hover:bg-green-50 text-green-700 transition-colors duration-150 text-[10px] sm:text-xs font-semibold py-1.5 px-2 rounded-md text-center truncate">
-                        {pair.left.name.split(" ")[0]}{" "}
-                        {pair.left.name.split(" ")[1] || ""} vs{" "}
-                        {pair.right.name}
-                      </button>
-                    </Link>
-                  </div>
+              {comparisonsLoading ? (
+                <div className="col-span-full flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
                 </div>
-              ))}
+              ) : comparisonPairs.length === 0 ? (
+                <p className="col-span-full text-center text-gray-500 py-8">
+                  No comparisons available right now
+                </p>
+              ) : (
+                comparisonPairs.map((pair, index) => (
+                  <div
+                    key={index}
+                    className="bg-white border border-gray-100 rounded-xl p-2.5 sm:p-4 shadow-xs flex flex-col justify-between"
+                  >
+                    <div>
+                      {/* Edge-to-edge split layout container */}
+                      <div className="relative border border-gray-200 rounded-lg overflow-hidden mb-3 w-full h-24 sm:h-36">
+                        <div className="grid grid-cols-2 gap-0 h-full w-full relative">
+                          {/* Left Side */}
+                          <div className="w-full h-full flex items-center justify-center bg-cover bg-center">
+                            <img
+                              src={apiHelper.image(pair.left.frontView)}
+                              alt={pair.left.productName}
+                              className="w-full h-full object-cover relative z-10"
+                            />
+                          </div>
+
+                          {/* Right Side */}
+                          <div className="w-full h-full flex items-center justify-center bg-cover bg-center">
+                            <img
+                              src={apiHelper.image(pair.right.frontView)}
+                              alt={pair.right.productName}
+                              className="w-full h-full object-cover relative z-10"
+                            />
+                          </div>
+                        </div>
+
+                        {/* Overlaid Center VS Badge */}
+                        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-900 text-white text-[9px] sm:text-[10px] font-black w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center border-2 border-white shadow-md z-20 select-none uppercase">
+                          vs
+                        </div>
+                      </div>
+
+                      {/* Left-Aligned / Right-Aligned labels */}
+                      <div className="grid grid-cols-2 gap-1 mb-3 px-0.5 text-xs sm:text-sm">
+                        <div className="text-left">
+                          <p className="font-semibold text-gray-800 truncate line-clamp-1">
+                            {pair.left.productName}
+                          </p>
+                          <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5 sm:mt-1">
+                            From{" "}
+                            <span className="font-semibold text-gray-700">
+                              ₹{(pair.left.exShowroomPrice / 100000).toFixed(2)}{" "}
+                              Lakh*
+                            </span>
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-semibold text-gray-800 truncate line-clamp-1">
+                            {pair.right.productName}
+                          </p>
+                          <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5 sm:mt-1">
+                            From{" "}
+                            <span className="font-semibold text-gray-700">
+                              ₹
+                              {(pair.right.exShowroomPrice / 100000).toFixed(2)}{" "}
+                              Lakh*
+                            </span>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action comparison button wrapper */}
+                    <div className="mt-1">
+                      <Link
+                        to={`/tractorcompare?v1=${pair.left.id}&v2=${pair.right.id}`}
+                      >
+                        <button className="w-full cursor-pointer border border-green-200 bg-white hover:bg-green-50 text-green-700 transition-colors duration-150 text-[10px] sm:text-xs font-semibold py-1.5 px-2 rounded-md text-center truncate">
+                          {pair.left.productName
+                            .split(" ")
+                            .slice(0, 2)
+                            .join(" ")}{" "}
+                          vs {pair.right.productName}
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
