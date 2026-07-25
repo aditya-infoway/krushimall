@@ -205,7 +205,6 @@ const UsedTractors = () => {
     e.preventDefault();
     setIsSubmitting(true);
     setTimeout(() => {
-      console.log("Enquiry submitted:", formData);
       setIsSubmitting(false);
       setSubmitted(true);
       setTimeout(() => {

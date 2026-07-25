@@ -116,8 +116,6 @@ export default function MediaDocument({
     setPreviews(newPreviews);
     setUploadedDocs(newDocs);
 
-    console.log("productData keys:", Object.keys(productData));
-    console.log("form values after setValue:", getValues());
   }, [productData, isEdit, setValue, getValues]);
 
   useEffect(() => {
@@ -383,7 +381,7 @@ export default function MediaDocument({
               <Button
                 type="button"
                 variant="outlined"
-                className="min-w-[7rem] order-2 sm:order-1"
+                className="min-w-[7rem] order-2 sm:order-1 cursor-pointer"
                 onClick={handlePrevious}
               >
                 Previous
@@ -392,7 +390,7 @@ export default function MediaDocument({
                 <Button
                   type="button"
                   variant="outlined"
-                  className="min-w-[7rem]"
+                  className="min-w-[7rem] cursor-pointer"
                   onClick={() => navigate(-1)}
                 >
                   Cancel
@@ -400,14 +398,14 @@ export default function MediaDocument({
                 <Button
                   type="button"
                   variant="outlined"
-                  className="min-w-[7rem]"
+                  className="min-w-[7rem] cursor-pointer"
                   onClick={handleSaveDraft}
                 >
                   Save Draft
                 </Button>
                 <Button
                   type="submit"
-                  className="min-w-[7rem]"
+                  className="min-w-[7rem] cursor-pointer"
                   disabled={loading}
                 >
                   {loading ? "Saving..." : "Save & Next"}

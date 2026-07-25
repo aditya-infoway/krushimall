@@ -42,6 +42,8 @@ import {
 import { Link, useParams, useNavigate } from "react-router-dom";
 import EnquiryModal from "../components/EnquiryModal";
 import apiHelper from "../utils/apiHelper";
+import { useWishlist } from "../context/WishlistContext";
+import { useAuth } from "../context/AuthContext";
 
 // ─── Helper Functions ──────────────────────────────────────────────────────
 const hasValidValue = (value) => {
@@ -589,7 +591,8 @@ const TractorDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [currentImage, setCurrentImage] = useState(0);
-  const [wishlist, setWishlist] = useState(false);
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { isAuthenticated } = useAuth();
   const [activeTab, setActiveTab] = useState("description");
   const [relatedIndex, setRelatedIndex] = useState(0);
   const intervalRef = useRef(null);
@@ -905,6 +908,22 @@ const TractorDetails = () => {
     ],
   };
 
+  const wishlistProduct = {
+    id: Number(id),
+    name: tractor.name,
+    brand: tractor.brand,
+    price: hasValidValue(d.exShowroomPrice) ? Number(d.exShowroomPrice) : 0,
+    image: tractor.images[0],
+  };
+
+  const handleWishlistClick = () => {
+    if (!isAuthenticated) {
+      navigate(`/login?redirect=/tractor/${id}`);
+      return;
+    }
+    toggleWishlist(wishlistProduct);
+  };
+
   // ─── Auto Slider ──────────────────────────────────────────────────────────
   useEffect(() => {
     intervalRef.current = setInterval(() => {
@@ -1148,13 +1167,13 @@ const TractorDetails = () => {
                 </div>
                 <div className="absolute top-3 right-3 flex gap-2 z-20">
                   <button
-                    onClick={() => setWishlist(!wishlist)}
+                    onClick={handleWishlistClick}
                     className="w-10 h-10 cursor-pointer bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all"
                   >
                     <Heart
                       size={18}
                       className={
-                        wishlist
+                        isInWishlist(Number(id))
                           ? "fill-green-500 text-green-500"
                           : "text-gray-500"
                       }
