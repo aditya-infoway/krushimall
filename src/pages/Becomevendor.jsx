@@ -394,8 +394,6 @@ const BecomeVendor = () => {
 
       const response = await apiHelper.post("/vendor/become", payload);
 
-      console.log("API Response", response);
-
       if (response.success) {
         showSuccessToast(response.message);
         navigate("/vendor-login");

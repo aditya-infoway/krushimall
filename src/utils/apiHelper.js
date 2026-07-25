@@ -17,8 +17,12 @@ api.interceptors.request.use(
       token = localStorage.getItem("vendorToken");
     }
 
-    // Website user routes
-    else if (url === "/webauth/me" || url === "/webauth/profile") {
+    // Website customer (web-user) routes — everything else that isn't
+    // vendor/admin/branch should use the webToken if one exists.
+    else if (
+      !url.startsWith("/admin") &&
+      !url.startsWith("/branch")
+    ) {
       token = localStorage.getItem("webToken");
     }
 

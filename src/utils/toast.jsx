@@ -3,11 +3,11 @@ import { ShoppingCart, Heart, Trash2, Package, Lock, CheckCircle, X, AlertCircle
 
 // Common animation wrapper
 const ToastWrapper = ({ t, children, borderColor, closeColor }) => (
-  <div
-    className={`${
-      t.visible ? 'animate-slide-up' : 'animate-slide-down'
-    } max-w-md w-full bg-white shadow-2xl rounded-2xl pointer-events-auto flex ring-1 ring-black ring-opacity-5 ${borderColor}`}
-  >
+ <div
+  className={`${
+    t.visible ? "animate-slide-up" : "animate-slide-down"
+  } max-w-[340px] w-full bg-white shadow-xl rounded-xl pointer-events-auto flex ring-1 ring-black/5 ${borderColor}`}
+>
     {children}
     <div className="flex border-l border-gray-100">
       <button

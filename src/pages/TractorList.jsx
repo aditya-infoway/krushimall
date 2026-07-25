@@ -44,7 +44,6 @@ const TractorList = () => {
     const fetchNewTractors = async () => {
       try {
         const response = await apiHelper.get("/website-variants");
-        console.log("API Response for New Tractors:", response);
 
         const tractorList = response.data || [];
 
@@ -87,19 +86,16 @@ const TractorList = () => {
   }, [selectedBrand]);
 
   // Debug: Log the URL parameters
-  useEffect(() => {
-    console.log(
-      "URL params - type:",
-      type,
-      "section:",
-      section,
-      "brand:",
-      brandFilter,
-    );
-    console.log("Current tractors:", currentTractors);
-    console.log("tractorsData[type]:", tractorsData[type]);
-    console.log("tractorsData[type][section]:", tractorsData[type]?.[section]);
-  }, [type, section, brandFilter]);
+  // useEffect(() => {
+  //   console.log(
+  //     "URL params - type:",
+  //     type,
+  //     "section:",
+  //     section,
+  //     "brand:",
+  //     brandFilter,
+  //   );
+  // }, [type, section, brandFilter]);
 
   // Tractor data based on type
   const tractorsData = {
@@ -568,8 +564,6 @@ const TractorList = () => {
     ];
   }
 
-  console.log("selectedBrand:", selectedBrand);
-  console.log("selectedHp:", selectedHp);
   // Filter tractors
   const filteredTractors = currentTractors.filter((tractor) => {
     if (
@@ -619,12 +613,6 @@ const TractorList = () => {
     setPriceRange([0, maxPrice]);
     setSortBy("popular");
   };
-
-  console.log("selectedBrand:", selectedBrand);
-  console.log("selectedHp:", selectedHp);
-  console.log("currentTractors:", currentTractors);
-  console.log("filteredTractors:", filteredTractors);
-  console.log("sortedTractors:", sortedTractors);
 
   const TractorCard = ({ tractor }) => (
     <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
@@ -725,7 +713,6 @@ const TractorList = () => {
           )}
         </div>
 
-        {/* Filter Bar */}
         {/* Filter Bar - Headless UI */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">

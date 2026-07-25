@@ -1,89 +1,99 @@
-// src/context/WishlistContext.jsx
-import { createContext, useContext, useState, useEffect } from 'react';
-import { useAuth } from './AuthContext';
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { useAuth } from "./AuthContext";
+import apiHelper from "../utils/apiHelper";
 
 const WishlistContext = createContext();
 
 export const useWishlist = () => {
   const context = useContext(WishlistContext);
-  if (!context) {
-    throw new Error('useWishlist must be used within a WishlistProvider');
-  }
+  if (!context) throw new Error("useWishlist must be used within a WishlistProvider");
   return context;
 };
 
+const mapVariant = (item) => ({
+  id: item.variant.id,
+  name: item.variant.productName,
+  brand: item.variant.brand?.brandName || "Unknown",
+  price: item.variant.exShowroomPrice || 0,
+  image: apiHelper.image(item.variant.frontView),
+});
+
 export const WishlistProvider = ({ children }) => {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const [wishlistItems, setWishlistItems] = useState([]);
+  const [wishlistIds, setWishlistIds] = useState(new Set());
   const [showWishlistToast, setShowWishlistToast] = useState(false);
-  const [toastMessage, setToastMessage] = useState('');
+  const [toastMessage, setToastMessage] = useState("");
 
-  // Load wishlist from localStorage when user changes
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      const savedWishlist = localStorage.getItem(`wishlist_${user.id}`);
-      if (savedWishlist) {
-        setWishlistItems(JSON.parse(savedWishlist));
-      }
-    } else {
+  const notify = (msg) => {
+    setToastMessage(msg);
+    setShowWishlistToast(true);
+    setTimeout(() => setShowWishlistToast(false), 3000);
+  };
+
+  const fetchWishlist = useCallback(async () => {
+    if (!isAuthenticated) {
       setWishlistItems([]);
+      setWishlistIds(new Set());
+      return;
     }
-  }, [isAuthenticated, user]);
+    try {
+      const res = await apiHelper.get("/wishlist");
+      const items = (res?.data || res || []).map(mapVariant);
+      setWishlistItems(items);
+      setWishlistIds(new Set(items.map((i) => i.id)));
+    } catch (error) {
+      console.error("Failed to fetch wishlist:", error);
+    }
+  }, [isAuthenticated]);
 
-  // Save wishlist to localStorage whenever it changes
   useEffect(() => {
-    if (isAuthenticated && user) {
-      localStorage.setItem(`wishlist_${user.id}`, JSON.stringify(wishlistItems));
+    fetchWishlist();
+  }, [fetchWishlist]);
+
+  const toggleWishlist = async (product) => {
+    if (!isAuthenticated) return;
+    const currentlyIn = wishlistIds.has(product.id);
+
+    // optimistic UI update
+    setWishlistIds((prev) => {
+      const next = new Set(prev);
+      currentlyIn ? next.delete(product.id) : next.add(product.id);
+      return next;
+    });
+    setWishlistItems((prev) =>
+      currentlyIn ? prev.filter((i) => i.id !== product.id) : [...prev, product]
+    );
+    notify(currentlyIn ? `${product.name} removed from wishlist!` : `${product.name} added to wishlist!`);
+
+    try {
+      await apiHelper.post("/wishlist/toggle", { variantId: product.id });
+    } catch (error) {
+      console.error("Failed to toggle wishlist:", error);
+      fetchWishlist(); // revert to server truth on failure
     }
-  }, [wishlistItems, isAuthenticated, user]);
+  };
 
   const addToWishlist = (product) => {
-    setWishlistItems(prev => {
-      // Check if product already exists
-      const exists = prev.find(item => item.id === product.id);
-      if (exists) {
-        setToastMessage(`${product.name} is already in your wishlist!`);
-        setShowWishlistToast(true);
-        setTimeout(() => setShowWishlistToast(false), 3000);
-        return prev;
-      }
-      
-      setToastMessage(`${product.name} added to wishlist!`);
-      setShowWishlistToast(true);
-      setTimeout(() => setShowWishlistToast(false), 3000);
-      return [...prev, product];
-    });
+    if (!wishlistIds.has(product.id)) toggleWishlist(product);
   };
 
   const removeFromWishlist = (productId) => {
-    setWishlistItems(prev => {
-      const removedProduct = prev.find(item => item.id === productId);
-      if (removedProduct) {
-        setToastMessage(`${removedProduct.name} removed from wishlist!`);
-        setShowWishlistToast(true);
-        setTimeout(() => setShowWishlistToast(false), 3000);
-      }
-      return prev.filter(item => item.id !== productId);
-    });
+    const product = wishlistItems.find((i) => i.id === productId);
+    if (product) toggleWishlist(product);
   };
 
-  const isInWishlist = (productId) => {
-    return wishlistItems.some(item => item.id === productId);
-  };
+  const isInWishlist = (productId) => wishlistIds.has(productId);
 
-  const toggleWishlist = (product) => {
-    if (isInWishlist(product.id)) {
-      removeFromWishlist(product.id);
-    } else {
-      addToWishlist(product);
-    }
-  };
-
-  const clearWishlist = () => {
+  const clearWishlist = async () => {
     setWishlistItems([]);
-    setToastMessage('Wishlist cleared!');
-    setShowWishlistToast(true);
-    setTimeout(() => setShowWishlistToast(false), 3000);
+    setWishlistIds(new Set());
+    try {
+      await apiHelper.delete("/wishlist");
+    } catch (error) {
+      console.error("Failed to clear wishlist:", error);
+      fetchWishlist();
+    }
   };
 
   const value = {
@@ -96,12 +106,8 @@ export const WishlistProvider = ({ children }) => {
     wishlistCount: wishlistItems.length,
     showWishlistToast,
     toastMessage,
-    setShowWishlistToast
+    setShowWishlistToast,
   };
 
-  return (
-    <WishlistContext.Provider value={value}>
-      {children}
-    </WishlistContext.Provider>
-  );
+  return <WishlistContext.Provider value={value}>{children}</WishlistContext.Provider>;
 };

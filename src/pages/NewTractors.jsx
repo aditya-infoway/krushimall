@@ -35,6 +35,8 @@ import {
 } from "lucide-react";
 import apiHelper from "../utils/apiHelper";
 import TractorCategory from "../components/TractorCategory";
+import { useWishlist } from "../context/WishlistContext";
+import { useAuth } from "../context/AuthContext";
 
 const NewTractors = () => {
   const [popularIndex, setPopularIndex] = useState(0);
@@ -62,6 +64,8 @@ const NewTractors = () => {
   // Add this with other useState declarations:
   const navigate = useNavigate();
   const location = useLocation();
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { isAuthenticated } = useAuth();
   const activeTab = location.pathname.includes("old") ? "used" : "new";
 
   // Add these new states after your existing filter states:
@@ -202,7 +206,6 @@ const NewTractors = () => {
       try {
         setBrandsLoading(true);
         const response = await apiHelper.get("/brand");
-        console.log("Full API Response:", response);
 
         let brandsData = [];
         if (response && response.data && Array.isArray(response.data)) {
@@ -211,15 +214,11 @@ const NewTractors = () => {
           brandsData = response;
         }
 
-        console.log("Brands Data:", brandsData);
-        console.log("First Brand:", brandsData[0]);
-
         // Map brands with their logo URLs from the API
         const activeBrands = brandsData
           .filter((brand) => brand.status === "ACTIVE")
           .map((item) => {
             const logoUrl = apiHelper.image(item.image);
-            console.log(`Brand: ${item.brandName}, Logo URL: ${logoUrl}`);
 
             return {
               name: item.brandName || item.name || "Unknown",
@@ -227,8 +226,6 @@ const NewTractors = () => {
               id: item.id || item.brandId,
             };
           });
-
-        console.log("Active Brands with Logos:", activeBrands);
         setPopularBrands(activeBrands);
       } catch (error) {
         console.error("Failed to fetch popular brands:", error);
@@ -263,7 +260,6 @@ const NewTractors = () => {
     setIsSubmitting(true);
 
     setTimeout(() => {
-      console.log("Enquiry submitted:", formData);
       setIsSubmitting(false);
       setSubmitted(true);
 
@@ -575,81 +571,93 @@ const NewTractors = () => {
     }, 3000);
   };
 
-  const TractorCard = ({ tractor }) => (
-    <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col flex-shrink-0 w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]">
-      {/* Clickable Image */}
-      <Link
-        to={`/tractor/${tractor.id}`}
-        className="relative h-40 sm:h-44 overflow-hidden bg-gray-100 block"
-      >
-        <img
-          src={tractor.image}
-          alt={tractor.name}
-          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-        />
-        <div className="absolute top-2 left-2">
-          <span className="bg-green-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-            New
-          </span>
-        </div>
-        <button
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            // Add wishlist logic here
-          }}
-          className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow hover:bg-gray-100 cursor-pointer"
-        >
-          <Heart className="h-3.5 w-3.5 text-gray-500 hover:text-green-600" />
-        </button>
-      </Link>
+  const TractorCard = ({ tractor }) => {
+    const wishlisted = isInWishlist(tractor.id);
 
-      <div className="p-3 flex flex-col flex-1">
-        <div className="flex items-center justify-between mb-1">
-          {/* Clickable Brand Name */}
-          <Link
-            to={`/tractor/${tractor.id}`}
-            className="text-xs font-semibold text-green-600 hover:text-green-700 transition-colors"
-          >
-            {tractor.brand}
-          </Link>
-          <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-            <MapPin className="h-3 w-3 flex-shrink-0" />
-            <span className="truncate">{tractor.location}</span>
-          </div>
-        </div>
-        <div className="flex items-center justify-between mb-1">
-          {/* Clickable Product Name */}
-          <Link
-            to={`/tractor/${tractor.id}`}
-            className="text-sm font-bold text-gray-900 mb-2 line-clamp-1 hover:text-green-600 transition-colors"
-          >
-            {tractor.name}
-          </Link>
-          <div className="flex items-center gap-1">
-            <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
-            <span className="text-xs font-semibold text-gray-700">
-              {tractor.rating}
+    return (
+      <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col flex-shrink-0 w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]">
+        {/* Clickable Image */}
+        <Link
+          to={`/tractor/${tractor.id}`}
+          className="relative h-40 sm:h-44 overflow-hidden bg-gray-100 block"
+        >
+          <img
+            src={tractor.image}
+            alt={tractor.name}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          />
+          <div className="absolute top-2 left-2">
+            <span className="bg-green-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
+              New
             </span>
           </div>
-        </div>
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              if (!isAuthenticated) {
+                navigate(`/login?redirect=${location.pathname}`);
+                return;
+              }
+              toggleWishlist(tractor);
+            }}
+            className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow hover:bg-gray-100 cursor-pointer"
+          >
+            <Heart
+              className={`h-3.5 w-3.5 transition-colors ${
+                wishlisted
+                  ? "text-green-600 fill-green-600"
+                  : "text-gray-500 hover:text-green-600"
+              }`}
+            />
+          </button>
+        </Link>
 
-        <div className="mt-auto pt-2 border-t">
-          <div className="flex items-center justify-between">
-            <p className="text-sm font-black text-gray-900">
-              ₹{tractor.price.toLocaleString()}
-            </p>
+        <div className="p-3 flex flex-col flex-1">
+          <div className="flex items-center justify-between mb-1">
             <Link
               to={`/tractor/${tractor.id}`}
-              className="bg-green-700 hover:bg-green-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
+              className="text-xs font-semibold text-green-600 hover:text-green-700 transition-colors"
             >
-              Details
+              {tractor.brand}
             </Link>
+            <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+              <MapPin className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">{tractor.location}</span>
+            </div>
+          </div>
+          <div className="flex items-center justify-between mb-1">
+            <Link
+              to={`/tractor/${tractor.id}`}
+              className="text-sm font-bold text-gray-900 mb-2 line-clamp-1 hover:text-green-600 transition-colors"
+            >
+              {tractor.name}
+            </Link>
+            <div className="flex items-center gap-1">
+              <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
+              <span className="text-xs font-semibold text-gray-700">
+                {tractor.rating}
+              </span>
+            </div>
+          </div>
+
+          <div className="mt-auto pt-2 border-t">
+            <div className="flex items-center justify-between">
+              <p className="text-sm font-black text-gray-900">
+                ₹{tractor.price.toLocaleString()}
+              </p>
+              <Link
+                to={`/tractor/${tractor.id}`}
+                className="bg-green-700 hover:bg-green-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
+              >
+                Details
+              </Link>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
   const SliderSection = ({
     title,
     subtitle,
@@ -1522,7 +1530,6 @@ const NewTractors = () => {
         </div>
       </div>
 
-
       {/* --- POPULAR COMPARISON HANDPICKS --- */}
       <div className="border-t border-gray-200 w-full">
         <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-16 md:pt-20 lg:pt-24 mx-auto">
@@ -1846,7 +1853,6 @@ const NewTractors = () => {
                     </div>
 
                     {/* Tractor Type */}
-
                     {/* Tractor Type Radio - Headless UI */}
                     <div>
                       <label className="block text-xs font-semibold text-gray-700 mb-1.5">

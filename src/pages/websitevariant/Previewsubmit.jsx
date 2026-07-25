@@ -460,7 +460,7 @@ const loadData = async () => {
             <Button 
               type="button" 
               variant="outlined" 
-              className="min-w-[7rem] order-2 sm:order-1"
+              className="min-w-[7rem] order-2 sm:order-1 cursor-pointer"
               onClick={handlePrevious}
             >
               <ChevronLeft className="h-4 w-4" />
@@ -470,7 +470,7 @@ const loadData = async () => {
               <Button 
                 type="button" 
                 variant="outlined" 
-                className="min-w-[7rem]"
+                className="min-w-[7rem] cursor-pointer"
                 onClick={() => navigate(-1)}
               >
                 Cancel
@@ -478,7 +478,7 @@ const loadData = async () => {
               <Button 
                 type="button" 
                 variant="outlined" 
-                className="min-w-[7rem]"
+                className="min-w-[7rem] cursor-pointer"
                 onClick={handleSaveDraft}
               >
                 <Save className="h-4 w-4" />
@@ -486,7 +486,7 @@ const loadData = async () => {
               </Button>
               <Button 
                 type="button" 
-                className="min-w-[7rem]"
+                className="min-w-[7rem] cursor-pointer"
                 disabled={!agreed || loading}
                 onClick={handleSubmit}
               >

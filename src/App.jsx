@@ -37,8 +37,15 @@ import VendorProfile from "./pages/VendorProfile";
 import VendorLogin from "./pages/VendorLogin";
 import WebsiteVariant from "./pages/websitevariant/index.jsx";
 import VendorFollowup from "./pages/Vendorfollowup.jsx";
+import { useEffect } from "react";
+import { requestNotificationPermission } from "./firebase-messaging";
 
 function App() {
+
+  useEffect(() => {
+    requestNotificationPermission();
+  }, []);
+
   return (
     <Router>
       <AuthProvider>

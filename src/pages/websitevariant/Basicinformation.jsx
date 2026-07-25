@@ -1189,7 +1189,7 @@ export default function BasicInformation({
               <Button
                 type="button"
                 variant="outlined"
-                className="min-w-[7rem] order-2 sm:order-1"
+                className="min-w-[7rem] order-2 sm:order-1 cursor-pointer"
                 onClick={() => navigate(-1)}
               >
                 Cancel
@@ -1198,7 +1198,7 @@ export default function BasicInformation({
                 <Button
                   type="button"
                   variant="outlined"
-                  className="min-w-[7rem]"
+                  className="min-w-[7rem] cursor-pointer"
                   onClick={() => {
                     if (step > 1) {
                       if (setCurrentStep) {
@@ -1211,7 +1211,7 @@ export default function BasicInformation({
                 >
                   Previous
                 </Button>
-                <Button type="submit" className="min-w-[7rem]">
+                <Button type="submit" className="min-w-[7rem] cursor-pointer">
                   Save &amp; Next
                 </Button>
               </div>
