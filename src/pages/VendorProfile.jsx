@@ -419,8 +419,6 @@ const VendorProfile = () => {
       const res = await apiHelper.get(
         "/vendor-web/website-enquiry-followup/today",
       );
-
-      console.log("Today Followup Response:", res);
       setTodayFollowups(res.data || []);
     } catch (err) {
       console.log(err);
@@ -660,7 +658,7 @@ const VendorProfile = () => {
               ))}
               <button
                 onClick={handleVendorLogout}
-                className="w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
+                className="w-full flex items-center cursor-pointer gap-3 px-5 py-3.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
               >
                 <LogOut className="h-4 w-4" />
                 Sign Out
@@ -709,7 +707,7 @@ const VendorProfile = () => {
                         if (isEditing) handleSave();
                         else setIsEditing(true);
                       }}
-                      className={`flex items-center whitespace-nowrap gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                      className={`flex items-center cursor-pointer whitespace-nowrap gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
                         isEditing
                           ? "bg-green-600 text-white hover:bg-green-700 shadow-md"
                           : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -926,14 +924,14 @@ const VendorProfile = () => {
                     <div className="mt-6 pt-6 border-t border-gray-100 flex gap-3">
                       <button
                         onClick={handleSave}
-                        className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-sm shadow-md"
+                        className="bg-green-600 hover:bg-green-700 text-white cursor-pointer font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-sm shadow-md"
                       >
                         <Save className="h-4 w-4" />
                         Save Changes
                       </button>
                       <button
                         onClick={handleCancel}
-                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-sm"
+                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 cursor-pointer font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-sm"
                       >
                         <X className="h-4 w-4" />
                         Cancel
@@ -961,7 +959,7 @@ const VendorProfile = () => {
                       if (isEditing) handleSave();
                       else setIsEditing(true);
                     }}
-                    className={`flex items-center whitespace-nowrap gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                    className={`flex items-center whitespace-nowrap gap-2 px-5 py-2.5 cursor-pointer rounded-xl text-sm font-semibold transition-all ${
                       isEditing
                         ? "bg-green-600 text-white hover:bg-green-700 shadow-md"
                         : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -1100,14 +1098,14 @@ const VendorProfile = () => {
                   <div className="mt-6 pt-6 border-t border-gray-100 flex gap-3">
                     <button
                       onClick={handleSave}
-                      className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-sm shadow-md"
+                      className="bg-green-600 hover:bg-green-700 text-white cursor-pointer font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-sm shadow-md"
                     >
                       <Save className="h-4 w-4" />
                       Save Changes
                     </button>
                     <button
                       onClick={handleCancel}
-                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-sm"
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 cursor-pointer font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-sm"
                     >
                       <X className="h-4 w-4" />
                       Cancel
@@ -1133,7 +1131,7 @@ const VendorProfile = () => {
 
                   <button
                     onClick={() => navigate("/vendor/add-product")}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold"
+                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white cursor-pointer px-5 py-2.5 rounded-xl text-sm font-semibold"
                   >
                     <Plus className="h-4 w-4" />
                     Add Product
@@ -1191,13 +1189,13 @@ const VendorProfile = () => {
                                   onClick={() =>
                                     navigate(`/vendor/edit-product/${item.id}`)
                                   }
-                                  className="px-3 py-1 bg-blue-500 text-white rounded-lg"
+                                  className="px-3 py-1 bg-blue-500 text-white rounded-lg cursor-pointer"
                                 >
                                   Edit
                                 </button>
                                 <button
                                   onClick={() => handleDelete(item.id)}
-                                  className="px-3 py-1 bg-red-500 text-white rounded-lg"
+                                  className="px-3 py-1 bg-red-500 text-white rounded-lg cursor-pointer"
                                 >
                                   Delete
                                 </button>

@@ -215,7 +215,6 @@ export default function TractorCompare() {
 
     const res = await apiHelper.get(`/compare-tractor/variant/${variantId}`);
 
-    console.log("API Response:", res.data);
 
     updated[index].details = res.data;
 

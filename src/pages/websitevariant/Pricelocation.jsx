@@ -886,7 +886,7 @@ const {
               <Button
                 type="button"
                 variant="outlined"
-                className="min-w-[7rem] order-2 sm:order-1"
+                className="min-w-[7rem] order-2 sm:order-1 cursor-pointer"
                 onClick={handlePrevious}
               >
                 Previous
@@ -895,12 +895,12 @@ const {
                 <Button
                   type="button"
                   variant="outlined"
-                  className="min-w-[7rem]"
+                  className="min-w-[7rem] cursor-pointer"
                   onClick={() => navigate(-1)}
                 >
                   Cancel
                 </Button>
-                <Button type="submit" className="min-w-[7rem]">
+                <Button type="submit" className="min-w-[7rem] cursor-pointer">
                   Save &amp; Next
                 </Button>
               </div>

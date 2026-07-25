@@ -620,12 +620,12 @@ const {
                 <Button
                   type="button"
                   variant="outlined"
-                  className="min-w-[7rem]"
+                  className="min-w-[7rem] cursor-pointer"
                   onClick={() => navigate(-1)}
                 >
                   Cancel
                 </Button>
-                <Button type="submit" className="min-w-[7rem]">
+                <Button type="submit" className="min-w-[7rem] cursor-pointer">
                   Save &amp; Next
                 </Button>
               </div>

@@ -177,7 +177,6 @@ const HeroSection = () => {
       try {
         // Fetch ALL models (no filter)
         const response = await apiHelper.get("/model");
-        console.log("Models API Response:", response);
 
         let modelsData = [];
         if (response && response.data && Array.isArray(response.data)) {
@@ -282,24 +281,24 @@ const HeroSection = () => {
   }, []);
 
   // Handle search button click
-const handleSearch = () => {
-  // Check if brand is selected
-  if (!vehicle.make) {
-    // Show alert or toast message
-    alert("Please select a brand first");
-    return;
-  }
+  const handleSearch = () => {
+    // Check if brand is selected
+    if (!vehicle.make) {
+      // Show alert or toast message
+      alert("Please select a brand first");
+      return;
+    }
 
-  // Build query parameters
-  const params = new URLSearchParams();
+    // Build query parameters
+    const params = new URLSearchParams();
 
-  if (vehicle.make) params.append("brand", vehicle.make);
-  if (vehicle.model) params.append("model", vehicle.model);
-  if (vehicle.year) params.append("year", vehicle.year);
+    if (vehicle.make) params.append("brand", vehicle.make);
+    if (vehicle.model) params.append("model", vehicle.model);
+    if (vehicle.year) params.append("year", vehicle.year);
 
-  // Navigate to tractor list page with filters
-  navigate(`/tractors?${params.toString()}`);
-};
+    // Navigate to tractor list page with filters
+    navigate(`/tractors?${params.toString()}`);
+  };
 
   return (
     <section

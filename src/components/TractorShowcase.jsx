@@ -1,5 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useWishlist } from "../context/WishlistContext";
+import { useAuth } from "../context/AuthContext";
 import {
   Tractor,
   Heart,
@@ -30,11 +32,13 @@ const TractorShowcase = () => {
   const [cardsToShow, setCardsToShow] = useState(4);
   const [newTractors, setNewTractors] = useState([]);
   const [usedTractors, setUsedTractors] = useState([]);
-  const [wishlist, setWishlist] = useState({});
   const [isTransitioning, setIsTransitioning] = useState(false);
   const intervalRef = useRef(null);
   const newTimerRef = useRef(null);
   const usedTimerRef = useRef(null);
+  const navigate = useNavigate();
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { isAuthenticated } = useAuth();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -263,10 +267,14 @@ const TractorShowcase = () => {
     fetchTrendingComparisons();
   }, []);
 
-  const toggleWishlist = (id, e) => {
+  const handleWishlistClick = (tractor, e) => {
     e.preventDefault();
     e.stopPropagation();
-    setWishlist((prev) => ({ ...prev, [id]: !prev[id] }));
+    if (!isAuthenticated) {
+      navigate("/login?redirect=/");
+      return;
+    }
+    toggleWishlist(tractor);
   };
 
   // Detect screen size for responsive cards
@@ -378,12 +386,12 @@ const TractorShowcase = () => {
         {/* Wishlist */}
         <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
           <button
-            onClick={(e) => toggleWishlist(tractor.id, e)}
+            onClick={(e) => handleWishlistClick(tractor, e)}
             className="p-1 sm:p-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white transition-all"
           >
             <Heart
               className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors ${
-                wishlist[tractor.id]
+                isInWishlist(tractor.id)
                   ? "fill-green-500 text-green-500"
                   : "text-gray-600 hover:text-green-500"
               }`}
