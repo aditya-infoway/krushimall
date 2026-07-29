@@ -754,6 +754,8 @@ export default function BasicInformation({
     }
   };
 
+  
+
   return (
     <div className="min-h-screen bg-gray-50 py-8 md:py-12 lg:py-16">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
