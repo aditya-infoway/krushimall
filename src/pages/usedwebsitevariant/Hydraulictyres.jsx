@@ -1028,7 +1028,7 @@ export default function HydraulicTyres({
       };
 
       await apiHelper.put(
-        `/vendor-web/website-variant/${productId}/save-step`,
+        `/vendor-web/used-website-variant/${productId}/save-step`,
         payload,
       );
 

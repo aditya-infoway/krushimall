@@ -22,6 +22,7 @@ import CategoryPage from "./pages/CategoryPage";
 import SubCategoryPage from "./pages/SubCategoryPage";
 import TractorCompare from "./pages/TractorCompare";
 import TractorDetail from "./pages/TractorDetail";
+import UsedTractorDetails from "./pages/usedTractorDetail.jsx";
 import NewTractors from "./pages/NewTractors";
 import OldTractors from "./pages/OldTractors";
 import Orders from "./pages/Orders";
@@ -72,6 +73,10 @@ function App() {
                   <Route path="/products" element={<Products />} />
                   <Route path="/product/:id" element={<ProductDetail />} />
                   <Route path="/tractor/:id" element={<TractorDetail />} />
+                  <Route
+  path="/used-tractor/:id"
+  element={<UsedTractorDetails />}
+/>
                   <Route path="/contact" element={<Contact />} />
                   <Route path="service" element={<Service />} />
                   <Route path="booking" element={<BookingService />} />

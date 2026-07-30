@@ -10,31 +10,29 @@ import AddProductStepper from "./AddProductStepper"; // Import the stepper
 import { useParams } from "react-router-dom";
 import apiHelper from "../../utils/apiHelper";
 
-
-
 const WebsiteVariant = () => {
   const { id } = useParams();
 
-const isEdit = !!id;
+  const isEdit = !!id;
   const [step, setStep] = useState(0);
   const [completedSteps, setCompletedSteps] = useState([]);
   const [productData, setProductData] = useState(null);
 
-useEffect(() => {
-  if (!id) return;
+  useEffect(() => {
+    if (!id) return;
 
-  const loadProduct = async () => {
-    try {
-      const res = await apiHelper.get(`/vendor-web/website-variant/${id}`);
+    const loadProduct = async () => {
+      try {
+        const res = await apiHelper.get(`/vendor-web/used-website-variant/${id}`);
 
-      setProductData(res.data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+        setProductData(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
 
-  loadProduct();
-}, [id]);
+    loadProduct();
+  }, [id]);
 
   // Handle step navigation with validation
   const handleStepChange = (newStep) => {
@@ -67,14 +65,14 @@ useEffect(() => {
     );
   };
 
-const commonProps = {
+  const commonProps = {
     step,
     completedSteps,
     setCurrentStep: handleStepChange,
     onComplete: markStepCompleted,
     productData,
     isEdit,
-};
+  };
 
   return (
     <AddProductStepper
@@ -84,8 +82,9 @@ const commonProps = {
     >
       {step === 0 && <BasicInformation {...commonProps} />}
       {step === 1 && <EngineDetails {...commonProps} />}
-      {step === 2 && <Transmission {...commonProps} />}
-      {step === 3 && <HydraulicTyres {...commonProps} />}
+
+      {step === 2 && <HydraulicTyres {...commonProps} />}
+      {step === 3 && <Transmission {...commonProps} />}
       {step === 4 && <PriceLocation {...commonProps} />}
       {step === 5 && <MediaDocument {...commonProps} />}
       {step === 6 && <PreviewSubmit {...commonProps} />}

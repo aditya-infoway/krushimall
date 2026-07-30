@@ -92,23 +92,22 @@ const apiHelper = {
 
   // Image URL Helper
   image: (path) => {
-    if (!path) return "/mah.png";
+  if (!path) return "/mah.png";
 
-    if (path.startsWith("http")) {
-      return path;
-    }
+  if (path.startsWith("http")) {
+    return path;
+  }
 
-    if (path.startsWith("/uploads/")) {
-      return `${BASE_URL}${path}`;
-    }
+  // Remove leading slash if present
+  path = path.replace(/^\/+/, "");
 
-    if (path.startsWith("/")) {
-      return `${BASE_URL}${path}`;
-    }
+  // If path already starts with uploads/, don't add it again
+  if (path.startsWith("uploads/")) {
+    return `${BASE_URL}/${path}`;
+  }
 
-    return `${BASE_URL}/uploads/${path}`;
-  },
-
+  return `${BASE_URL}/uploads/${path}`;
+},
   getImageUrl(path) {
     return this.image(path);
   },

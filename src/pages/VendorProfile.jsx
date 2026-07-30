@@ -343,23 +343,47 @@ const VendorProfile = () => {
       setLoadingProducts(false);
     }
   };
+const loadUsedProducts = async () => {
+  try {
+    setLoadingProducts(true);
 
-  useEffect(() => {
-    loadVendorData();
+    const res = await apiHelper.get("/vendor-web/used-website-variant");
+
+    setProducts(res.data || []);
+  } catch (err) {
+    console.log(err);
+    showErrorToast("Unable to load used products");
+  } finally {
+    setLoadingProducts(false);
+  }
+};
+ useEffect(() => {
+  loadVendorData();
+
+  if (vendorData.vehicleType === "used") {
+    loadUsedProducts();
+  } else {
     loadProducts();
-  }, [user]);
+  }
+}, [user, vendorData.vehicleType]);;
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Delete this product?")) return;
+const handleDelete = async (id) => {
+  if (!window.confirm("Delete this product?")) return;
 
-    try {
+  try {
+    if (vendorData.vehicleType === "used") {
+      await apiHelper.delete(`/vendor-web/used-website-variant/${id}`);
+      loadUsedProducts();
+    } else {
       await apiHelper.delete(`/vendor-web/website-variant/${id}`);
-      showSuccessToast("Product deleted");
       loadProducts();
-    } catch (err) {
-      showErrorToast("Unable to delete");
     }
-  };
+
+    showSuccessToast("Product deleted");
+  } catch (err) {
+    showErrorToast("Unable to delete");
+  }
+};
 
   // Vendor Stats
   const vendorStats = [
@@ -1332,10 +1356,10 @@ const VendorProfile = () => {
                             </td>
                             <td className="px-4 py-3">{item.productName}</td>
                             <td className="px-4 py-3">
-                              {item.brand?.brandName}
+                              {item.brand}
                             </td>
                             <td className="px-4 py-3">
-                              ₹ {item.exShowroomPrice}
+                              ₹ {item.expectedPrice}
                             </td>
                             <td className="px-4 py-3">{item.status}</td>
                             <td className="px-4 py-3">
