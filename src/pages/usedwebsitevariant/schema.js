@@ -4,54 +4,57 @@ import * as Yup from "yup";
 
 dayjs.extend(isBetween);
 
-export const BasicInformationSchema = Yup.object().shape({
+
+
+export const BasicInformationSchema = Yup.object({
   // Product Classification
-  categoryId: Yup.number().nullable().required("Category is required"),
-  brandId: Yup.number().nullable().required("Brand is required"),
-  modelId: Yup.number().nullable().required("Model is required"),
-  modelYearId: Yup.number().nullable().required("Model Year is required"),
+  categoryId: Yup.number().required("Category is required"),
+  brandId: Yup.number().required("Brand is required"),
+  modelId: Yup.number().required("Model is required"),
+  modelYearId: Yup.number().required("Model Year is required"),
   variantId: Yup.number().nullable(),
-  variantCode: Yup.string(),
-  
+  variantCode: Yup.string().nullable(),
+
   // Tractor Details
-  variant: Yup.string(),
-  hp: Yup.number().typeError("HP must be a number").nullable(),
-  manufacturingYear: Yup
-    .number()
+  hp: Yup.number()
+    .transform((v, o) => (o === "" ? null : v))
+    .nullable()
+    .typeError("HP must be a number"),
+
+  manufacturingYear: Yup.number()
+    .transform((v, o) => (o === "" ? undefined : v))
     .typeError("Manufacturing Year must be a number")
     .required("Manufacturing Year is required")
-    .min(1900, "Manufacturing Year must be at least 1900")
-    .max(new Date().getFullYear(), "Manufacturing Year cannot be in the future"),
-  purchaseYear: Yup
-    .number()
-    .typeError("Purchase Year must be a number")
+    .min(1900)
+    .max(new Date().getFullYear()),
+
+  purchaseYear: Yup.number()
+    .transform((v, o) => (o === "" ? null : v))
     .nullable()
-    .min(1900, "Purchase Year must be at least 1900")
-    .max(new Date().getFullYear(), "Purchase Year cannot be in the future"),
-  rcRegistrationNumber: Yup
-    .string()
-    .required("RC Registration Number is required")
-    .matches(/^[A-Z0-9-]+$/, "Invalid RC Registration Number format"),
-  engineNumber: Yup
-    .string()
-    .required("Engine Number is required")
-    .matches(/^[A-Z0-9]+$/, "Invalid Engine Number format"),
-  chassisNumber: Yup
-    .string()
-    .required("Chassis Number is required")
-    .matches(/^[A-Z0-9]+$/, "Invalid Chassis Number format"),
-  tractorCategory: Yup
-    .string()
-    .oneOf(['compact', 'utility', 'row_crop', 'orchard', 'industrial'], "Invalid tractor category"),
-  fuelType: Yup
-    .string()
-    .oneOf(['diesel', 'petrol', 'electric', 'cng'], "Invalid fuel type"),
-  driveType: Yup
-    .string()
-    .oneOf(['2wd', '4wd'], "Invalid drive type"),
+    .typeError("Purchase Year must be a number")
+    .min(1900)
+    .max(new Date().getFullYear()),
+
+  rcRegistrationNumber: Yup.string()
+    .trim()
+    .required("RC Registration Number is required"),
+
+  engineNumber: Yup.string()
+    .trim()
+    .required("Engine Number is required"),
+
+  chassisNumber: Yup.string()
+    .trim()
+    .required("Chassis Number is required"),
+
   
-  // Colors (as checkboxes)
-  colors: Yup.object().shape({
+
+  fuelType: Yup.string().required("Fuel Type is required"),
+
+  driveType: Yup.string().required("Drive Type is required"),
+
+  // Colors
+  colors: Yup.object({
     red: Yup.boolean(),
     blue: Yup.boolean(),
     green: Yup.boolean(),
@@ -60,163 +63,256 @@ export const BasicInformationSchema = Yup.object().shape({
     white: Yup.boolean(),
     custom: Yup.boolean(),
   }),
+
   customColorName: Yup.string().when("colors.custom", {
     is: true,
-    then: () => Yup.string().required("Custom color name is required"),
-    otherwise: () => Yup.string().nullable(),
+    then: (schema) => schema.required("Custom Color Name is required"),
+    otherwise: (schema) => schema.nullable(),
   }),
+
   customColorCode: Yup.string().when("colors.custom", {
     is: true,
-    then: () => Yup.string().required("Custom color code is required"),
-    otherwise: () => Yup.string().nullable(),
+    then: (schema) => schema.required("Custom Color Code is required"),
+    otherwise: (schema) => schema.nullable(),
   }),
+
   showCustomColor: Yup.boolean(),
-  
+
   // Location
   country: Yup.string().required("Country is required"),
-  availableStates: Yup.array().min(1, "At least one state is required"),
-  availableDistricts: Yup.array().min(1, "At least one district is required"),
-  locationTaluka: Yup.string().nullable(),
-  locationVillage: Yup.string().nullable(),
-  
+
+  availableStates: Yup.array()
+    .min(1, "Select at least one state")
+    .required(),
+
+  availableDistricts: Yup.array()
+    .min(1, "Select at least one district")
+    .required(),
+
+  taluka: Yup.string().nullable(),
+
+  city: Yup.string().nullable(),
+
   // Ownership
-  ownership: Yup
-    .string()
-    .oneOf(['first_owner', 'second_owner', 'third_owner'], "Invalid ownership type"),
-  ownerType: Yup
-    .string()
-    .oneOf(['first_owner', 'second_owner', 'third_owner'], "Invalid owner type"),
-  firstOwner: Yup.string().nullable(),
-  secondOwner: Yup.string().nullable(),
-  thirdOwner: Yup.string().nullable(),
-  sellerType: Yup
-    .string()
-    .oneOf(['farmer', 'dealer', 'individual'], "Invalid seller type"),
+  ownerType: Yup.string().required("Owner Type is required"),
+
+  sellerType: Yup.string().required("Seller Type is required"),
+
   ownershipProofAvailable: Yup.boolean().nullable(),
-  
+
   // Usage
-  hoursMeterReading: Yup
-    .number()
-    .typeError('Hours Meter Reading must be a number')
-    .required('Hours Meter Reading is required')
-    .min(0, 'Hours Meter Reading cannot be negative'),
-  approxWorkingHours: Yup
-    .number()
-    .typeError('Approx Working Hours must be a number')
+  hoursMeterReading: Yup.number()
+    .transform((v, o) => (o === "" ? undefined : v))
+    .typeError("Hours Meter Reading must be a number")
+    .required("Hours Meter Reading is required")
+    .min(0),
+
+  approxWorkingHours: Yup.number()
+    .transform((v, o) => (o === "" ? null : v))
     .nullable()
-    .min(0, 'Approx Working Hours cannot be negative'),
-  acresWorked: Yup
-    .number()
-    .typeError('Acres Worked must be a number')
+    .typeError("Approx Working Hours must be a number")
+    .min(0),
+
+  acresWorked: Yup.number()
+    .transform((v, o) => (o === "" ? null : v))
     .nullable()
-    .min(0, 'Acres Worked cannot be negative'),
-  purpose: Yup
-    .string()
-    .oneOf(['farming', 'commercial', 'rental'], "Invalid purpose"),
-  
+    .typeError("Acres Worked must be a number")
+    .min(0),
+
+  purpose: Yup.string().required("Purpose is required"),
+
   // Additional
-  availableDealers: Yup.array().min(1, "At least one dealer is required"),
-  stockStatus: Yup
-    .string()
-    .oneOf(['in_stock', 'out_of_stock', 'limited_stock', 'pre_order'], "Invalid stock status"),
+  availableDealers: Yup.array()
+    .min(1, "Select at least one dealer")
+    .required(),
+
+  stockStatus: Yup.string().required("Stock Status is required"),
 });
+
+
 
 export const EnginedetailsSchema = Yup.object().shape({
-  engineType: Yup.string().trim().required("Engine Type Required"),
-  fuelType: Yup.string().trim().required("Fuel Type Required"),
-  horsePower: Yup.number()
-    .typeError("Horse Power must be a number")
-    .positive("Horse Power must be positive")
-    .required("Horse Power Required"),
-  numberOfCylinders: Yup.string()
-    .trim()
-    .required("Number of Cylinders Required"),
-  cubicCapacity: Yup.number()
-    .typeError("Cubic Capacity must be a number")
-    .positive("Cubic Capacity must be positive")
-    .required("Cubic Capacity Required"),
-  ratedRpm: Yup.number()
-    .typeError("Rated RPM must be a number")
-    .positive("Rated RPM must be positive")
-    .required("Rated RPM Required"),
-  aspiratedType: Yup.string().trim().required("Aspirated Type Required"),
-  emissionNorms: Yup.string().trim().required("Emission Norms Required"),
-  coolingSystem: Yup.string().trim().required("Cooling System Required"),
-  airFilterType: Yup.string().trim().required("Air Filter Type Required"),
-  maximumTorque: Yup.number()
-    .typeError("Maximum Torque must be a number")
-    .nullable(),
-  torqueRpm: Yup.number().typeError("Torque RPM must be a number").nullable(),
-  torqueBackup: Yup.number()
-    .typeError("Torque Backup must be a number")
-    .nullable(),
-  engineCondition: Yup.string().trim().required("Engine Condition Required"),
+  // Engine Specifications
+  
+  // Vehicle Inspection
+  overallCondition: Yup.string().required("Overall Condition Required"),
+
+  engineSelfStart: Yup.string().required("Self Start Working Required"),
+
+  engineColdStart: Yup.string().required("Cold Start Required"),
+
+  engineSmoke: Yup.string().required("Smoke Required"),
+
+  engineSound: Yup.string().required("Engine Sound Required"),
+
+  engineOilLeakage: Yup.string().required("Oil Leakage Required"),
+
+  clutchCondition: Yup.string().required("Clutch Condition Required"),
+
+  gearboxCondition: Yup.string().required("Gearbox Condition Required"),
+
+  steeringType: Yup.string().required("Steering Type Required"),
+
+  steeringCondition: Yup.string().required("Steering Condition Required"),
+
+  brakesCondition: Yup.string().required("Brakes Condition Required"),
+
+  batteryCondition: Yup.string().required("Battery Condition Required"),
+
+  // Lights
+  lightsHeadLight: Yup.boolean(),
+
+  lightsIndicator: Yup.boolean(),
+
+  lightsTailLight: Yup.boolean(),
+
+  lightsHorn: Yup.boolean(),
 });
+
+
 
 export const TransmissionSchema = Yup.object().shape({
-  clutchType: Yup.string().trim().required("Clutch Type Required"),
-  forwardGears: Yup.number()
-    .typeError("Forward Gears must be a number")
-    .positive("Forward Gears must be positive")
-    .required("Forward Gears Required"),
-  reverseGears: Yup.number()
-    .typeError("Reverse Gears must be a number")
-    .positive("Reverse Gears must be positive")
-    .required("Reverse Gears Required"),
-  gearType: Yup.string().trim().required("Gear Type Required"),
-  transmissionType: Yup.string().trim().required("Transmission Type Required"),
-  ptoHp: Yup.number()
-    .typeError("PTO HP must be a number")
-    .positive("PTO HP must be positive")
-    .required("PTO HP Required"),
-  ptoRpm: Yup.number()
-    .typeError("PTO RPM must be a number")
-    .positive("PTO RPM must be positive")
-    .required("PTO RPM Required"),
-  ptoType: Yup.string().trim().required("PTO Type Required"),
-  ptoPosition: Yup.string().trim().required("PTO Position Required"),
-  features: Yup.object().shape({
-    creeperGears: Yup.boolean(),
-    shuttleShift: Yup.boolean(),
-    sideShiftGear: Yup.boolean(),
-    powerShuttle: Yup.boolean(),
-    hiLoGears: Yup.boolean(),
-    multiSpeedPto: Yup.boolean(),
-    reversePto: Yup.boolean(),
-    superReducer: Yup.boolean(),
+  // Service
+  lastServiceDate: Yup.date()
+    .nullable()
+    .required("Last Service Date is required"),
+
+  service: Yup.object().shape({
+    engineOverhauled: Yup.string().required(
+      "Please select Engine Overhauled"
+    ),
+
+    gearboxRepaired: Yup.string().required(
+      "Please select Gearbox Repaired"
+    ),
+
+    clutchChanged: Yup.string().required(
+      "Please select Clutch Changed"
+    ),
+
+    tyresChanged: Yup.string().required(
+      "Please select Tyres Changed"
+    ),
+
+    batteryChanged: Yup.string().required(
+      "Please select Battery Changed"
+    ),
   }),
+
+  // Accident
+  accident: Yup.string().required("Accident Status is required"),
+
+  // Flood
+  floodDamage: Yup.string().required("Please select Flood Damage"),
+
+  // Insurance
+  insurance: Yup.string().required("Insurance Status is required"),
+
+  insuranceExpiryDate: Yup.date()
+    .nullable()
+    .when("insurance", {
+      is: "active",
+      then: (schema) =>
+        schema.required("Insurance Expiry Date is required"),
+      otherwise: (schema) => schema.nullable(),
+    }),
+
+  // Finance
+  finance: Yup.string().required("Please select Loan Remaining"),
+
+  financeCompany: Yup.string().when("finance", {
+    is: "yes",
+    then: (schema) =>
+      schema.trim().required("Finance Company is required"),
+    otherwise: (schema) => schema.nullable(),
+  }),
+
+  outstandingAmount: Yup.number()
+    .transform((value, originalValue) =>
+      originalValue === "" ? null : value
+    )
+    .nullable()
+    .when("finance", {
+      is: "yes",
+      then: (schema) =>
+        schema
+          .required("Outstanding Amount is required")
+          .positive("Outstanding Amount must be positive"),
+      otherwise: (schema) => schema.nullable(),
+    }),
 });
+
 
 export const HydraulicTyresSchema = Yup.object().shape({
-  liftingCapacity: Yup.number()
-    .typeError("Lifting capacity must be a number")
-    .positive("Lifting capacity must be positive")
-    .required("Lifting Capacity Required"),
-  hydraulicType: Yup.string().trim(),
-  liftingCapacityAt610mm: Yup.string().nullable(),
-  controlType: Yup.string().trim(),
-  threePointLinkage: Yup.string().required("Please select linkage type"),
-  linkageCategory: Yup.string().required("Please select linkage category"),
-  topLink: Yup.string().required("Please select top link"),
-  draftSensitivity: Yup.string().required("Please select draft sensitivity"),
-  remoteValveType: Yup.string().trim(),
-  numberOfRemoteValves: Yup.string().trim(),
-  features: Yup.object().shape({
-    externalHydraulicCylinder: Yup.boolean(),
-    selfLevelling: Yup.boolean(),
-    quickHitch: Yup.boolean(),
-    downPositionControl: Yup.boolean(),
-    loadSensing: Yup.boolean(),
-    flowControl: Yup.boolean(),
-    returnToDepth: Yup.boolean(),
-    transportLock: Yup.boolean(),
+  // Front Tyre
+  frontTyreBrand: Yup.string()
+    .trim()
+    .required("Front Tyre Brand is required"),
+
+  frontTyreRemainingPercent: Yup.number()
+    .transform((value, originalValue) =>
+      originalValue === "" ? undefined : value
+    )
+    .typeError("Front Tyre Remaining % must be a number")
+    .required("Front Tyre Remaining % is required")
+    .min(0, "Minimum value is 0")
+    .max(100, "Maximum value is 100"),
+
+  frontTyreCondition: Yup.string()
+    .required("Front Tyre Condition is required"),
+
+  // Rear Tyre
+  rearTyreBrand: Yup.string()
+    .trim()
+    .required("Rear Tyre Brand is required"),
+
+  rearTyreRemainingPercent: Yup.number()
+    .transform((value, originalValue) =>
+      originalValue === "" ? undefined : value
+    )
+    .typeError("Rear Tyre Remaining % must be a number")
+    .required("Rear Tyre Remaining % is required")
+    .min(0, "Minimum value is 0")
+    .max(100, "Maximum value is 100"),
+
+  rearTyreCondition: Yup.string()
+    .required("Rear Tyre Condition is required"),
+
+  // Hydraulic
+  hydraulicLiftWorking: Yup.string()
+    .required("Please select Hydraulic Lift Working"),
+
+  hydraulicCondition: Yup.string()
+    .required("Please select Hydraulic Condition"),
+
+  // PTO
+  ptoStatus: Yup.string()
+    .required("Please select PTO Status"),
+
+  // Attachments
+  attachments: Yup.object().shape({
+    rotavator: Yup.boolean(),
+    cultivator: Yup.boolean(),
+    trailer: Yup.boolean(),
+    trolley: Yup.boolean(),
+    mbPlough: Yup.boolean(),
+    seedDrill: Yup.boolean(),
+    sprayer: Yup.boolean(),
+    dozer: Yup.boolean(),
+    loader: Yup.boolean(),
   }),
 });
 
+
+
 export const PriceLocationSchema = Yup.object().shape({
-  expectedprice: Yup.number()
+  // Pricing
+  expectedPrice: Yup.number()
+    .transform((value, originalValue) =>
+      originalValue === "" ? undefined : value
+    )
     .typeError("Expected Price must be a number")
-    .positive("Expected Price must be positive")
+    .positive("Expected Price must be greater than 0")
     .required("Expected Price is required"),
 
   negotiable: Yup.string()
@@ -230,9 +326,12 @@ export const PriceLocationSchema = Yup.object().shape({
   financeAvailable: Yup.string()
     .oneOf(["yes", "no"])
     .required("Finance Availability is required"),
-country: Yup.string()
+
+  // Location
+  country: Yup.string()
     .trim()
-    .required("country is required"),
+    .required("Country is required"),
+
   state: Yup.string()
     .trim()
     .required("State is required"),
@@ -241,25 +340,38 @@ country: Yup.string()
     .trim()
     .required("District is required"),
 
-  taluka: Yup.string().trim(),
+  taluka: Yup.string()
+    .trim()
+    .nullable(),
 
   city: Yup.string()
     .trim()
-    .required("Village / City is required"),
+    .required("City is required"),
 
   pincode: Yup.string()
+    .trim()
     .matches(/^[1-9][0-9]{5}$/, "Enter a valid pincode")
     .required("Pincode is required"),
 
-  landmark: Yup.string().trim(),
+  landmark: Yup.string()
+    .trim()
+    .nullable(),
 
   fullAddress: Yup.string()
     .trim()
     .required("Full Address is required"),
 
-  latitude: Yup.number().nullable(),
+  latitude: Yup.number()
+    .transform((value, originalValue) =>
+      originalValue === "" ? null : value
+    )
+    .nullable(),
 
-  longitude: Yup.number().nullable(),
+  longitude: Yup.number()
+    .transform((value, originalValue) =>
+      originalValue === "" ? null : value
+    )
+    .nullable(),
 });
 
 export const MediaDocumnetSchema = Yup.object().shape({
@@ -272,7 +384,7 @@ export const MediaDocumnetSchema = Yup.object().shape({
   tyreView: Yup.mixed().required("Tyre View image is required"),
   hydraulicView: Yup.mixed().required("Hydraulic View image is required"),
   ptoView: Yup.mixed().required("PTO View image is required"),
-  chassisNumber: Yup.mixed().required("Chassis Number image is required"),
+  chassisNumberImage: Yup.mixed().required("Chassis Number image is required"),
   rcBook: Yup.mixed().required("RC Book image is required"),
   additionalImage1: Yup.mixed().nullable(),
   additionalImage2: Yup.mixed().nullable(),

@@ -93,145 +93,211 @@ const TractorShowcase = () => {
     fetchData();
   }, []);
 
-  const allUsedTractors = [
-    {
-      id: 101,
-      name: "Mahindra 575 DI",
-      brand: "Mahindra",
-      price: "₹4,50,000",
-      originalPrice: "₹6,85,000",
-      hp: "45 HP",
-      year: "2021",
-      hours: "2,450 hrs",
-      location: "Meerut, UP",
-      image: "/mah.png",
-      rating: 4.3,
-      condition: "Excellent",
-      verified: true,
-      sellerType: "Individual",
-      warranty: "6 Months",
-    },
-    {
-      id: 102,
-      name: "Swaraj 855 FE",
-      brand: "Swaraj",
-      price: "₹5,20,000",
-      originalPrice: "₹8,25,000",
-      hp: "52 HP",
-      year: "2020",
-      hours: "3,120 hrs",
-      location: "Karnal, HR",
-      image: "/mah.png",
-      rating: 4.1,
-      condition: "Good",
-      verified: true,
-      sellerType: "Dealer",
-      warranty: "3 Months",
-    },
-    {
-      id: 103,
-      name: "John Deere 5050D",
-      brand: "John Deere",
-      price: "₹6,80,000",
-      originalPrice: "₹9,95,000",
-      hp: "50 HP",
-      year: "2022",
-      hours: "1,850 hrs",
-      location: "Ludhiana, PB",
-      image: "/mah.png",
-      rating: 4.5,
-      condition: "Like New",
-      verified: true,
-      sellerType: "Dealer",
-      warranty: "1 Year",
-    },
-    {
-      id: 104,
-      name: "Eicher 380",
-      brand: "Eicher",
-      price: "₹3,20,000",
-      originalPrice: "₹5,25,000",
-      hp: "40 HP",
-      year: "2019",
-      hours: "4,200 hrs",
-      location: "Indore, MP",
-      image: "/mah.png",
-      rating: 4.0,
-      condition: "Good",
-      verified: false,
-      sellerType: "Individual",
-      warranty: "No",
-    },
-    {
-      id: 105,
-      name: "TAFE MF 245",
-      brand: "TAFE",
-      price: "₹3,80,000",
-      originalPrice: "₹5,95,000",
-      hp: "42 HP",
-      year: "2020",
-      hours: "3,800 hrs",
-      location: "Coimbatore, TN",
-      image: "/mah.png",
-      rating: 4.2,
-      condition: "Good",
-      verified: true,
-      sellerType: "Dealer",
-      warranty: "3 Months",
-    },
-    {
-      id: 106,
-      name: "New Holland 3630",
-      brand: "New Holland",
-      price: "₹5,50,000",
-      originalPrice: "₹7,75,000",
-      hp: "50 HP",
-      year: "2021",
-      hours: "2,100 hrs",
-      location: "Varanasi, UP",
-      image: "/mah.png",
-      rating: 4.4,
-      condition: "Excellent",
-      verified: true,
-      sellerType: "Individual",
-      warranty: "6 Months",
-    },
-    {
-      id: 107,
-      name: "Sonalika 745 DI",
-      brand: "Sonalika",
-      price: "₹4,20,000",
-      originalPrice: "₹6,35,000",
-      hp: "50 HP",
-      year: "2021",
-      hours: "2,900 hrs",
-      location: "Patna, BR",
-      image: "/mah.png",
-      rating: 4.1,
-      condition: "Good",
-      verified: true,
-      sellerType: "Dealer",
-      warranty: "3 Months",
-    },
-    {
-      id: 108,
-      name: "Escorts Powertrac 439",
-      brand: "Escorts",
-      price: "₹3,60,000",
-      originalPrice: "₹5,45,000",
-      hp: "41 HP",
-      year: "2019",
-      hours: "3,600 hrs",
-      location: "Alwar, RJ",
-      image: "/mah.png",
-      rating: 3.9,
-      condition: "Fair",
-      verified: false,
-      sellerType: "Individual",
-      warranty: "No",
-    },
-  ];
+  // const allUsedTractors = [
+  //   {
+  //     id: 101,
+  //     name: "Mahindra 575 DI",
+  //     brand: "Mahindra",
+  //     price: "₹4,50,000",
+  //     originalPrice: "₹6,85,000",
+  //     hp: "45 HP",
+  //     year: "2021",
+  //     hours: "2,450 hrs",
+  //     location: "Meerut, UP",
+  //     image: "/mah.png",
+  //     rating: 4.3,
+  //     condition: "Excellent",
+  //     verified: true,
+  //     sellerType: "Individual",
+  //     warranty: "6 Months",
+  //   },
+  //   {
+  //     id: 102,
+  //     name: "Swaraj 855 FE",
+  //     brand: "Swaraj",
+  //     price: "₹5,20,000",
+  //     originalPrice: "₹8,25,000",
+  //     hp: "52 HP",
+  //     year: "2020",
+  //     hours: "3,120 hrs",
+  //     location: "Karnal, HR",
+  //     image: "/mah.png",
+  //     rating: 4.1,
+  //     condition: "Good",
+  //     verified: true,
+  //     sellerType: "Dealer",
+  //     warranty: "3 Months",
+  //   },
+  //   {
+  //     id: 103,
+  //     name: "John Deere 5050D",
+  //     brand: "John Deere",
+  //     price: "₹6,80,000",
+  //     originalPrice: "₹9,95,000",
+  //     hp: "50 HP",
+  //     year: "2022",
+  //     hours: "1,850 hrs",
+  //     location: "Ludhiana, PB",
+  //     image: "/mah.png",
+  //     rating: 4.5,
+  //     condition: "Like New",
+  //     verified: true,
+  //     sellerType: "Dealer",
+  //     warranty: "1 Year",
+  //   },
+  //   {
+  //     id: 104,
+  //     name: "Eicher 380",
+  //     brand: "Eicher",
+  //     price: "₹3,20,000",
+  //     originalPrice: "₹5,25,000",
+  //     hp: "40 HP",
+  //     year: "2019",
+  //     hours: "4,200 hrs",
+  //     location: "Indore, MP",
+  //     image: "/mah.png",
+  //     rating: 4.0,
+  //     condition: "Good",
+  //     verified: false,
+  //     sellerType: "Individual",
+  //     warranty: "No",
+  //   },
+  //   {
+  //     id: 105,
+  //     name: "TAFE MF 245",
+  //     brand: "TAFE",
+  //     price: "₹3,80,000",
+  //     originalPrice: "₹5,95,000",
+  //     hp: "42 HP",
+  //     year: "2020",
+  //     hours: "3,800 hrs",
+  //     location: "Coimbatore, TN",
+  //     image: "/mah.png",
+  //     rating: 4.2,
+  //     condition: "Good",
+  //     verified: true,
+  //     sellerType: "Dealer",
+  //     warranty: "3 Months",
+  //   },
+  //   {
+  //     id: 106,
+  //     name: "New Holland 3630",
+  //     brand: "New Holland",
+  //     price: "₹5,50,000",
+  //     originalPrice: "₹7,75,000",
+  //     hp: "50 HP",
+  //     year: "2021",
+  //     hours: "2,100 hrs",
+  //     location: "Varanasi, UP",
+  //     image: "/mah.png",
+  //     rating: 4.4,
+  //     condition: "Excellent",
+  //     verified: true,
+  //     sellerType: "Individual",
+  //     warranty: "6 Months",
+  //   },
+  //   {
+  //     id: 107,
+  //     name: "Sonalika 745 DI",
+  //     brand: "Sonalika",
+  //     price: "₹4,20,000",
+  //     originalPrice: "₹6,35,000",
+  //     hp: "50 HP",
+  //     year: "2021",
+  //     hours: "2,900 hrs",
+  //     location: "Patna, BR",
+  //     image: "/mah.png",
+  //     rating: 4.1,
+  //     condition: "Good",
+  //     verified: true,
+  //     sellerType: "Dealer",
+  //     warranty: "3 Months",
+  //   },
+  //   {
+  //     id: 108,
+  //     name: "Escorts Powertrac 439",
+  //     brand: "Escorts",
+  //     price: "₹3,60,000",
+  //     originalPrice: "₹5,45,000",
+  //     hp: "41 HP",
+  //     year: "2019",
+  //     hours: "3,600 hrs",
+  //     location: "Alwar, RJ",
+  //     image: "/mah.png",
+  //     rating: 3.9,
+  //     condition: "Fair",
+  //     verified: false,
+  //     sellerType: "Individual",
+  //     warranty: "No",
+  //   },
+  // ];
+useEffect(() => {
+  const fetchUsedTractors = async () => {
+    try {
+      const res = await apiHelper.get("/vendor-web/used-website-variant?status=ACTIVE");
 
+      const tractors = (res.data || []).map((item) => ({
+        id: item.id,
+        brand:
+          item.brandRef?.brandName ||
+          item.brand ||
+          "Unknown",
+
+        name:
+          `${item.brandRef?.brandName || item.brand || ""} ${
+            item.modelRef?.modelName || item.model || ""
+          }`.trim(),
+
+        price: item.expectedPrice
+          ? `₹${Number(item.expectedPrice).toLocaleString("en-IN")}`
+          : "₹0",
+
+        originalPrice: item.originalPrice
+          ? `₹${Number(item.originalPrice).toLocaleString("en-IN")}`
+          : null,
+
+        hp: item.hp ? `${item.hp} HP` : "",
+
+        year:
+          item.manufacturingYear ||
+          item.purchaseYear,
+
+        hours:
+          item.hoursMeterReading
+            ? `${item.hoursMeterReading} hrs`
+            : "",
+
+        location:
+          item.city ||
+          item.district ||
+          item.state ||
+          "Location",
+
+        image: item.frontView
+          ? apiHelper.image(item.frontView)
+          : "/mah.png",
+
+        condition:
+          item.overallCondition || "Good",
+
+        verified: true,
+
+        sellerType:
+          item.sellerType || "",
+
+        warranty:
+          item.warranty || "No",
+      }));
+
+      setUsedTractors(tractors);
+    } catch (err) {
+      console.error(err);
+      setUsedTractors([]);
+    }
+  };
+
+  fetchUsedTractors();
+}, []);
   const [comparisonPairs, setComparisonPairs] = useState([]);
   const [comparisonsLoading, setComparisonsLoading] = useState(true);
 
@@ -313,10 +379,10 @@ const TractorShowcase = () => {
             (prev) => (prev + 1) % Math.ceil(newTractors.length / cardsToShow),
           );
         }
-        if (allUsedTractors.length > cardsToShow) {
+        if (usedTractors.length > cardsToShow) {
           setUsedIndex(
             (prev) =>
-              (prev + 1) % Math.ceil(allUsedTractors.length / cardsToShow),
+              (prev + 1) % Math.ceil(usedTractors.length / cardsToShow),
           );
         }
       }
@@ -349,7 +415,11 @@ const TractorShowcase = () => {
 
   const TractorCard = ({ tractor, isUsed = false, className = "" }) => (
     <Link
-      to={`/tractor/${tractor.id}`}
+        to={
+      isUsed
+        ? `/used-tractor/${tractor.id}`
+        : `/tractor/${tractor.id}`
+    }
       className={`group bg-white rounded-2xl border-2 border-gray-200 hover:border-green-400 shadow-sm hover:shadow-2xl hover:shadow-green-100/50 transition-all duration-500 flex flex-col flex-shrink-0 hover:-translate-y-2 cursor-pointer h-full ${className}`}
     >
       {/* Image Section - Fixed height */}
@@ -683,7 +753,7 @@ const TractorShowcase = () => {
             title="Used Tractors"
             icon={TrendingUp}
             iconGradient="from-green-600 to-green-700"
-            tractors={allUsedTractors}
+            tractors={usedTractors}
             index={usedIndex}
             setIndex={setUsedIndex}
             isUsed={true}

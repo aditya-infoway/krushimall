@@ -268,13 +268,13 @@ export default function PriceLocation({
         if (!productId) return;
 
         const res = await apiHelper.get(
-          `/vendor-web/website-variant/${productId}`,
+          `/vendor-web/used-website-variant/${productId}`,
         );
 
         const data = res.data.data || res.data;
 
         reset({
-          expectedprice: data.expectedprice || "",
+          expectedPrice: data.expectedPrice || "",
 
           financeAvailable: data.financeAvailable || "",
 
@@ -318,7 +318,7 @@ export default function PriceLocation({
       }
 
       const payload = {
-        expectedprice: data.expectedprice ? Number(data.expectedprice) : null,
+        expectedPrice: data.expectedPrice ? Number(data.expectedPrice) : null,
 
         financeAvailable: data.financeAvailable,
 
@@ -339,7 +339,7 @@ export default function PriceLocation({
       };
 
       await apiHelper.put(
-        `/vendor-web/website-variant/${productId}/save-step`,
+        `/vendor-web/used-website-variant/${productId}/save-step`,
         payload,
       );
 
@@ -401,10 +401,10 @@ export default function PriceLocation({
                     </label>
                     <div className="relative">
                       <Input
-                        {...register("expectedprice")}
+                        {...register("expectedPrice")}
                         type="number"
                         placeholder="Enter price"
-                        error={errors?.expectedprice?.message}
+                        error={errors?.expectedPrice?.message}
                       />
                     </div>
                   </div>
