@@ -46,6 +46,12 @@ function PreviewRow({ label, value }) {
   );
 }
 
+const yesNo = (val) => {
+  if (val === true) return "Yes";
+  if (val === false) return "No";
+  return val || "-";
+};
+
 export default function PreviewSubmit({ 
   setCurrentStep, 
   setFinished,
@@ -79,7 +85,7 @@ const loadData = async () => {
 
     if (!id) return;
 
-    const res = await apiHelper.get(`/vendor-web/website-variant/${id}`);
+    const res = await apiHelper.get(`/vendor-web/used-website-variant/${id}`);
     setTractorData(res.data);
   } catch (error) {
     console.error(error);
@@ -114,6 +120,19 @@ const loadData = async () => {
 
   const selectedImage = images[selectedIndex];
 
+  // Attachments summary (boolean flags on the schema)
+  const attachmentLabels = [
+    { key: "rotavator", label: "Rotavator" },
+    { key: "cultivator", label: "Cultivator" },
+    { key: "trailer", label: "Trailer" },
+    { key: "trolley", label: "Trolley" },
+    { key: "mbPlough", label: "MB Plough" },
+    { key: "seedDrill", label: "Seed Drill" },
+    { key: "sprayer", label: "Sprayer" },
+    { key: "dozer", label: "Dozer" },
+    { key: "loader", label: "Loader" },
+  ].filter((item) => tractorData?.[item.key]);
+
   const handleSubmit = async () => {
   try {
     setLoading(true);
@@ -128,7 +147,7 @@ const loadData = async () => {
     }
 
     await apiHelper.put(
-      `/vendor-web/website-variant/${productId}/submit`,
+      `/vendor-web/used-website-variant/${productId}/submit`,
       { agreed }
     );
 
@@ -220,33 +239,36 @@ const loadData = async () => {
 
                 <div className="lg:col-span-5">
                   <div className="flex items-center gap-3 flex-wrap">
-                    <h2 className="text-2xl font-bold text-gray-900">{tractorData?.productName || "-"}</h2>
-                    <span className="rounded-full bg-green-50 px-3 py-1 text-xs font-medium text-green-700 border border-green-200">
-                      New Tractor
+                    <h2 className="text-2xl font-bold text-gray-900">
+                      {tractorData?.brandRef?.brandName || tractorData?.brand || "-"}{" "}
+                      {tractorData?.modelRef?.modelName || tractorData?.model || ""}
+                    </h2>
+                    <span className="rounded-full bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 border border-amber-200">
+                      Used Tractor
                     </span>
                   </div>
 
                   <div className="mt-4 flex flex-wrap gap-5 text-sm">
                     <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full">
                       <Gauge className="h-4 w-4 text-gray-500" />
-                      <span className="text-gray-700">{tractorData?.horsePower} HP</span>
+                      <span className="text-gray-700">{tractorData?.hp ? `${tractorData.hp} HP` : "-"}</span>
                     </div>
                     <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full">
                       <Fuel className="h-4 w-4 text-gray-500" />
-                      <span className="text-gray-700">{tractorData?.fuelType}</span>
+                      <span className="text-gray-700">{tractorData?.fuelType || "-"}</span>
                     </div>
                     <div className="flex items-center gap-1.5 bg-gray-50 px-3 py-1.5 rounded-full">
                       <CalendarDays className="h-4 w-4 text-gray-500" />
-                      <span className="text-gray-700">{tractorData?.modelYear?.modelYear}</span>
+                      <span className="text-gray-700">{tractorData?.manufacturingYear || "-"}</span>
                     </div>
                   </div>
 
                   <div className="mt-6 border-t border-gray-100 pt-4">
-                    <p className="text-xs font-medium uppercase tracking-wider text-gray-400">Ex-Showroom Price</p>
+                    <p className="text-xs font-medium uppercase tracking-wider text-gray-400">Expected Price</p>
                     <div className="flex items-center gap-2">
                       <DollarSign className="h-6 w-6 text-green-600" />
                       <h3 className="text-3xl font-bold text-green-600">
-                        ₹ {tractorData?.exShowroomPrice?.toLocaleString?.() ?? "-"}
+                        ₹ {tractorData?.expectedPrice?.toLocaleString?.() ?? "-"}
                       </h3>
                     </div>
                   </div>
@@ -285,66 +307,110 @@ const loadData = async () => {
             {/* Details Sections */}
             <div className="space-y-6">
               <PreviewSection title="Basic Information">
-                <PreviewRow label="Brand" value={tractorData?.brand?.brandName} />
                 <PreviewRow label="Category" value={tractorData?.category?.categoryName} />
-                <PreviewRow label="Model" value={tractorData?.model?.modelName} />
-                <PreviewRow
-                  label="Launch Year"
-                  value={tractorData?.launchYear ? new Date(tractorData.launchYear).toLocaleDateString("en-IN") : "-"}
-                />
-                <PreviewRow label="Variant" value={tractorData?.variant?.variantName} />
-                <PreviewRow label="Country of Origin" value={tractorData?.country || "India"} />
-                <PreviewRow label="Tractor Status" value={tractorData?.tractorStatus} />
+                <PreviewRow label="Brand" value={tractorData?.brandRef?.brandName || tractorData?.brand} />
+                <PreviewRow label="Model" value={tractorData?.modelRef?.modelName || tractorData?.model} />
+                <PreviewRow label="Variant" value={tractorData?.variantRef?.variantName || tractorData?.variant} />
+                <PreviewRow label="Model Year" value={tractorData?.modelYear?.modelYear} />
+                <PreviewRow label="Manufacturing Year" value={tractorData?.manufacturingYear} />
+                <PreviewRow label="Purchase Year" value={tractorData?.purchaseYear} />
+                <PreviewRow label="Tractor Category" value={tractorData?.tractorCategory} />
+                <PreviewRow label="Fuel Type" value={tractorData?.fuelType} />
+                <PreviewRow label="Drive Type" value={tractorData?.driveType} />
+                <PreviewRow label="HP" value={tractorData?.hp} />
+                <PreviewRow label="RC Registration Number" value={tractorData?.rcRegistrationNumber} />
+                <PreviewRow label="Engine Number" value={tractorData?.engineNumber} />
+                <PreviewRow label="Chassis Number" value={tractorData?.chassisNumber} />
                 <PreviewRow label="Stock Status" value={tractorData?.stockStatus} />
               </PreviewSection>
 
-              <PreviewSection title="Engine Details">
-                <PreviewRow label="Horse Power" value={`${tractorData?.horsePower || "-"} HP`} />
-                <PreviewRow label="Engine Type" value={tractorData?.engineType} />
-                <PreviewRow label="Fuel Type" value={tractorData?.fuelType} />
-                <PreviewRow label="No. Of Cylinders" value={tractorData?.numberOfCylinders} />
-                <PreviewRow label="Cubic Capacity" value={tractorData?.cubicCapacity} />
-                <PreviewRow label="Aspirated Type" value={tractorData?.aspiratedType} />
-                <PreviewRow label="Air Filter" value={tractorData?.airFilterType} />
-                <PreviewRow label="Cooling System" value={tractorData?.coolingSystem} />
-                <PreviewRow label="Torque RPM" value={tractorData?.torqueRpm} />
-                <PreviewRow label="Emission Norms" value={tractorData?.emissionNorms} />
-                <PreviewRow label="Engine Condition" value={tractorData?.engineCondition} />
+              <PreviewSection title="Ownership & Usage">
+                <PreviewRow label="Owner Type" value={tractorData?.ownerType} />
+                <PreviewRow label="Seller Type" value={tractorData?.sellerType} />
+                <PreviewRow label="Ownership Proof Available" value={yesNo(tractorData?.ownershipProofAvailable)} />
+                <PreviewRow label="Hours Meter Reading" value={tractorData?.hoursMeterReading} />
+                <PreviewRow label="Approx Working Hours" value={tractorData?.approxWorkingHours} />
+                <PreviewRow label="Acres Worked" value={tractorData?.acresWorked} />
+                <PreviewRow label="Purpose" value={tractorData?.purpose} />
               </PreviewSection>
 
-              <PreviewSection title="Transmission Details">
-                <PreviewRow label="Clutch Type" value={tractorData?.clutchType} />
-                <PreviewRow label="Forward Gears" value={tractorData?.forwardGears} />
-                <PreviewRow label="Reverse Gears" value={tractorData?.reverseGears} />
-                <PreviewRow label="Gear Type" value={tractorData?.gearType} />
-                <PreviewRow label="Transmission Type" value={tractorData?.transmissionType} />
-                <PreviewRow label="PTO HP" value={tractorData?.ptoHp} />
-                <PreviewRow label="PTO RPM" value={tractorData?.ptoRpm} />
-                <PreviewRow label="PTO Type" value={tractorData?.ptoType} />
-                <PreviewRow label="PTO Position" value={tractorData?.ptoPosition} />
+              <PreviewSection title="Vehicle Inspection">
+                <PreviewRow label="Overall Condition" value={tractorData?.overallCondition} />
+                <PreviewRow label="Engine Self Start" value={tractorData?.engineSelfStart} />
+                <PreviewRow label="Engine Cold Start" value={tractorData?.engineColdStart} />
+                <PreviewRow label="Engine Smoke" value={tractorData?.engineSmoke} />
+                <PreviewRow label="Engine Sound" value={tractorData?.engineSound} />
+                <PreviewRow label="Engine Oil Leakage" value={tractorData?.engineOilLeakage} />
+                <PreviewRow label="Clutch Condition" value={tractorData?.clutchCondition} />
+                <PreviewRow label="Gearbox Condition" value={tractorData?.gearboxCondition} />
+                <PreviewRow label="Steering Type" value={tractorData?.steeringType} />
+                <PreviewRow label="Steering Condition" value={tractorData?.steeringCondition} />
+                <PreviewRow label="Brakes Condition" value={tractorData?.brakesCondition} />
+                <PreviewRow label="Battery Condition" value={tractorData?.batteryCondition} />
               </PreviewSection>
 
-              <PreviewSection title="Hydraulic & Tyres">
-                <PreviewRow label="Lifting Capacity" value={tractorData?.liftingCapacity} />
-                <PreviewRow label="Lifting Capacity @610mm" value={tractorData?.liftingCapacityAt610mm} />
-                <PreviewRow label="Hydraulic Type" value={tractorData?.hydraulicType} />
-                <PreviewRow label="Control Type" value={tractorData?.controlType} />
-                <PreviewRow label="Remote Valve Type" value={tractorData?.remoteValveType} />
-                <PreviewRow label="Number Of Remote Valves" value={tractorData?.numberOfRemoteValves} />
-                <PreviewRow label="3 Point Linkage" value={tractorData?.threePointLinkage} />
-                <PreviewRow label="Linkage Category" value={tractorData?.linkageCategory} />
-                <PreviewRow label="Top Link" value={tractorData?.topLink} />
-                <PreviewRow label="Draft Sensitivity" value={tractorData?.draftSensitivity} />
+              <PreviewSection title="Lights">
+                <PreviewRow label="Head Light" value={yesNo(tractorData?.lightsHeadLight)} />
+                <PreviewRow label="Indicator" value={yesNo(tractorData?.lightsIndicator)} />
+                <PreviewRow label="Tail Light" value={yesNo(tractorData?.lightsTailLight)} />
+                <PreviewRow label="Horn" value={yesNo(tractorData?.lightsHorn)} />
+              </PreviewSection>
+
+              <PreviewSection title="Tyre Details">
+                <PreviewRow label="Front Tyre Brand" value={tractorData?.frontTyreBrand} />
+                <PreviewRow label="Front Tyre Remaining %" value={tractorData?.frontTyreRemainingPercent} />
+                <PreviewRow label="Front Tyre Condition" value={tractorData?.frontTyreCondition} />
+                <PreviewRow label="Rear Tyre Brand" value={tractorData?.rearTyreBrand} />
+                <PreviewRow label="Rear Tyre Remaining %" value={tractorData?.rearTyreRemainingPercent} />
+                <PreviewRow label="Rear Tyre Condition" value={tractorData?.rearTyreCondition} />
+              </PreviewSection>
+
+              <PreviewSection title="Hydraulic & PTO">
+                <PreviewRow label="Hydraulic Lift Working" value={tractorData?.hydraulicLiftWorking} />
+                <PreviewRow label="Hydraulic Condition" value={tractorData?.hydraulicCondition} />
+                <PreviewRow label="PTO Status" value={tractorData?.ptoStatus} />
+              </PreviewSection>
+
+              {attachmentLabels.length > 0 && (
+                <PreviewSection title="Attachments Included">
+                  {attachmentLabels.map((item) => (
+                    <PreviewRow key={item.key} label={item.label} value="Yes" />
+                  ))}
+                </PreviewSection>
+              )}
+
+              <PreviewSection title="Transmission & Service">
+                <PreviewRow
+                  label="Last Service Date"
+                  value={tractorData?.lastServiceDate ? new Date(tractorData.lastServiceDate).toLocaleDateString("en-IN") : "-"}
+                />
+                <PreviewRow label="Engine Overhauled" value={tractorData?.engineOverhauled} />
+                <PreviewRow label="Gearbox Repaired" value={tractorData?.gearboxRepaired} />
+                <PreviewRow label="Clutch Changed" value={tractorData?.clutchChanged} />
+                <PreviewRow label="Tyres Changed" value={tractorData?.tyresChanged} />
+                <PreviewRow label="Battery Changed" value={tractorData?.batteryChanged} />
+                <PreviewRow label="Accident Status" value={tractorData?.accident} />
+                <PreviewRow label="Flood Damage" value={tractorData?.floodDamage} />
+                <PreviewRow label="Insurance" value={tractorData?.insurance} />
+                <PreviewRow
+                  label="Insurance Expiry Date"
+                  value={tractorData?.insuranceExpiryDate ? new Date(tractorData.insuranceExpiryDate).toLocaleDateString("en-IN") : "-"}
+                />
+                <PreviewRow label="Loan Remaining" value={tractorData?.finance} />
+                {tractorData?.finance === "yes" && (
+                  <>
+                    <PreviewRow label="Finance Company" value={tractorData?.financeCompany} />
+                    <PreviewRow label="Outstanding Amount" value={tractorData?.outstandingAmount} />
+                  </>
+                )}
               </PreviewSection>
 
               <PreviewSection title="Price & Location">
-                <PreviewRow label="Ex-Showroom Price" value={`₹ ${tractorData?.exShowroomPrice?.toLocaleString?.() ?? "-"}`} />
-                <PreviewRow label="On-Road Price" value={`₹ ${tractorData?.onRoadPrice?.toLocaleString?.() ?? "-"}`} />
-                <PreviewRow label="GST" value={`${tractorData?.gst || "-"}%`} />
-                <PreviewRow label="TCS" value={tractorData?.tcsApplicable} />
+                <PreviewRow label="Expected Price" value={`₹ ${tractorData?.expectedPrice?.toLocaleString?.() ?? "-"}`} />
                 <PreviewRow label="Finance Available" value={tractorData?.financeAvailable} />
-                <PreviewRow label="EMI Available" value={tractorData?.emiAvailable ? "Yes" : "No"} />
+                <PreviewRow label="Exchange Offer" value={tractorData?.exchangeOffer} />
                 <PreviewRow label="Negotiable" value={tractorData?.negotiable} />
+                <PreviewRow label="Country" value={tractorData?.country} />
                 <PreviewRow label="State" value={tractorData?.state} />
                 <PreviewRow label="District" value={tractorData?.district} />
                 <PreviewRow label="Taluka" value={tractorData?.taluka} />

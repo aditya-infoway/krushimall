@@ -18,7 +18,7 @@ const imageUploads = [
   { key: "tyreView", label: "Tyre View", required: true },
   { key: "hydraulicView", label: "Hydraulic View", required: true },
   { key: "ptoView", label: "PTO View", required: true },
-  { key: "chassisNumber", label: "Chassis Number", required: true },
+  { key: "chassisNumberImage", label: "Chassis Number", required: true },
   { key: "rcBook", label: "RC Book", required: true },
   { key: "additionalImage1", label: "Additional Image 1", required: false },
   { key: "additionalImage2", label: "Additional Image 2", required: false },
@@ -128,7 +128,7 @@ export default function MediaDocument({
     register("tyreView");
     register("hydraulicView");
     register("ptoView");
-    register("chassisNumber");
+    register("chassisNumberImage");
     register("rcBook");
     register("brochure");
     register("warrantyCard");
@@ -173,7 +173,7 @@ export default function MediaDocument({
       });
 
       await apiHelper.put(
-        `/vendor-web/website-variant/${productId}/save-step`,
+        `/vendor-web/used-website-variant/${productId}/save-step`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },

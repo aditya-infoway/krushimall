@@ -8,8 +8,9 @@ import { useNavigate } from "react-router-dom";
 
 import { EnginedetailsSchema } from "./schema";
 import apiHelper from "../../utils/apiHelper";
-
-
+import { Listbox, Transition } from "@headlessui/react";
+import { ChevronUpDownIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { Fragment } from "react";
 
 // ---- Newly added option lists for Vehicle Inspection Details ----
 const overallConditionOptions = [
@@ -178,31 +179,68 @@ const CustomListbox = ({
   placeholder,
   label,
   error,
+  required,
+  icon: Icon,
 }) => {
   return (
     <div>
       {label && (
         <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-          {label}
+          {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
-      <select
-        value={value?.value || ""}
-        onChange={(e) => {
-          const selected = data.find((item) => item.value === e.target.value);
-          onChange(selected);
-        }}
-        className={`w-full px-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
-          error ? "border-red-300 bg-red-50" : "border-gray-200"
-        }`}
-      >
-        <option value="">{placeholder}</option>
-        {data?.map((item) => (
-          <option key={item.value} value={item.value}>
-            {item[displayField] || item.label}
-          </option>
-        ))}
-      </select>
+      <Listbox value={value} onChange={onChange}>
+        <div className="relative">
+          <Listbox.Button className="relative w-full cursor-default rounded-xl border border-gray-200 bg-white py-3 pl-4 pr-10 text-left text-sm text-gray-900 outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600">
+            <span className="block truncate">
+              {value ? value[displayField] : placeholder}
+            </span>
+            <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+              <ChevronUpDownIcon
+                className="h-5 w-5 text-gray-400"
+                aria-hidden="true"
+              />
+            </span>
+          </Listbox.Button>
+          <Transition
+            as={Fragment}
+            leave="transition ease-in duration-100"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+          >
+            <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+              {data?.map((item) => (
+                <Listbox.Option
+                  key={item.id || item.value}
+                  className={({ active }) =>
+                    `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                      active ? "bg-green-100 text-green-900" : "text-gray-900"
+                    }`
+                  }
+                  value={item}
+                >
+                  {({ selected }) => (
+                    <>
+                      <span
+                        className={`block truncate ${
+                          selected ? "font-medium" : "font-normal"
+                        }`}
+                      >
+                        {item[displayField] || item.label}
+                      </span>
+                      {selected && (
+                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-green-600">
+                          <CheckIcon className="h-4 w-4" aria-hidden="true" />
+                        </span>
+                      )}
+                    </>
+                  )}
+                </Listbox.Option>
+              ))}
+            </Listbox.Options>
+          </Transition>
+        </div>
+      </Listbox>
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
@@ -296,20 +334,7 @@ const {
       }
 
       const payload = {
-        engineType: data.engineType,
-        fuelType: data.fuelType,
-        horsePower: data.horsePower ? Number(data.horsePower) : null,
-        numberOfCylinders: data.numberOfCylinders,
-        cubicCapacity: data.cubicCapacity ? Number(data.cubicCapacity) : null,
-        ratedRpm: data.ratedRpm ? Number(data.ratedRpm) : null,
-        aspiratedType: data.aspiratedType,
-        emissionNorms: data.emissionNorms,
-        coolingSystem: data.coolingSystem,
-        airFilterType: data.airFilterType,
-        maximumTorque: data.maximumTorque ? Number(data.maximumTorque) : null,
-        torqueRpm: data.torqueRpm ? Number(data.torqueRpm) : null,
-        torqueBackup: data.torqueBackup ? Number(data.torqueBackup) : null,
-        engineCondition: data.engineCondition,
+       
 
         // ---- Vehicle Inspection Details ----
         overallCondition: data.overallCondition,
@@ -333,7 +358,7 @@ const {
       };
 
       await apiHelper.put(
-        `/vendor-web/website-variant/${productId}/save-step`,
+        `/vendor-web/used-website-variant/${productId}/save-step`,
         payload,
       );
 

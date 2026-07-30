@@ -195,12 +195,15 @@ const Textarea = ({
         {Icon && (
           <Icon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
         )}
-        <textarea
-          {...props}
-          className={`w-full ${Icon ? "pl-10" : "px-4"} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
-            error ? "border-red-300 bg-red-50" : "border-gray-200"
-          } ${props.disabled ? "bg-gray-50 cursor-not-allowed" : ""}`}
-        />
+       <textarea
+  {...props}
+  rows={4}
+  className={`w-180  resize-none ${
+    Icon ? "pl-10" : "px-4"
+  } pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+    error ? "border-red-300 bg-red-50" : "border-gray-200"
+  } ${props.disabled ? "bg-gray-50 cursor-not-allowed" : ""}`}
+/>
       </div>
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
       {description && !error && (
@@ -504,6 +507,8 @@ export default function BasicInformation({
   });
 
   const [country, setCountry] = useState("");
+  const [state, setState] = useState("");
+  const [district, setDistrict] = useState("");
   const [categories, setCategories] = useState([]);
   const [brands, setBrands] = useState([]);
   const [models, setModels] = useState([]);
@@ -511,7 +516,7 @@ export default function BasicInformation({
   const [variants, setVariants] = useState([]);
   const [selectedStates, setSelectedStates] = useState([]);
   const [selectedDistricts, setSelectedDistricts] = useState([]);
-
+  const [highlightCount, setHighlightCount] = useState(5);
   const categoryId = watch("categoryId");
   const brandId = watch("brandId");
   const modelId = watch("modelId");
@@ -574,14 +579,24 @@ export default function BasicInformation({
     setCountry(productData.country || "");
     setSelectedStates(productData.availableStates || []);
 
+    if (productData.availableStates?.length) {
+      setState(productData.availableStates[0]);
+    }
+
+    if (productData.availableDistricts?.length) {
+      setDistrict(productData.availableDistricts[0]);
+    }
+
     reset({
+      // Product Classification
+       productName: productData.productName,
       categoryId: productData.categoryId,
       brandId: productData.brandId,
       modelId: productData.modelId,
       modelYearId: productData.modelYearId,
       variantId: productData.variantId,
       variantCode: productData.variantCode,
-      
+
       // Tractor Details
       brand: productData.brand,
       model: productData.model,
@@ -595,8 +610,8 @@ export default function BasicInformation({
       tractorCategory: productData.tractorCategory,
       fuelType: productData.fuelType,
       driveType: productData.driveType,
-      
-      // Colors (as checkboxes)
+ description: productData.description,
+      // Colors
       colors: {
         red: productData.redColor,
         blue: productData.blueColor,
@@ -606,15 +621,24 @@ export default function BasicInformation({
         white: productData.whiteColor,
         custom: productData.customColor,
       },
+      // Highlights
+     highlights: {
+    highlight1: productData.highlight1,
+    highlight2: productData.highlight2,
+    highlight3: productData.highlight3,
+    highlight4: productData.highlight4,
+    highlight5: productData.highlight5,
+  },
       customColorName: productData.customColorName,
       customColorCode: productData.customColorCode,
-      
+
       // Location
-      locationState: productData.locationState,
-      locationDistrict: productData.locationDistrict,
-      locationTaluka: productData.locationTaluka,
-      locationVillage: productData.locationVillage,
-      
+      country: productData.country || "",
+      availableStates: productData.availableStates || [],
+      availableDistricts: productData.availableDistricts || [],
+      taluka: productData.locationTaluka || "",
+      city: productData.locationVillage || "",
+
       // Ownership
       ownership: productData.ownership,
       ownerType: productData.ownerType,
@@ -623,23 +647,20 @@ export default function BasicInformation({
       thirdOwner: productData.thirdOwner,
       sellerType: productData.sellerType,
       ownershipProofAvailable: productData.ownershipProofAvailable,
-      
+
       // Usage
       hoursMeterReading: productData.hoursMeterReading,
       approxWorkingHours: productData.approxWorkingHours,
       acresWorked: productData.acresWorked,
       purpose: productData.purpose,
-      
+
       // Additional fields
-      country: productData.country,
-      availableStates: productData.availableStates || [],
-      availableDistricts: productData.availableDistricts || [],
       availableDealers: productData.availableDealers || [],
       stockStatus: productData.stockStatus,
     });
 
     setValue("showCustomColor", productData.customColor);
-  }, [productData, isEdit, reset]);
+  }, [productData, isEdit, reset, setValue]);
 
   const showCustomColorInput = watch("showCustomColor");
 
@@ -647,45 +668,63 @@ export default function BasicInformation({
     value: c.isoCode,
     label: c.name,
   }));
-  
+
   const stateOptions = State.getStatesOfCountry(country).map((s) => ({
     value: s.isoCode,
     label: s.name,
   }));
-  
+
   const districtOptions = selectedStates.flatMap((stateCode) =>
     City.getCitiesOfState(country, stateCode).map((c) => ({
       value: c.name,
       label: c.name,
     })),
   );
+  const cityOptions = City.getCitiesOfState(country, state).map((c) => ({
+    value: c.name,
+    label: c.name,
+  }));
 
   const onSubmit = async (data) => {
+    
     try {
+      const selectedBrand = filteredBrands.find(
+        (item) => Number(item.id) === Number(data.brandId),
+      );
+
+      const selectedModel = filteredModels.find(
+        (item) => Number(item.id) === Number(data.modelId),
+      );
+
+      const selectedVariant = filteredVariants.find(
+        (item) => Number(item.id) === Number(data.variantId),
+      );
+
       const payload = {
         // Product Classification
+           productName: data.productName || "",
         categoryId: data.categoryId ? Number(data.categoryId) : null,
         brandId: data.brandId ? Number(data.brandId) : null,
         modelId: data.modelId ? Number(data.modelId) : null,
         modelYearId: data.modelYearId ? Number(data.modelYearId) : null,
         variantId: data.variantId ? Number(data.variantId) : null,
-        variantCode: data.variantCode,
-        
+        variantCode: data.variantCode || "",
+
         // Tractor Details
-        brand: data.brand,
-        model: data.model,
-        variant: data.variant,
-        hp: data.hp,
-        manufacturingYear: data.manufacturingYear,
-        purchaseYear: data.purchaseYear,
-        rcRegistrationNumber: data.rcRegistrationNumber,
-        engineNumber: data.engineNumber,
-        chassisNumber: data.chassisNumber,
-        tractorCategory: data.tractorCategory,
-        fuelType: data.fuelType,
-        driveType: data.driveType,
-        
-        // Colors (as checkboxes)
+        brand: selectedBrand?.brandName || "",
+        model: selectedModel?.modelName || "",
+        variant: selectedVariant?.variantName || "",
+        hp: data.hp || null,
+        manufacturingYear: data.manufacturingYear || null,
+        purchaseYear: data.purchaseYear || null,
+        rcRegistrationNumber: data.rcRegistrationNumber || "",
+        engineNumber: data.engineNumber || "",
+        chassisNumber: data.chassisNumber || "",
+        tractorCategory: data.tractorCategory || "",
+        fuelType: data.fuelType || "",
+        driveType: data.driveType || "",
+  description: data.description || "",
+        // Colors
         redColor: Boolean(data.colors?.red),
         blueColor: Boolean(data.colors?.blue),
         greenColor: Boolean(data.colors?.green),
@@ -693,37 +732,43 @@ export default function BasicInformation({
         blackColor: Boolean(data.colors?.black),
         whiteColor: Boolean(data.colors?.white),
         customColor: Boolean(data.colors?.custom),
-        customColorName: data.customColorName,
-        customColorCode: data.customColorCode,
-        
+        customColorName: data.customColorName || "",
+        customColorCode: data.customColorCode || "",
+        // Highlights
+       highlight1: data.highlights?.highlight1 || "",
+highlight2: data.highlights?.highlight2 || "",
+highlight3: data.highlights?.highlight3 || "",
+highlight4: data.highlights?.highlight4 || "",
+highlight5: data.highlights?.highlight5 || "",
         // Location
-        locationState: data.locationState,
-        locationDistrict: data.locationDistrict,
-        locationTaluka: data.locationTaluka,
-        locationVillage: data.locationVillage,
-        
-        // Ownership
-        ownership: data.ownership,
-        ownerType: data.ownerType,
-        firstOwner: data.firstOwner,
-        secondOwner: data.secondOwner,
-        thirdOwner: data.thirdOwner,
-        sellerType: data.sellerType,
-        ownershipProofAvailable: data.ownershipProofAvailable,
-        
-        // Usage
-        hoursMeterReading: data.hoursMeterReading,
-        approxWorkingHours: data.approxWorkingHours,
-        acresWorked: data.acresWorked,
-        purpose: data.purpose,
-        
-        // Additional fields
-        country: data.country,
+        country: data.country || "",
         availableStates: data.availableStates || [],
         availableDistricts: data.availableDistricts || [],
+
+        locationState: data.availableStates?.[0] || "",
+        locationDistrict: data.availableDistricts?.[0] || "",
+        locationTaluka: data.taluka || "",
+        locationVillage: data.city || "",
+
+        // Ownership
+        ownership: data.ownership || "",
+        ownerType: data.ownerType || "",
+        firstOwner: data.firstOwner || "",
+        secondOwner: data.secondOwner || "",
+        thirdOwner: data.thirdOwner || "",
+        sellerType: data.sellerType || "",
+        ownershipProofAvailable: Boolean(data.ownershipProofAvailable),
+
+        // Usage
+        hoursMeterReading: data.hoursMeterReading || null,
+        approxWorkingHours: data.approxWorkingHours || null,
+        acresWorked: data.acresWorked || null,
+        purpose: data.purpose || "",
+
+        // Additional Fields
         availableDealers: data.availableDealers || [],
-        stockStatus: data.stockStatus,
-        
+        stockStatus: data.stockStatus || "",
+
         currentStep: 0,
       };
 
@@ -731,15 +776,17 @@ export default function BasicInformation({
 
       if (isEdit) {
         res = await apiHelper.put(
-          `/vendor-web/website-variant/${productData.id}`,
+          `/vendor-web/used-website-variant/${productData.id}`,
           payload,
         );
       } else {
-        res = await apiHelper.post("/vendor-web/website-variant", payload);
+        res = await apiHelper.post("/vendor-web/used-website-variant", payload);
+
         localStorage.setItem("vendorProductId", res.data.id.toString());
       }
 
       toast.success("Basic information saved!");
+
       if (onComplete) {
         onComplete(step);
       }
@@ -747,6 +794,7 @@ export default function BasicInformation({
       setCurrentStep(step + 1);
     } catch (error) {
       console.error(error);
+
       toast.error(
         error.response?.data?.message ||
           "Failed to save basic information. Please try again.",
@@ -754,14 +802,12 @@ export default function BasicInformation({
     }
   };
 
-  
-
   return (
     <div className="min-h-screen bg-gray-50 py-8 md:py-12 lg:py-16">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Add New Product</h1>
+          <h1 className="text-2xl font-bold text-gray-900">Add Used Product</h1>
           <p className="text-sm text-gray-500 mt-1">
             Fill in the details below to list your product
           </p>
@@ -909,7 +955,13 @@ export default function BasicInformation({
                       />
                     )}
                   />
-
+  <Input
+    {...register("productName")}
+    label="Website Display Product Name"
+    placeholder="Mahindra Arjun Novo 605 DI 57 HP"
+    required
+    error={errors?.productName?.message}
+  />
                   <Input
                     {...register("hp")}
                     label="HP"
@@ -960,26 +1012,6 @@ export default function BasicInformation({
                   />
 
                   <Controller
-                    name="tractorCategory"
-                    control={control}
-                    render={({ field }) => (
-                      <CustomListbox
-                        data={tractorCategoryOptions}
-                        value={
-                          tractorCategoryOptions.find(
-                            (o) => o.value === field.value,
-                          ) || null
-                        }
-                        onChange={(option) => field.onChange(option?.value)}
-                        displayField="label"
-                        placeholder="Select Tractor Category"
-                        label="Tractor Category"
-                        error={errors?.tractorCategory?.message}
-                      />
-                    )}
-                  />
-
-                  <Controller
                     name="fuelType"
                     control={control}
                     render={({ field }) => (
@@ -1018,6 +1050,14 @@ export default function BasicInformation({
                       />
                     )}
                   />
+                  <Textarea
+  {...register("description")}
+  label="Description"
+  placeholder="Enter product description"
+  rows={5}
+  error={errors?.description?.message}
+  className=" w-full"
+/>
                 </div>
               </div>
 
@@ -1085,7 +1125,34 @@ export default function BasicInformation({
                   </div>
                 )}
               </div>
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Key Highlights
+                </h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  Add key highlights about this tractor
+                </p>
 
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+                  {Array.from({ length: highlightCount }, (_, index) => (
+                    <Input
+                      key={index}
+                      {...register(`highlights.highlight${index + 1}`)}
+                      label={`Highlight ${index + 1}`}
+                      placeholder="Enter highlight"
+                    />
+                  ))}
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outlined"
+                  className="mt-4"
+                  onClick={() => setHighlightCount((prev) => prev + 1)}
+                >
+                  + Add Another Highlight
+                </Button>
+              </div>
               {/* Location */}
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">
@@ -1144,6 +1211,7 @@ export default function BasicInformation({
                             const values = selected?.map((s) => s.value) || [];
                             field.onChange(values);
                             setSelectedStates(values);
+                            setState(values[0] || "");
                           }}
                         />
                       )}
@@ -1157,7 +1225,8 @@ export default function BasicInformation({
 
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      Available Districts <span className="text-red-500">*</span>
+                      Available Districts{" "}
+                      <span className="text-red-500">*</span>
                     </label>
                     <Controller
                       name="availableDistricts"
@@ -1172,9 +1241,14 @@ export default function BasicInformation({
                           value={districtOptions.filter((o) =>
                             field.value?.includes(o.value),
                           )}
-                          onChange={(selected) =>
-                            field.onChange(selected?.map((s) => s.value) || [])
-                          }
+                          onChange={(selected) => {
+                            const values = selected?.map((s) => s.value) || [];
+
+                            field.onChange(values);
+
+                            // First selected district
+                            setDistrict(values[0] || "");
+                          }}
                         />
                       )}
                     />
@@ -1185,19 +1259,65 @@ export default function BasicInformation({
                     )}
                   </div>
 
-                  <Input
-                    {...register("locationTaluka")}
-                    label="Taluka"
-                    placeholder="Enter taluka"
-                    error={errors?.locationTaluka?.message}
-                  />
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Taluka
+                    </label>
+                    <Controller
+                      name="taluka"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          options={cityOptions}
+                          styles={selectStyles}
+                          placeholder="Search Taluka"
+                          isDisabled={!district}
+                          value={
+                            cityOptions.find((o) => o.value === field.value) ||
+                            null
+                          }
+                          onChange={(selected) =>
+                            field.onChange(selected?.value || "")
+                          }
+                        />
+                      )}
+                    />
+                    {errors?.taluka && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.taluka.message}
+                      </p>
+                    )}
+                  </div>
 
-                  <Input
-                    {...register("locationVillage")}
-                    label="Village"
-                    placeholder="Enter village"
-                    error={errors?.locationVillage?.message}
-                  />
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      City <span className="text-red-500">*</span>
+                    </label>
+                    <Controller
+                      name="city"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          options={cityOptions}
+                          styles={selectStyles}
+                          placeholder="Search City"
+                          isDisabled={!state}
+                          value={
+                            cityOptions.find((o) => o.value === field.value) ||
+                            null
+                          }
+                          onChange={(selected) =>
+                            field.onChange(selected?.value || "")
+                          }
+                        />
+                      )}
+                    />
+                    {errors?.city && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.city.message}
+                      </p>
+                    )}
+                  </div>
                 </div>
               </div>
 
@@ -1246,7 +1366,7 @@ export default function BasicInformation({
                       />
                     )}
                   />
-{/* 
+                  {/* 
                   <Input
                     {...register("firstOwner")}
                     label="First Owner"
@@ -1362,9 +1482,8 @@ export default function BasicInformation({
                       <CustomListbox
                         data={purposeOptions}
                         value={
-                          purposeOptions.find(
-                            (o) => o.value === field.value,
-                          ) || null
+                          purposeOptions.find((o) => o.value === field.value) ||
+                          null
                         }
                         onChange={(option) => field.onChange(option?.value)}
                         displayField="label"
