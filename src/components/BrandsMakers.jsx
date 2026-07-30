@@ -6,57 +6,50 @@ import apiHelper from "../utils/apiHelper";
 const BrandsMakers = () => {
   const navigate = useNavigate();
   const [showAllMobile, setShowAllMobile] = useState(false);
-const [tractorMakers, setTractorMakers] = useState([]);
-const [loading, setLoading] = useState(true);
+  const [showAllDesktop, setShowAllDesktop] = useState(false);
+  const [tractorMakers, setTractorMakers] = useState([]);
+  const [loading, setLoading] = useState(true);
 
+  const DESKTOP_INITIAL_LIMIT = 12;
 
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        setLoading(true);
+        const response = await apiHelper.get("/brand");
+        
+        let brandsData = [];
+        if (response && response.data && Array.isArray(response.data)) {
+          brandsData = response.data;
+        } else if (Array.isArray(response)) {
+          brandsData = response;
+        }
 
- 
+        const mappedBrands = brandsData
+          .filter(brand => brand.status === "ACTIVE")
+          .map((item) => ({
+            name: item.brandName || item.name || "Unknown",
+            logo: apiHelper.image(item.image),
+            slug: (item.brandName || item.name || "unknown")
+              .toLowerCase()
+              .replace(/\s+/g, '-'),
+          }));
 
-useEffect(() => {
-  const fetchBrands = async () => {
-    try {
-      setLoading(true);
-      const response = await apiHelper.get("/brand");
-      
-      let brandsData = [];
-      if (response && response.data && Array.isArray(response.data)) {
-        brandsData = response.data;
-      } else if (Array.isArray(response)) {
-        brandsData = response;
+        setTractorMakers(mappedBrands);
+      } catch (error) {
+        console.error("Failed to fetch brands:", error);
+      } finally {
+        setLoading(false);
       }
+    };
 
-      const mappedBrands = brandsData
-        .filter(brand => brand.status === "ACTIVE")
-        .map((item) => ({
-          name: item.brandName || item.name || "Unknown",
-          logo: apiHelper.image(item.image), // ✅ Using your existing image method
-          slug: (item.brandName || item.name || "unknown")
-            .toLowerCase()
-            .replace(/\s+/g, '-'),
-        }));
+    fetchBrands();
+  }, []);
 
-      setTractorMakers(mappedBrands);
-    } catch (error) {
-      console.error("Failed to fetch brands:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchBrands();
-}, []);
-
-
-
-
-
-  // Handle tractor maker click - navigate to tractors page with brand filter
   const handleTractorMakerClick = (brandName) => {
     navigate(`/tractors?brand=${encodeURIComponent(brandName)}`);
   };
 
-  // Handle View All button - navigate to tractors page
   const handleViewAllTractors = () => {
     navigate("/tractors");
   };
@@ -80,16 +73,23 @@ useEffect(() => {
     return () => clearInterval(interval);
   }, [scrollPos]);
 
+  const getVisibleBrands = () => {
+    if (window.innerWidth < 640) {
+      return showAllMobile ? tractorMakers : tractorMakers.slice(0, 8);
+    } else {
+      return showAllDesktop ? tractorMakers : tractorMakers.slice(0, DESKTOP_INITIAL_LIMIT);
+    }
+  };
+
+  const visibleBrands = getVisibleBrands();
+
   return (
     <section className="bg-gray-50 w-full">
-      {/* STANDARDIZED: Same spacing pattern as FeaturesBar for consistency */}
       <div className="px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
-        {/* Inner container with bottom padding to match top spacing */}
-        <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto ">
+        <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto">
           
           {/* Header with title/desc on left, button on right */}
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-8 md:mb-12">
-            {/* Left side: Title and Description */}
             <div className="flex-1">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
                 Popular{" "}
@@ -102,7 +102,7 @@ useEffect(() => {
               </p>
             </div>
 
-            {/* Right side: View All Button - hidden on mobile, shown on desktop */}
+            {/* View All Button - hidden on mobile, shown on desktop */}
             <div className="hidden sm:flex sm:flex-shrink-0">
               <button
                 onClick={handleViewAllTractors}
@@ -116,13 +116,11 @@ useEffect(() => {
 
           {/* Grid Layout Container */}
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 xl:gap-5">
-            {tractorMakers.map((maker, i) => (
+            {visibleBrands.map((maker, i) => (
               <div
                 key={i}
                 onClick={() => handleTractorMakerClick(maker.name)}
-                className={`bg-white border-2 border-gray-100 rounded-2xl p-5 text-center hover:border-green-600 hover:shadow-xl hover:shadow-green-900/5 transition-all duration-300 cursor-pointer group hover:-translate-y-1 ${
-                  !showAllMobile && i >= 8 ? "hidden sm:block" : ""
-                }`}
+                className="bg-white border-2 border-gray-100 rounded-2xl p-5 text-center hover:border-green-600 hover:shadow-xl hover:shadow-green-900/5 transition-all duration-300 cursor-pointer group hover:-translate-y-1"
               >
                 <div className="h-16 flex items-center justify-center mb-3">
                   <img
@@ -143,7 +141,33 @@ useEffect(() => {
             ))}
           </div>
 
-          {/* Show All / Show Less button - Only visible on mobile */}
+          {/* View More Link - Simple right-aligned link */}
+          {!showAllDesktop && tractorMakers.length > DESKTOP_INITIAL_LIMIT && (
+            <div className="hidden sm:flex justify-end mt-6">
+              <button
+                onClick={() => setShowAllDesktop(true)}
+                className="inline-flex cursor-pointer items-center gap-2 text-green-700 hover:text-green-800 font-semibold text-base transition-all group"
+              >
+                <span>View More</span>
+                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+          )}
+
+          {/* Show Less Link - Right aligned */}
+          {showAllDesktop && tractorMakers.length > DESKTOP_INITIAL_LIMIT && (
+            <div className="hidden sm:flex justify-end mt-6">
+              <button
+                onClick={() => setShowAllDesktop(false)}
+                className="inline-flex cursor-pointer items-center gap-2 text-green-700 hover:text-green-800 font-semibold text-base transition-all group"
+              >
+                <span>Show Less</span>
+                <ChevronUp className="w-4 h-4" />
+              </button>
+            </div>
+          )}
+
+          {/* Mobile: Show All / Show Less button */}
           <div className="flex sm:hidden justify-center mt-6">
             <button
               onClick={() => setShowAllMobile(!showAllMobile)}
