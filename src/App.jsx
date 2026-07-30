@@ -39,7 +39,7 @@ import WebsiteVariant from "./pages/websitevariant/index.jsx";
 import VendorFollowup from "./pages/Vendorfollowup.jsx";
 import { useEffect } from "react";
 import { requestNotificationPermission } from "./firebase-messaging";
-
+import UsedWebsiteVariant from "./pages/usedwebsitevariant/index.jsx";
 function App() {
 
   useEffect(() => {
@@ -90,6 +90,15 @@ function App() {
                     path="/vendor/edit-product/:id"
                     element={<WebsiteVariant />}
                   />
+                  <Route
+  path="/vendor/add-used-product"
+  element={<UsedWebsiteVariant />}
+ />
+
+<Route
+  path="/vendor/edit-used-product/:id"
+  element={<UsedWebsiteVariant />}
+ />
                   <Route path="/help" element={<Help />} />
                   <Route path="/booking-history" element={<BookingHistory />} />
                   <Route path="/tractorcompare" element={<TractorCompare />} />

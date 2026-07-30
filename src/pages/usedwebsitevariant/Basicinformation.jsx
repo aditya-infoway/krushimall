@@ -29,6 +29,50 @@ const colorOptions = [
   { label: "White", value: "white" },
 ];
 
+const fuelTypeOptions = [
+  { label: "Diesel", value: "diesel" },
+  { label: "Petrol", value: "petrol" },
+  { label: "Electric", value: "electric" },
+  { label: "CNG", value: "cng" },
+];
+
+const driveTypeOptions = [
+  { label: "2WD", value: "2wd" },
+  { label: "4WD", value: "4wd" },
+];
+
+const ownershipOptions = [
+  { label: "First Owner", value: "first_owner" },
+  { label: "Second Owner", value: "second_owner" },
+  { label: "Third Owner", value: "third_owner" },
+];
+
+const ownerTypeOptions = [
+  { label: "First Owner", value: "first_owner" },
+  { label: "Second Owner", value: "second_owner" },
+  { label: "Third Owner", value: "third_owner" },
+];
+
+const sellerTypeOptions = [
+  { label: "Farmer", value: "farmer" },
+  { label: "Dealer", value: "dealer" },
+  { label: "Individual", value: "individual" },
+];
+
+const purposeOptions = [
+  { label: "Farming", value: "farming" },
+  { label: "Commercial", value: "commercial" },
+  { label: "Rental", value: "rental" },
+];
+
+const tractorCategoryOptions = [
+  { label: "Compact", value: "compact" },
+  { label: "Utility", value: "utility" },
+  { label: "Row Crop", value: "row_crop" },
+  { label: "Orchard", value: "orchard" },
+  { label: "Industrial", value: "industrial" },
+];
+
 const stockStatusOptions = [
   { label: "In Stock", value: "in_stock" },
   { label: "Out of Stock", value: "out_of_stock" },
@@ -101,13 +145,14 @@ const Input = ({
   description,
   className = "",
   icon: Icon,
+  required,
   ...props
 }) => {
   return (
     <div className={className}>
       {label && (
         <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-          {label}
+          {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
       <div className="relative">
@@ -136,13 +181,14 @@ const Textarea = ({
   description,
   className = "",
   icon: Icon,
+  required,
   ...props
 }) => {
   return (
     <div className={className}>
       {label && (
         <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-          {label}
+          {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
       <div className="relative">
@@ -199,13 +245,14 @@ const CustomListbox = ({
   placeholder,
   label,
   error,
+  required,
   icon: Icon,
 }) => {
   return (
     <div>
       {label && (
         <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-          {label}
+          {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
       <Listbox value={value} onChange={onChange}>
@@ -266,13 +313,13 @@ const CustomListbox = ({
 };
 
 // Custom DatePicker Component - matches vendor profile theme
-
 const DatePicker = ({
   value, // Date object or null
   onChange, // (date: Date | null) => void
   label,
   error,
   placeholder = "Select date...",
+  required,
 }) => {
   const [open, setOpen] = useState(false);
   const [viewDate, setViewDate] = useState(value || new Date());
@@ -338,7 +385,7 @@ const DatePicker = ({
     <div ref={wrapperRef} className="relative">
       {label && (
         <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-          {label}
+          {label} {required && <span className="text-red-500">*</span>}
         </label>
       )}
 
@@ -462,14 +509,26 @@ export default function BasicInformation({
   const [models, setModels] = useState([]);
   const [modelYears, setModelYears] = useState([]);
   const [variants, setVariants] = useState([]);
-  const [highlightCount, setHighlightCount] = useState(5);
+  const [selectedStates, setSelectedStates] = useState([]);
+  const [selectedDistricts, setSelectedDistricts] = useState([]);
 
-  const showCustomColorInput = watch("showCustomColor");
   const categoryId = watch("categoryId");
   const brandId = watch("brandId");
   const modelId = watch("modelId");
   const modelYearId = watch("modelYearId");
-  const selectedStates = watch("availableStates") || [];
+  const watchCountry = watch("country");
+  const watchAvailableStates = watch("availableStates") || [];
+
+  // Update state when watch values change
+  useEffect(() => {
+    if (watchCountry) {
+      setCountry(watchCountry);
+    }
+  }, [watchCountry]);
+
+  useEffect(() => {
+    setSelectedStates(watchAvailableStates);
+  }, [watchAvailableStates]);
 
   const filteredBrands = brands.filter(
     (item) => Number(item.categoryId) === Number(categoryId),
@@ -513,6 +572,7 @@ export default function BasicInformation({
     if (!isEdit || !productData) return;
 
     setCountry(productData.country || "");
+    setSelectedStates(productData.availableStates || []);
 
     reset({
       categoryId: productData.categoryId,
@@ -520,33 +580,23 @@ export default function BasicInformation({
       modelId: productData.modelId,
       modelYearId: productData.modelYearId,
       variantId: productData.variantId,
-
       variantCode: productData.variantCode,
-      productName: productData.productName,
-      productCode: productData.productCode,
-      skuCode: productData.skuCode,
-
-      launchYear: productData.launchYear
-        ? productData.launchYear.split("T")[0]
-        : "",
-
-      country: productData.country,
-      tractorStatus: productData.tractorStatus,
-      shortDescription: productData.shortDescription,
-
-      seoTitle: productData.seoTitle,
-      seoUrl: productData.seoUrl,
-      metaDescription: productData.metaDescription,
-      keywords: productData.keywords,
-
-      highlights: {
-        highlight1: productData.highlight1,
-        highlight2: productData.highlight2,
-        highlight3: productData.highlight3,
-        highlight4: productData.highlight4,
-        highlight5: productData.highlight5,
-      },
-
+      
+      // Tractor Details
+      brand: productData.brand,
+      model: productData.model,
+      variant: productData.variant,
+      hp: productData.hp,
+      manufacturingYear: productData.manufacturingYear,
+      purchaseYear: productData.purchaseYear,
+      rcRegistrationNumber: productData.rcRegistrationNumber,
+      engineNumber: productData.engineNumber,
+      chassisNumber: productData.chassisNumber,
+      tractorCategory: productData.tractorCategory,
+      fuelType: productData.fuelType,
+      driveType: productData.driveType,
+      
+      // Colors (as checkboxes)
       colors: {
         red: productData.redColor,
         blue: productData.blueColor,
@@ -556,68 +606,86 @@ export default function BasicInformation({
         white: productData.whiteColor,
         custom: productData.customColor,
       },
-
       customColorName: productData.customColorName,
       customColorCode: productData.customColorCode,
-
+      
+      // Location
+      locationState: productData.locationState,
+      locationDistrict: productData.locationDistrict,
+      locationTaluka: productData.locationTaluka,
+      locationVillage: productData.locationVillage,
+      
+      // Ownership
+      ownership: productData.ownership,
+      ownerType: productData.ownerType,
+      firstOwner: productData.firstOwner,
+      secondOwner: productData.secondOwner,
+      thirdOwner: productData.thirdOwner,
+      sellerType: productData.sellerType,
+      ownershipProofAvailable: productData.ownershipProofAvailable,
+      
+      // Usage
+      hoursMeterReading: productData.hoursMeterReading,
+      approxWorkingHours: productData.approxWorkingHours,
+      acresWorked: productData.acresWorked,
+      purpose: productData.purpose,
+      
+      // Additional fields
+      country: productData.country,
       availableStates: productData.availableStates || [],
       availableDistricts: productData.availableDistricts || [],
       availableDealers: productData.availableDealers || [],
-
       stockStatus: productData.stockStatus,
     });
 
     setValue("showCustomColor", productData.customColor);
   }, [productData, isEdit, reset]);
 
+  const showCustomColorInput = watch("showCustomColor");
+
   const countryOptions = Country.getAllCountries().map((c) => ({
     value: c.isoCode,
     label: c.name,
   }));
+  
   const stateOptions = State.getStatesOfCountry(country).map((s) => ({
     value: s.isoCode,
     label: s.name,
   }));
-  const cityOptions = selectedStates.flatMap((stateCode) =>
+  
+  const districtOptions = selectedStates.flatMap((stateCode) =>
     City.getCitiesOfState(country, stateCode).map((c) => ({
       value: c.name,
       label: c.name,
     })),
   );
 
-  const formatLocalDate = (date) => {
-    if (!date) return "";
-    const y = date.getFullYear();
-    const m = String(date.getMonth() + 1).padStart(2, "0");
-    const d = String(date.getDate()).padStart(2, "0");
-    return `${y}-${m}-${d}`;
-  };
-  const parseLocalDate = (dateStr) =>
-    dateStr ? new Date(dateStr + "T00:00:00") : undefined;
-
   const onSubmit = async (data) => {
     try {
       const payload = {
+        // Product Classification
         categoryId: data.categoryId ? Number(data.categoryId) : null,
         brandId: data.brandId ? Number(data.brandId) : null,
         modelId: data.modelId ? Number(data.modelId) : null,
         modelYearId: data.modelYearId ? Number(data.modelYearId) : null,
         variantId: data.variantId ? Number(data.variantId) : null,
         variantCode: data.variantCode,
-        productName: data.productName,
-        productCode: data.productCode,
-        skuCode: data.skuCode,
-        launchYear: data.launchYear
-          ? new Date(data.launchYear).toISOString()
-          : null,
-        country: data.country,
-        tractorStatus: data.tractorStatus,
-        shortDescription: data.shortDescription,
-        highlight1: data.highlights?.highlight1,
-        highlight2: data.highlights?.highlight2,
-        highlight3: data.highlights?.highlight3,
-        highlight4: data.highlights?.highlight4,
-        highlight5: data.highlights?.highlight5,
+        
+        // Tractor Details
+        brand: data.brand,
+        model: data.model,
+        variant: data.variant,
+        hp: data.hp,
+        manufacturingYear: data.manufacturingYear,
+        purchaseYear: data.purchaseYear,
+        rcRegistrationNumber: data.rcRegistrationNumber,
+        engineNumber: data.engineNumber,
+        chassisNumber: data.chassisNumber,
+        tractorCategory: data.tractorCategory,
+        fuelType: data.fuelType,
+        driveType: data.driveType,
+        
+        // Colors (as checkboxes)
         redColor: Boolean(data.colors?.red),
         blueColor: Boolean(data.colors?.blue),
         greenColor: Boolean(data.colors?.green),
@@ -627,14 +695,35 @@ export default function BasicInformation({
         customColor: Boolean(data.colors?.custom),
         customColorName: data.customColorName,
         customColorCode: data.customColorCode,
-        availableStates: data.availableStates,
-        availableDistricts: data.availableDistricts,
-        availableDealers: data.availableDealers,
+        
+        // Location
+        locationState: data.locationState,
+        locationDistrict: data.locationDistrict,
+        locationTaluka: data.locationTaluka,
+        locationVillage: data.locationVillage,
+        
+        // Ownership
+        ownership: data.ownership,
+        ownerType: data.ownerType,
+        firstOwner: data.firstOwner,
+        secondOwner: data.secondOwner,
+        thirdOwner: data.thirdOwner,
+        sellerType: data.sellerType,
+        ownershipProofAvailable: data.ownershipProofAvailable,
+        
+        // Usage
+        hoursMeterReading: data.hoursMeterReading,
+        approxWorkingHours: data.approxWorkingHours,
+        acresWorked: data.acresWorked,
+        purpose: data.purpose,
+        
+        // Additional fields
+        country: data.country,
+        availableStates: data.availableStates || [],
+        availableDistricts: data.availableDistricts || [],
+        availableDealers: data.availableDealers || [],
         stockStatus: data.stockStatus,
-        seoTitle: data.seoTitle,
-        seoUrl: data.seoUrl,
-        metaDescription: data.metaDescription,
-        keywords: data.keywords,
+        
         currentStep: 0,
       };
 
@@ -647,7 +736,6 @@ export default function BasicInformation({
         );
       } else {
         res = await apiHelper.post("/vendor-web/website-variant", payload);
-
         localStorage.setItem("vendorProductId", res.data.id.toString());
       }
 
@@ -678,10 +766,10 @@ export default function BasicInformation({
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ">
           <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
             <div className="p-6 md:p-8 lg:p-10 space-y-10">
-              {/* Category, Brand, Model, Model Year */}
+              {/* Product Classification */}
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">
                   Product Classification
@@ -708,6 +796,7 @@ export default function BasicInformation({
                         placeholder="Select Category"
                         label="Select Category"
                         error={errors?.categoryId?.message}
+                        required
                       />
                     )}
                   />
@@ -733,6 +822,7 @@ export default function BasicInformation({
                         placeholder="Select Brand"
                         label="Select Brand"
                         error={errors?.brandId?.message}
+                        required
                       />
                     )}
                   />
@@ -757,6 +847,7 @@ export default function BasicInformation({
                         placeholder="Select Model"
                         label="Select Model"
                         error={errors?.modelId?.message}
+                        required
                       />
                     )}
                   />
@@ -781,18 +872,19 @@ export default function BasicInformation({
                         placeholder="Select Model Year"
                         label="Select Model Year"
                         error={errors?.modelYearId?.message}
+                        required
                       />
                     )}
                   />
                 </div>
               </div>
 
-              {/* Variant, Variant Code, Launch Year, Product Name */}
+              {/* Tractor Details */}
               <div>
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">
-                  Product Details
+                  Tractor Details
                 </h2>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                   <Controller
                     name="variantId"
                     control={control}
@@ -806,133 +898,132 @@ export default function BasicInformation({
                         onChange={(option) => {
                           field.onChange(option.id);
                           setValue("variantCode", option.variantCode || "");
+                          setValue("variant", option.variantName || "");
                         }}
                         displayField="variantName"
                         placeholder="Select Variant"
-                        label="Select Variant"
+                        label="Variant"
                         error={errors?.variantId?.message}
                       />
                     )}
                   />
 
                   <Input
-                    {...register("variantCode")}
-                    label="Variant Code"
-                    placeholder="Variant Code"
-                    disabled
+                    {...register("hp")}
+                    label="HP"
+                    placeholder="Enter horsepower"
+                    type="number"
+                    error={errors?.hp?.message}
+                  />
+
+                  <Input
+                    {...register("manufacturingYear")}
+                    label="Manufacturing Year *"
+                    placeholder="Enter manufacturing year"
+                    type="number"
+                    error={errors?.manufacturingYear?.message}
+                    required
+                  />
+
+                  <Input
+                    {...register("purchaseYear")}
+                    label="Purchase Year"
+                    placeholder="Enter purchase year"
+                    type="number"
+                    error={errors?.purchaseYear?.message}
+                  />
+
+                  <Input
+                    {...register("rcRegistrationNumber")}
+                    label="RC Registration Number *"
+                    placeholder="Enter RC registration number"
+                    error={errors?.rcRegistrationNumber?.message}
+                    required
+                  />
+
+                  <Input
+                    {...register("engineNumber")}
+                    label="Engine Number *"
+                    placeholder="Enter engine number"
+                    error={errors?.engineNumber?.message}
+                    required
+                  />
+
+                  <Input
+                    {...register("chassisNumber")}
+                    label="Chassis Number *"
+                    placeholder="Enter chassis number"
+                    error={errors?.chassisNumber?.message}
+                    required
                   />
 
                   <Controller
-                    name="launchYear"
+                    name="tractorCategory"
                     control={control}
                     render={({ field }) => (
-                      <DatePicker
+                      <CustomListbox
+                        data={tractorCategoryOptions}
                         value={
-                          field.value ? parseLocalDate(field.value) : undefined
+                          tractorCategoryOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
                         }
-                        onChange={(dates) =>
-                          field.onChange(dates ? formatLocalDate(dates) : null)
-                        }
-                        label="Launch Year"
-                        error={errors?.launchYear?.message}
-                        placeholder="Select launch date..."
+                        onChange={(option) => field.onChange(option?.value)}
+                        displayField="label"
+                        placeholder="Select Tractor Category"
+                        label="Tractor Category"
+                        error={errors?.tractorCategory?.message}
                       />
                     )}
                   />
 
-                  <Input
-                    {...register("productName")}
-                    label="Website Display Product Name"
-                    placeholder="Enter product Name"
-                    error={errors?.productName?.message}
+                  <Controller
+                    name="fuelType"
+                    control={control}
+                    render={({ field }) => (
+                      <CustomListbox
+                        data={fuelTypeOptions}
+                        value={
+                          fuelTypeOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
+                        onChange={(option) => field.onChange(option?.value)}
+                        displayField="label"
+                        placeholder="Select Fuel Type"
+                        label="Fuel Type"
+                        error={errors?.fuelType?.message}
+                      />
+                    )}
+                  />
+
+                  <Controller
+                    name="driveType"
+                    control={control}
+                    render={({ field }) => (
+                      <CustomListbox
+                        data={driveTypeOptions}
+                        value={
+                          driveTypeOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
+                        onChange={(option) => field.onChange(option?.value)}
+                        displayField="label"
+                        placeholder="Select Drive Type"
+                        label="Drive Type (2WD / 4WD)"
+                        error={errors?.driveType?.message}
+                      />
+                    )}
                   />
                 </div>
               </div>
 
-              {/* Product Code, SKU Code, Tractor Status */}
-              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
-                <Input
-                  {...register("productCode")}
-                  label="Product Code"
-                  placeholder="Enter product Code"
-                  error={errors?.productCode?.message}
-                />
-                <Input
-                  {...register("skuCode")}
-                  label="SKU Code"
-                  placeholder="Enter SKU code"
-                  error={errors?.skuCode?.message}
-                />
-
-                <Controller
-                  name="tractorStatus"
-                  control={control}
-                  render={({ field }) => (
-                    <CustomListbox
-                      data={tractorStatusOptions}
-                      value={
-                        tractorStatusOptions.find(
-                          (o) => o.value === field.value,
-                        ) || null
-                      }
-                      onChange={(option) => field.onChange(option?.value)}
-                      displayField="label"
-                      placeholder="Select Status"
-                      label="Tractor Status"
-                      error={errors?.tractorStatus?.message}
-                    />
-                  )}
-                />
-              </div>
-
-              {/* Short Description */}
+              {/* Available Colors - Checkboxes */}
               <div>
-                <Textarea
-                  {...register("shortDescription")}
-                  label="Short Description"
-                  placeholder="Write short description about this tractor (Max 200 characters)"
-                  maxLength={200}
-                  rows={3}
-                  description="Max 200 characters"
-                  error={errors?.shortDescription?.message}
-                />
-              </div>
-
-              {/* Key Highlights */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Key Highlights
-                </h3>
-                <p className="text-sm text-gray-500 mb-6">
-                  Add key highlights about this tractor
-                </p>
-
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
-                  {Array.from({ length: highlightCount }, (_, index) => (
-                    <Input
-                      key={index}
-                      {...register(`highlights.highlight${index + 1}`)}
-                      label={`Highlight ${index + 1}`}
-                      placeholder="Enter highlight"
-                    />
-                  ))}
-                </div>
-
-                <Button
-                  type="button"
-                  variant="outlined"
-                  className="mt-4"
-                  onClick={() => setHighlightCount((prev) => prev + 1)}
-                >
-                  + Add Another Highlight
-                </Button>
-              </div>
-
-              {/* Available Colors */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h2 className="text-lg font-semibold text-gray-900 mb-2">
                   Available Colors
-                </h3>
+                </h2>
                 <p className="text-sm text-gray-500 mb-6">
                   Select available colors for this tractor
                 </p>
@@ -993,19 +1084,15 @@ export default function BasicInformation({
                 )}
               </div>
 
-              {/* Dealer Availability */}
+              {/* Location */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                  Dealer Availability
-                </h3>
-                <p className="text-sm text-gray-500 mb-6">
-                  Select where this tractor is available
-                </p>
-
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">
+                  Location
+                </h2>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      Country
+                      Country <span className="text-red-500">*</span>
                     </label>
                     <Controller
                       name="country"
@@ -1051,9 +1138,11 @@ export default function BasicInformation({
                           value={stateOptions.filter((o) =>
                             field.value?.includes(o.value),
                           )}
-                          onChange={(selected) =>
-                            field.onChange(selected?.map((s) => s.value) || [])
-                          }
+                          onChange={(selected) => {
+                            const values = selected?.map((s) => s.value) || [];
+                            field.onChange(values);
+                            setSelectedStates(values);
+                          }}
                         />
                       )}
                     />
@@ -1066,20 +1155,19 @@ export default function BasicInformation({
 
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      Available Districts{" "}
-                      <span className="text-red-500">*</span>
+                      Available Districts <span className="text-red-500">*</span>
                     </label>
                     <Controller
                       name="availableDistricts"
                       control={control}
                       render={({ field }) => (
                         <Select
-                          options={cityOptions}
+                          options={districtOptions}
                           isMulti
                           styles={selectStyles}
                           placeholder="Search District"
                           isDisabled={!selectedStates.length}
-                          value={cityOptions.filter((o) =>
+                          value={districtOptions.filter((o) =>
                             field.value?.includes(o.value),
                           )}
                           onChange={(selected) =>
@@ -1095,92 +1183,248 @@ export default function BasicInformation({
                     )}
                   </div>
 
-                  <div>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-                      Available Dealers <span className="text-red-500">*</span>
-                    </label>
-                    <Controller
-                      name="availableDealers"
-                      control={control}
-                      render={({ field }) => (
-                        <Select
-                          options={dealerOptions}
-                          isMulti
-                          styles={selectStyles}
-                          placeholder="Search Dealers"
-                          value={dealerOptions.filter((o) =>
-                            field.value?.includes(o.value),
-                          )}
-                          onChange={(selected) =>
-                            field.onChange(selected?.map((s) => s.value) || [])
-                          }
-                        />
-                      )}
-                    />
-                    {errors?.availableDealers && (
-                      <p className="mt-1 text-xs text-red-600">
-                        {errors.availableDealers.message}
-                      </p>
-                    )}
-                  </div>
+                  <Input
+                    {...register("locationTaluka")}
+                    label="Taluka"
+                    placeholder="Enter taluka"
+                    error={errors?.locationTaluka?.message}
+                  />
 
-                  <Controller
-                    name="stockStatus"
+                  <Input
+                    {...register("locationVillage")}
+                    label="Village"
+                    placeholder="Enter village"
+                    error={errors?.locationVillage?.message}
+                  />
+                </div>
+              </div>
+
+              {/* Ownership */}
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">
+                  Ownership
+                </h2>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                  {/* <Controller
+                    name="ownership"
                     control={control}
                     render={({ field }) => (
                       <CustomListbox
-                        data={stockStatusOptions}
+                        data={ownershipOptions}
                         value={
-                          stockStatusOptions.find(
+                          ownershipOptions.find(
                             (o) => o.value === field.value,
                           ) || null
                         }
                         onChange={(option) => field.onChange(option?.value)}
                         displayField="label"
-                        placeholder="Select Stock Status"
-                        label="Stock Status"
-                        error={errors?.stockStatus?.message}
+                        placeholder="Select Ownership"
+                        label="Ownership"
+                        error={errors?.ownership?.message}
+                      />
+                    )}
+                  /> */}
+
+                  <Controller
+                    name="ownerType"
+                    control={control}
+                    render={({ field }) => (
+                      <CustomListbox
+                        data={ownerTypeOptions}
+                        value={
+                          ownerTypeOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
+                        onChange={(option) => field.onChange(option?.value)}
+                        displayField="label"
+                        placeholder="Select Owner Type"
+                        label="Owner Type"
+                        error={errors?.ownerType?.message}
+                      />
+                    )}
+                  />
+{/* 
+                  <Input
+                    {...register("firstOwner")}
+                    label="First Owner"
+                    placeholder="Enter first owner name"
+                    error={errors?.firstOwner?.message}
+                  />
+
+                  <Input
+                    {...register("secondOwner")}
+                    label="Second Owner"
+                    placeholder="Enter second owner name"
+                    error={errors?.secondOwner?.message}
+                  />
+
+                  <Input
+                    {...register("thirdOwner")}
+                    label="Third Owner"
+                    placeholder="Enter third owner name"
+                    error={errors?.thirdOwner?.message}
+                  /> */}
+
+                  <Controller
+                    name="sellerType"
+                    control={control}
+                    render={({ field }) => (
+                      <CustomListbox
+                        data={sellerTypeOptions}
+                        value={
+                          sellerTypeOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
+                        onChange={(option) => field.onChange(option?.value)}
+                        displayField="label"
+                        placeholder="Select Seller Type"
+                        label="Seller Type"
+                        error={errors?.sellerType?.message}
+                      />
+                    )}
+                  />
+
+                  <div>
+                    <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                      Ownership Proof Available
+                    </label>
+                    <Controller
+                      name="ownershipProofAvailable"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          options={[
+                            { label: "Yes", value: true },
+                            { label: "No", value: false },
+                          ]}
+                          styles={selectStyles}
+                          placeholder="Select"
+                          value={
+                            [
+                              { label: "Yes", value: true },
+                              { label: "No", value: false },
+                            ].find((o) => o.value === field.value) || null
+                          }
+                          onChange={(selected) =>
+                            field.onChange(selected?.value || false)
+                          }
+                        />
+                      )}
+                    />
+                    {errors?.ownershipProofAvailable && (
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.ownershipProofAvailable.message}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Usage */}
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900 mb-6">
+                  Usage
+                </h2>
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                  <Input
+                    {...register("hoursMeterReading")}
+                    label="Hours Meter Reading *"
+                    placeholder="Enter hours meter reading"
+                    type="number"
+                    error={errors?.hoursMeterReading?.message}
+                    required
+                  />
+
+                  <Input
+                    {...register("approxWorkingHours")}
+                    label="Approx Working Hours"
+                    placeholder="Enter approximate working hours"
+                    type="number"
+                    error={errors?.approxWorkingHours?.message}
+                  />
+
+                  <Input
+                    {...register("acresWorked")}
+                    label="Acres Worked"
+                    placeholder="Enter acres worked"
+                    type="number"
+                    error={errors?.acresWorked?.message}
+                  />
+
+                  <Controller
+                    name="purpose"
+                    control={control}
+                    render={({ field }) => (
+                      <CustomListbox
+                        data={purposeOptions}
+                        value={
+                          purposeOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
+                        onChange={(option) => field.onChange(option?.value)}
+                        displayField="label"
+                        placeholder="Select Purpose"
+                        label="Purpose"
+                        error={errors?.purpose?.message}
                       />
                     )}
                   />
                 </div>
               </div>
 
-              {/* SEO Details */}
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-6">
-                  SEO Details
-                </h3>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
-                  <Input
-                    {...register("seoTitle")}
-                    label="SEO Title"
-                    placeholder="Enter SEO title"
-                    error={errors?.seoTitle?.message}
+              {/* Additional Fields */}
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+                <div>
+                  <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                    Available Dealers <span className="text-red-500">*</span>
+                  </label>
+                  <Controller
+                    name="availableDealers"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        options={dealerOptions}
+                        isMulti
+                        styles={selectStyles}
+                        placeholder="Search Dealers"
+                        value={dealerOptions.filter((o) =>
+                          field.value?.includes(o.value),
+                        )}
+                        onChange={(selected) =>
+                          field.onChange(selected?.map((s) => s.value) || [])
+                        }
+                      />
+                    )}
                   />
-                  <Input
-                    {...register("seoUrl")}
-                    label="SEO URL"
-                    placeholder="Enter SEO URL"
-                    error={errors?.seoUrl?.message}
-                  />
-                  <Textarea
-                    {...register("metaDescription")}
-                    label="Meta Description"
-                    placeholder="Enter meta description"
-                    maxLength={160}
-                    rows={2}
-                    description="Max 160 characters"
-                    error={errors?.metaDescription?.message}
-                  />
-                  <Input
-                    {...register("keywords")}
-                    label="Keywords"
-                    placeholder="Enter keywords"
-                    description="Comma separated keywords"
-                    error={errors?.keywords?.message}
-                  />
+                  {errors?.availableDealers && (
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.availableDealers.message}
+                    </p>
+                  )}
                 </div>
+
+                <Controller
+                  name="stockStatus"
+                  control={control}
+                  render={({ field }) => (
+                    <CustomListbox
+                      data={stockStatusOptions}
+                      value={
+                        stockStatusOptions.find(
+                          (o) => o.value === field.value,
+                        ) || null
+                      }
+                      onChange={(option) => field.onChange(option?.value)}
+                      displayField="label"
+                      placeholder="Select Stock Status"
+                      label="Stock Status"
+                      error={errors?.stockStatus?.message}
+                    />
+                  )}
+                />
               </div>
             </div>
 
@@ -1203,8 +1447,6 @@ export default function BasicInformation({
                     if (step > 1) {
                       if (setCurrentStep) {
                         setCurrentStep(step - 1);
-                      } else if (prevStep) {
-                        prevStep();
                       }
                     }
                   }}

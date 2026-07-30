@@ -13,19 +13,25 @@ api.interceptors.request.use(
     let token = null;
 
     // Vendor routes
-    if (url.startsWith("/vendor")) {
-      token = localStorage.getItem("vendorToken");
-    }
-
-    // Website customer (web-user) routes — everything else that isn't
-    // vendor/admin/branch should use the webToken if one exists.
-    else if (
-      !url.startsWith("/admin") &&
-      !url.startsWith("/branch")
-    ) {
-      token = localStorage.getItem("webToken");
-    }
-
+   // Vendor login doesn't require a token
+if (url === "/vendor/login") {
+  token = null;
+}
+// Become Vendor uses the website user's token
+else if (url === "/vendor/become") {
+  token = localStorage.getItem("webToken");
+}
+// Vendor dashboard routes use the vendor token
+else if (url.startsWith("/vendor")) {
+  token = localStorage.getItem("vendorToken");
+}
+// Other website routes use the web token
+else if (
+  !url.startsWith("/admin") &&
+  !url.startsWith("/branch")
+) {
+  token = localStorage.getItem("webToken");
+}
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
