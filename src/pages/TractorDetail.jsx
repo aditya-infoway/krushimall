@@ -1619,11 +1619,12 @@ const TractorDetails = () => {
       </div>
 
       {/* Enquiry Modal */}
-      <EnquiryModal
-        isOpen={showEnquiryModal}
-        websiteVariantId={id}
-        onClose={() => setShowEnquiryModal(false)}
-      />
+    <EnquiryModal
+  isOpen={showEnquiryModal}
+  enquiryMode="new"
+  websiteVariantId={id}
+  onClose={() => setShowEnquiryModal(false)}
+/>
     </div>
   );
 };

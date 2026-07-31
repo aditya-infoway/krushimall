@@ -188,7 +188,23 @@ const NewTractors = () => {
           })
           .filter((hp) => !isNaN(hp))
           .sort((a, b) => a - b);
+const transmissions = [
+  ...new Set(
+    tractorsData
+      .map(
+        (t) =>
+          t.transmissionType ||
+          t.transmission ||
+          t.gearType
+      )
+      .filter(Boolean)
+  ),
+].sort();
 
+setTransmissionOptions([
+  "All Transmissions",
+  ...transmissions,
+]);
         // Create unique HP options with "HP" suffix
         const uniqueHpOptions = [...new Set(hpValues)].map((hp) => `${hp} HP`);
 
@@ -486,12 +502,9 @@ const NewTractors = () => {
     ...upcomingTractors,
   ];
 
-  const transmissionOptions = [
-    "All Transmissions",
-    "Manual",
-    "Synchronous",
-    "Constant Mesh",
-  ];
+const [transmissionOptions, setTransmissionOptions] = useState([
+  "All Transmissions",
+]);
 
   const maxPrice = 1000000;
 
