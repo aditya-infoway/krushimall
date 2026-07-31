@@ -182,7 +182,7 @@ const VendorProfile = () => {
 
     // Vendor Type
     vendorType: "vehicle", // 'vehicle', 'spare-parts', 'service'
-    vehicleType: "new", // 'new', 'used'
+    vehicleType: "", // 'new', 'used'
 
     // Address
     country: "",
@@ -198,7 +198,7 @@ const VendorProfile = () => {
     panNumber: "",
     establishmentYear: "",
     businessAddress: "",
-
+    avatar: "",
     // Stats
     totalProducts: 0,
     totalOrders: 0,
@@ -216,7 +216,8 @@ const VendorProfile = () => {
   const [selectedState, setSelectedState] = useState(null);
   const [selectedCity, setSelectedCity] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState(null);
-
+  const [selectedImage, setSelectedImage] = useState(null);
+  const fileInputRef = useRef(null);
   const [errors, setErrors] = useState({});
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -279,18 +280,32 @@ const VendorProfile = () => {
       const response = await apiHelper.get("/vendor/me");
       const userData = response.vendor;
 
-      setVendorData((prev) => ({
-        ...prev,
-        name: userData.name || prev.name,
-        email: userData.email || prev.email,
-        phone: userData.phone || prev.phone,
-        address: userData.address || prev.address,
-        country: userData.country || prev.country,
-        state: userData.state || prev.state,
-        district: userData.district || prev.district,
-        city: userData.city || prev.city,
-        pincode: userData.pincode || prev.pincode,
-      }));
+     setVendorData((prev) => ({
+  ...prev,
+
+  name: userData.name || prev.name,
+  businessName: userData.businessName || prev.businessName,
+
+  email: userData.email || prev.email,
+  phone: userData.number || userData.phone || prev.phone,
+
+  vendorType: userData.vendorType || prev.vendorType,
+  vehicleType: userData.vehicleType || prev.vehicleType,
+
+  address: userData.address || prev.address,
+  country: userData.country || prev.country,
+  state: userData.state || prev.state,
+  district: userData.district || prev.district,
+  city: userData.city || prev.city,
+  pincode: userData.pincode || prev.pincode,
+
+  gstNumber: userData.gstNumber || prev.gstNumber,
+  panNumber: userData.panNumber || prev.panNumber,
+
+  avatar: userData.avatar
+    ? apiHelper.getImageUrl(userData.avatar)
+    : "",
+}));
 
       const country = Country.getAllCountries().find(
         (c) => c.name === userData.country,
@@ -343,47 +358,49 @@ const VendorProfile = () => {
       setLoadingProducts(false);
     }
   };
-const loadUsedProducts = async () => {
-  try {
-    setLoadingProducts(true);
+  const loadUsedProducts = async () => {
+    try {
+      setLoadingProducts(true);
 
-    const res = await apiHelper.get("/vendor-web/used-website-variant");
+      const res = await apiHelper.get("/vendor-web/used-website-variant");
 
-    setProducts(res.data || []);
-  } catch (err) {
-    console.log(err);
-    showErrorToast("Unable to load used products");
-  } finally {
-    setLoadingProducts(false);
-  }
-};
- useEffect(() => {
+      setProducts(res.data || []);
+    } catch (err) {
+      console.log(err);
+      showErrorToast("Unable to load used products");
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+  useEffect(() => {
   loadVendorData();
+}, [user]);
+ useEffect(() => {
+  if (!vendorData.vehicleType) return;
 
   if (vendorData.vehicleType === "used") {
     loadUsedProducts();
   } else {
     loadProducts();
   }
-}, [user, vendorData.vehicleType]);;
+}, [vendorData.vehicleType]);
+  const handleDelete = async (id) => {
+    if (!window.confirm("Delete this product?")) return;
 
-const handleDelete = async (id) => {
-  if (!window.confirm("Delete this product?")) return;
+    try {
+      if (vendorData.vehicleType === "used") {
+        await apiHelper.delete(`/vendor-web/used-website-variant/${id}`);
+        loadUsedProducts();
+      } else {
+        await apiHelper.delete(`/vendor-web/website-variant/${id}`);
+        loadProducts();
+      }
 
-  try {
-    if (vendorData.vehicleType === "used") {
-      await apiHelper.delete(`/vendor-web/used-website-variant/${id}`);
-      loadUsedProducts();
-    } else {
-      await apiHelper.delete(`/vendor-web/website-variant/${id}`);
-      loadProducts();
+      showSuccessToast("Product deleted");
+    } catch (err) {
+      showErrorToast("Unable to delete");
     }
-
-    showSuccessToast("Product deleted");
-  } catch (err) {
-    showErrorToast("Unable to delete");
-  }
-};
+  };
 
   // Vendor Stats
   const vendorStats = [
@@ -475,29 +492,48 @@ const handleDelete = async (id) => {
   const handleSave = async () => {
     try {
       setLoading(true);
-      // Save vendor data
-      const updatedData = {
-        ...vendorData,
-        country: selectedCountry?.name || vendorData.country,
-        state: selectedState?.name || vendorData.state,
-        city: selectedCity?.name || vendorData.city,
-        district: selectedDistrict?.name || vendorData.district,
-      };
 
-      // API call to update vendor profile
-      await apiHelper.put("/vendor/update", updatedData);
+      const formData = new FormData();
 
-      // Update local storage
-      localStorage.setItem("vendorData", JSON.stringify(updatedData));
+      formData.append("name", vendorData.name);
+      formData.append("number", vendorData.phone);
+      formData.append("email", vendorData.email);
+      formData.append("vendorType", vendorData.vendorType);
+      formData.append("vehicleType", vendorData.vehicleType || "");
+      formData.append("country", selectedCountry?.name || vendorData.country);
+      formData.append("state", selectedState?.name || vendorData.state);
+      formData.append(
+        "district",
+        selectedDistrict?.name || vendorData.district,
+      );
+      formData.append("city", selectedCity?.name || vendorData.city);
+      formData.append("address", vendorData.address);
+      formData.append("pincode", vendorData.pincode);
+
+      // Upload avatar if selected
+      if (selectedImage) {
+        formData.append("avatar", selectedImage);
+      }
+
+      await apiHelper.put("/vendor/update", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
+
+      setSelectedImage(null);
+
+      await loadVendorData();
 
       setIsEditing(false);
       setShowSaveSuccess(true);
       showSuccessToast("Vendor profile updated successfully!");
+
       setTimeout(() => setShowSaveSuccess(false), 3000);
 
-      // Refresh user data
       await refreshUser();
     } catch (error) {
+      console.error(error);
       showErrorToast("Failed to update vendor profile");
     } finally {
       setLoading(false);
@@ -648,10 +684,49 @@ const handleDelete = async (id) => {
               <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-r from-green-600 to-green-700"></div>
               <div className="relative z-10">
                 <div className="relative w-24 h-24 mx-auto mb-3">
-                  <div className="w-24 h-24 rounded-full border-4 border-white bg-green-100 flex items-center justify-center overflow-hidden shadow-md">
-                    <Store className="h-12 w-12 text-green-600" />
+                  <div className="w-24 h-24 rounded-full border-4 border-white bg-green-100 overflow-hidden shadow-md">
+                    {vendorData.avatar ? (
+                      <img
+                        src={vendorData.avatar}
+                        alt="Vendor"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Store className="h-12 w-12 text-green-600 mx-auto mt-6" />
+                    )}
                   </div>
-                  <button className="absolute bottom-0 right-0 bg-green-600 text-white p-1.5 rounded-full shadow-lg hover:bg-green-700 transition-all hover:scale-110">
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    hidden
+                    accept="image/*"
+                    disabled={!isEditing}
+                    onChange={(e) => {
+                      if (!isEditing) return;
+
+                      const file = e.target.files?.[0];
+                      if (!file) return;
+
+                      setSelectedImage(file);
+
+                      setVendorData((prev) => ({
+                        ...prev,
+                        avatar: URL.createObjectURL(file),
+                      }));
+                    }}
+                  />
+                  <button
+                    type="button"
+                    disabled={!isEditing}
+                    onClick={() => {
+                      if (isEditing) fileInputRef.current?.click();
+                    }}
+                    className={`absolute bottom-0 right-0 p-1.5 rounded-full shadow-lg ${
+                      isEditing
+                        ? "bg-green-600 text-white cursor-pointer"
+                        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                    }`}
+                  >
                     <Camera className="h-3.5 w-3.5" />
                   </button>
                 </div>
@@ -1309,7 +1384,7 @@ const handleDelete = async (id) => {
                   </div>
 
                   <button
-                 onClick={() => navigate("/vendor/add-used-product")}
+                    onClick={() => navigate("/vendor/add-used-product")}
                     className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white cursor-pointer px-5 py-2.5 rounded-xl text-sm font-semibold"
                   >
                     <Plus className="h-4 w-4" />
@@ -1355,9 +1430,7 @@ const handleDelete = async (id) => {
                               {(currentPage - 1) * itemsPerPage + index + 1}
                             </td>
                             <td className="px-4 py-3">{item.productName}</td>
-                            <td className="px-4 py-3">
-                              {item.brand}
-                            </td>
+                            <td className="px-4 py-3">{item.brand}</td>
                             <td className="px-4 py-3">
                               ₹ {item.expectedPrice}
                             </td>
@@ -1366,7 +1439,9 @@ const handleDelete = async (id) => {
                               <div className="flex justify-center gap-2">
                                 <button
                                   onClick={() =>
-                                  navigate(`/vendor/edit-used-product/${item.id}`)
+                                    navigate(
+                                      `/vendor/edit-used-product/${item.id}`,
+                                    )
                                   }
                                   className="px-3 py-1 bg-blue-500 text-white rounded-lg cursor-pointer"
                                 >
@@ -1508,7 +1583,11 @@ const handleDelete = async (id) => {
                             <td className="px-4 py-3">{item.mobileNumber}</td>
 
                             <td className="px-4 py-3">
-                              {item.websiteVariant?.productName || "-"}
+                              <td className="px-4 py-3">
+                                {item.websiteVariant?.productName ||
+                                  item.usedWebsiteVariant?.productName ||
+                                  "-"}
+                              </td>
                             </td>
 
                             <td

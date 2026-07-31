@@ -205,7 +205,7 @@ const CustomListbox = ({
                     `relative cursor-default select-none py-2 pl-10 pr-4 ${
                       active ? "bg-green-100 text-green-900" : "text-gray-900"
                     }`
-                  }
+                  } 
                   value={item}
                 >
                   {({ selected }) => (
@@ -293,11 +293,13 @@ export default function HydraulicTyres({
     });
   }, [productData, isEdit, reset]);
 
-  const onSubmit = async (data) => {
+ const onSubmit = async (data) => {
     try {
       setLoading(true);
-      const productId =
-        localStorage.getItem("vendorProductId") || productData?.id;
+      const productId = isEdit
+        ? productData?.id
+        : localStorage.getItem("vendorProductId");
+
       if (!productId) {
         toast("Please save basic information first.");
         return;
@@ -337,12 +339,10 @@ export default function HydraulicTyres({
 
       toast.success("Hydraulic details saved!");
 
-      // Mark current step as completed
       if (onComplete) {
         onComplete(step);
       }
 
-      // Go to next step
       if (setCurrentStep) {
         setCurrentStep(step + 1);
       }

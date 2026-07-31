@@ -65,7 +65,8 @@ const Profile = () => {
   const [selectedState, setSelectedState] = useState(null);
   const [selectedCity, setSelectedCity] = useState(null);
   const [selectedDistrict, setSelectedDistrict] = useState(null);
-
+  const [selectedImage, setSelectedImage] = useState(null);
+  const fileInputRef = useRef(null);
   const [userData, setUserData] = useState({
     name: "",
     email: "",
@@ -76,6 +77,7 @@ const Profile = () => {
     district: "",
     city: "",
     pincode: "",
+    avatar: "",
   });
 
   useEffect(() => {
@@ -206,6 +208,7 @@ const Profile = () => {
         district: user.district || "",
         city: user.city || "",
         pincode: user.pincode || "",
+        avatar: user.avatar ? apiHelper.getImageUrl(user.avatar) : "",
       }));
 
       const country = Country.getAllCountries().find(
@@ -261,14 +264,37 @@ const Profile = () => {
 
   const handleSave = async () => {
     try {
-      await apiHelper.put("/webauth/profile", userData);
+      const formData = new FormData();
+
+      formData.append("name", userData.name);
+      formData.append("email", userData.email);
+      formData.append("phone", userData.phone);
+      formData.append("address", userData.address);
+      formData.append("country", userData.country);
+      formData.append("state", userData.state);
+      formData.append("district", userData.district);
+      formData.append("city", userData.city);
+      formData.append("pincode", userData.pincode);
+
+      // Upload image if selected
+      if (selectedImage) {
+        formData.append("avatar", selectedImage);
+      }
+
+      await apiHelper.put("/webauth/profile", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
 
       showSuccessToast("Profile updated");
 
+      setSelectedImage(null);
       setIsEditing(false);
 
-      loadProfile();
+      await loadProfile();
     } catch (err) {
+      console.error(err);
       showErrorToast("Unable to update profile");
     }
   };
@@ -562,9 +588,43 @@ const Profile = () => {
                       <User className="h-12 w-12 text-green-600" />
                     )}
                   </div>
-                  <button className="absolute bottom-0 right-0 bg-green-600 text-white p-1.5 rounded-full shadow-lg hover:bg-green-700 transition-all hover:scale-110">
-                    <Camera className="h-3.5 w-3.5" />
-                  </button>
+                 <input
+  ref={fileInputRef}
+  type="file"
+  accept="image/*"
+  hidden
+  disabled={!isEditing}
+  onChange={(e) => {
+    if (!isEditing) return;
+
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setSelectedImage(file);
+
+    setUserData((prev) => ({
+      ...prev,
+      avatar: URL.createObjectURL(file),
+    }));
+  }}
+/>
+                <button
+  type="button"
+  disabled={!isEditing}
+  onClick={() => {
+    if (isEditing) {
+      fileInputRef.current?.click();
+    }
+  }}
+  className={`absolute bottom-0 right-0 p-1.5 rounded-full shadow-lg transition-all
+    ${
+      isEditing
+        ? "bg-green-600 text-white hover:bg-green-700 hover:scale-110 cursor-pointer"
+        : "bg-gray-300 text-gray-500 cursor-not-allowed"
+    }`}
+>
+  <Camera className="h-3.5 w-3.5" />
+</button>
                 </div>
                 <h3 className="font-bold text-gray-900 text-lg">
                   {userData.name}

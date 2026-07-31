@@ -3,7 +3,14 @@ import { X, Phone, Mail, User, MessageSquare, Send, Clock, Check, Sparkles } fro
 import { RadioGroup } from "@headlessui/react";
 import apiHelper from "../utils/apiHelper";
 import { showSuccessToast, showErrorToast } from "../utils/toast";
-const EnquiryModal = ({ isOpen: externalIsOpen, onClose,websiteVariantId, }) => {
+const EnquiryModal = ({
+  isOpen: externalIsOpen,
+  onClose,
+  enquiryMode = "both",
+
+  websiteVariantId,
+  usedWebsiteVariantId,
+}) => {
   const [internalIsOpen, setInternalIsOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -122,13 +129,25 @@ const EnquiryModal = ({ isOpen: externalIsOpen, onClose,websiteVariantId, }) => 
   try {
     setIsSubmitting(true);
 
-    await apiHelper.post("/vendor-web/website-enquiry", {
-        websiteVariantId,
-      fullName: formData.name,
-      email: formData.email,
-      mobileNumber: formData.phone,
-      message: formData.message,
-    });
+   const tractorType =
+  enquiryMode === "both"
+    ? formData.tractorType
+    : enquiryMode;
+
+await apiHelper.post("/vendor-web/website-enquiry", {
+  interestedIn: tractorType,
+
+  websiteVariantId:
+    tractorType === "new" ? websiteVariantId : null,
+
+  usedWebsiteVariantId:
+    tractorType === "used" ? usedWebsiteVariantId : null,
+
+  fullName: formData.name,
+  email: formData.email,
+  mobileNumber: formData.phone,
+  message: formData.message,
+});
 
     showSuccessToast("Enquiry submitted successfully!");
 
