@@ -91,7 +91,8 @@ const formatStockStatus = (status) => {
 
 // Get stock status color
 const getStockStatusColor = (status) => {
-  if (!hasValidValue(status)) return "bg-gray-100 text-gray-600 border-gray-200";
+  if (!hasValidValue(status))
+    return "bg-gray-100 text-gray-600 border-gray-200";
   const statusLower = status.toLowerCase();
   if (
     statusLower === "in_stock" ||
@@ -232,7 +233,7 @@ const TABS = [
   { id: "inspection", label: "Inspection" },
   { id: "tyres", label: "Tyres" },
   { id: "hydraulic", label: "Hydraulic & PTO" },
-  { id: "attachments", label: "Attachments" },
+  // { id: "attachments", label: "Attachments" },
   { id: "pricing", label: "Pricing" },
   { id: "location", label: "Location" },
 ];
@@ -614,7 +615,9 @@ const UsedTractorDetails = () => {
       try {
         setLoading(true);
         setError(null);
-       const response = await apiHelper.get(`/vendor-web/used-website-variant/${id}`);
+        const response = await apiHelper.get(
+          `/vendor-web/used-website-variant/${id}`,
+        );
         setTractorData(response.data);
       } catch (error) {
         console.error("Error fetching tractor data:", error);
@@ -662,7 +665,6 @@ const UsedTractorDetails = () => {
     d.highlight3,
     d.highlight4,
     d.highlight5,
-    
   ].filter((h) => hasValidValue(h));
 
   // Available colors
@@ -673,7 +675,7 @@ const UsedTractorDetails = () => {
     d.orangeColor ? "Orange" : null,
     d.blackColor ? "Black" : null,
     d.whiteColor ? "White" : null,
-    d.customColor ? (d.customColorName || "Custom") : null,
+    d.customColor ? d.customColorName || "Custom" : null,
   ].filter((c) => c !== null && c !== undefined && c !== "");
 
   // Attachments
@@ -708,7 +710,9 @@ const UsedTractorDetails = () => {
       ? `₹ ${Number(d.expectedPrice).toLocaleString("en-IN")}`
       : "₹ 2,65,000",
     expectedPrice: d.expectedPrice || null,
-    financeAvailable: hasValidValue(d.financeAvailable) ? d.financeAvailable : null,
+    financeAvailable: hasValidValue(d.financeAvailable)
+      ? d.financeAvailable
+      : null,
     exchangeOffer: hasValidValue(d.exchangeOffer) ? d.exchangeOffer : null,
     negotiable: hasValidValue(d.negotiable) ? d.negotiable : null,
 
@@ -716,18 +720,30 @@ const UsedTractorDetails = () => {
     hp: hasValidValue(d.hp) ? `${d.hp} HP` : "45 HP",
     fuelType: hasValidValue(d.fuelType) ? d.fuelType : "Diesel",
     driveType: hasValidValue(d.driveType) ? d.driveType : "2 WD",
-    tractorCategory: hasValidValue(d.tractorCategory) ? d.tractorCategory : null,
-    manufacturingYear: hasValidValue(d.manufacturingYear) ? d.manufacturingYear : null,
+    tractorCategory: hasValidValue(d.tractorCategory)
+      ? d.tractorCategory
+      : null,
+    manufacturingYear: hasValidValue(d.manufacturingYear)
+      ? d.manufacturingYear
+      : null,
     purchaseYear: hasValidValue(d.purchaseYear) ? d.purchaseYear : null,
-    hoursMeterReading: hasValidValue(d.hoursMeterReading) ? d.hoursMeterReading : null,
-    approxWorkingHours: hasValidValue(d.approxWorkingHours) ? d.approxWorkingHours : null,
+    hoursMeterReading: hasValidValue(d.hoursMeterReading)
+      ? d.hoursMeterReading
+      : null,
+    approxWorkingHours: hasValidValue(d.approxWorkingHours)
+      ? d.approxWorkingHours
+      : null,
     acresWorked: hasValidValue(d.acresWorked) ? d.acresWorked : null,
 
     // Registration
-    rcRegistrationNumber: hasValidValue(d.rcRegistrationNumber) ? d.rcRegistrationNumber : null,
+    rcRegistrationNumber: hasValidValue(d.rcRegistrationNumber)
+      ? d.rcRegistrationNumber
+      : null,
     engineNumber: hasValidValue(d.engineNumber) ? d.engineNumber : null,
     chassisNumber: hasValidValue(d.chassisNumber) ? d.chassisNumber : null,
-    chassisNumberImage: hasValidValue(d.chassisNumberImage) ? apiHelper.image(d.chassisNumberImage) : null,
+    chassisNumberImage: hasValidValue(d.chassisNumberImage)
+      ? apiHelper.image(d.chassisNumberImage)
+      : null,
     rcBook: hasValidValue(d.rcBook) ? apiHelper.image(d.rcBook) : null,
 
     // Ownership
@@ -741,20 +757,38 @@ const UsedTractorDetails = () => {
     purpose: hasValidValue(d.purpose) ? d.purpose : null,
 
     // Engine Details
-    engineSelfStart: hasValidValue(d.engineSelfStart) ? d.engineSelfStart : null,
-    engineColdStart: hasValidValue(d.engineColdStart) ? d.engineColdStart : null,
+    engineSelfStart: hasValidValue(d.engineSelfStart)
+      ? d.engineSelfStart
+      : null,
+    engineColdStart: hasValidValue(d.engineColdStart)
+      ? d.engineColdStart
+      : null,
     engineSmoke: hasValidValue(d.engineSmoke) ? d.engineSmoke : null,
     engineSound: hasValidValue(d.engineSound) ? d.engineSound : null,
-    engineOilLeakage: hasValidValue(d.engineOilLeakage) ? d.engineOilLeakage : null,
+    engineOilLeakage: hasValidValue(d.engineOilLeakage)
+      ? d.engineOilLeakage
+      : null,
 
     // Vehicle Inspection
-    overallCondition: hasValidValue(d.overallCondition) ? d.overallCondition : null,
-    clutchCondition: hasValidValue(d.clutchCondition) ? d.clutchCondition : null,
-    gearboxCondition: hasValidValue(d.gearboxCondition) ? d.gearboxCondition : null,
+    overallCondition: hasValidValue(d.overallCondition)
+      ? d.overallCondition
+      : null,
+    clutchCondition: hasValidValue(d.clutchCondition)
+      ? d.clutchCondition
+      : null,
+    gearboxCondition: hasValidValue(d.gearboxCondition)
+      ? d.gearboxCondition
+      : null,
     steeringType: hasValidValue(d.steeringType) ? d.steeringType : null,
-    steeringCondition: hasValidValue(d.steeringCondition) ? d.steeringCondition : null,
-    brakesCondition: hasValidValue(d.brakesCondition) ? d.brakesCondition : null,
-    batteryCondition: hasValidValue(d.batteryCondition) ? d.batteryCondition : null,
+    steeringCondition: hasValidValue(d.steeringCondition)
+      ? d.steeringCondition
+      : null,
+    brakesCondition: hasValidValue(d.brakesCondition)
+      ? d.brakesCondition
+      : null,
+    batteryCondition: hasValidValue(d.batteryCondition)
+      ? d.batteryCondition
+      : null,
 
     // Lights
     lightsHeadLight: d.lightsHeadLight || false,
@@ -764,15 +798,27 @@ const UsedTractorDetails = () => {
 
     // Tyres
     frontTyreBrand: hasValidValue(d.frontTyreBrand) ? d.frontTyreBrand : null,
-    frontTyreRemainingPercent: hasValidValue(d.frontTyreRemainingPercent) ? `${d.frontTyreRemainingPercent}%` : null,
-    frontTyreCondition: hasValidValue(d.frontTyreCondition) ? d.frontTyreCondition : null,
+    frontTyreRemainingPercent: hasValidValue(d.frontTyreRemainingPercent)
+      ? `${d.frontTyreRemainingPercent}%`
+      : null,
+    frontTyreCondition: hasValidValue(d.frontTyreCondition)
+      ? d.frontTyreCondition
+      : null,
     rearTyreBrand: hasValidValue(d.rearTyreBrand) ? d.rearTyreBrand : null,
-    rearTyreRemainingPercent: hasValidValue(d.rearTyreRemainingPercent) ? `${d.rearTyreRemainingPercent}%` : null,
-    rearTyreCondition: hasValidValue(d.rearTyreCondition) ? d.rearTyreCondition : null,
+    rearTyreRemainingPercent: hasValidValue(d.rearTyreRemainingPercent)
+      ? `${d.rearTyreRemainingPercent}%`
+      : null,
+    rearTyreCondition: hasValidValue(d.rearTyreCondition)
+      ? d.rearTyreCondition
+      : null,
 
     // Hydraulic
-    hydraulicLiftWorking: hasValidValue(d.hydraulicLiftWorking) ? d.hydraulicLiftWorking : null,
-    hydraulicCondition: hasValidValue(d.hydraulicCondition) ? d.hydraulicCondition : null,
+    hydraulicLiftWorking: hasValidValue(d.hydraulicLiftWorking)
+      ? d.hydraulicLiftWorking
+      : null,
+    hydraulicCondition: hasValidValue(d.hydraulicCondition)
+      ? d.hydraulicCondition
+      : null,
 
     // PTO
     ptoStatus: hasValidValue(d.ptoStatus) ? d.ptoStatus : null,
@@ -781,9 +827,15 @@ const UsedTractorDetails = () => {
     attachments: attachments,
 
     // Service History
-    lastServiceDate: hasValidValue(d.lastServiceDate) ? new Date(d.lastServiceDate).toLocaleDateString() : null,
-    engineOverhauled: hasValidValue(d.engineOverhauled) ? d.engineOverhauled : null,
-    gearboxRepaired: hasValidValue(d.gearboxRepaired) ? d.gearboxRepaired : null,
+    lastServiceDate: hasValidValue(d.lastServiceDate)
+      ? new Date(d.lastServiceDate).toLocaleDateString()
+      : null,
+    engineOverhauled: hasValidValue(d.engineOverhauled)
+      ? d.engineOverhauled
+      : null,
+    gearboxRepaired: hasValidValue(d.gearboxRepaired)
+      ? d.gearboxRepaired
+      : null,
     clutchChanged: hasValidValue(d.clutchChanged) ? d.clutchChanged : null,
     tyresChanged: hasValidValue(d.tyresChanged) ? d.tyresChanged : null,
     batteryChanged: hasValidValue(d.batteryChanged) ? d.batteryChanged : null,
@@ -794,12 +846,16 @@ const UsedTractorDetails = () => {
 
     // Insurance
     insurance: hasValidValue(d.insurance) ? d.insurance : null,
-    insuranceExpiryDate: hasValidValue(d.insuranceExpiryDate) ? new Date(d.insuranceExpiryDate).toLocaleDateString() : null,
+    insuranceExpiryDate: hasValidValue(d.insuranceExpiryDate)
+      ? new Date(d.insuranceExpiryDate).toLocaleDateString()
+      : null,
 
     // Finance
     finance: hasValidValue(d.finance) ? d.finance : null,
     financeCompany: hasValidValue(d.financeCompany) ? d.financeCompany : null,
-    outstandingAmount: hasValidValue(d.outstandingAmount) ? `₹ ${Number(d.outstandingAmount).toLocaleString("en-IN")}` : null,
+    outstandingAmount: hasValidValue(d.outstandingAmount)
+      ? `₹ ${Number(d.outstandingAmount).toLocaleString("en-IN")}`
+      : null,
 
     // Location
     country: hasValidValue(d.country) ? d.country : null,
@@ -820,17 +876,21 @@ const UsedTractorDetails = () => {
 
     // Documents
     brochure: hasValidValue(d.brochure) ? apiHelper.image(d.brochure) : null,
-    warrantyCard: hasValidValue(d.warrantyCard) ? apiHelper.image(d.warrantyCard) : null,
-    insuranceCertificate: hasValidValue(d.insuranceCertificate) ? apiHelper.image(d.insuranceCertificate) : null,
+    warrantyCard: hasValidValue(d.warrantyCard)
+      ? apiHelper.image(d.warrantyCard)
+      : null,
+    insuranceCertificate: hasValidValue(d.insuranceCertificate)
+      ? apiHelper.image(d.insuranceCertificate)
+      : null,
     invoice: hasValidValue(d.invoice) ? apiHelper.image(d.invoice) : null,
     others: hasValidValue(d.others) ? apiHelper.image(d.others) : null,
 
     // Similar & Related Products (sample data - you should fetch from API)
     images: finalImages,
     phone: "12345 67890", // This should come from vendor or user data
-   description: hasValidValue(d.description)
-  ? d.description
-  : "Used Tractor in excellent condition",
+    description: hasValidValue(d.description)
+      ? d.description
+      : "Used Tractor in excellent condition",
 
     similar: [
       { name: "Mahindra 265 DI", price: "₹ 4,60,000", image: "/mah.png" },
@@ -1223,10 +1283,20 @@ const UsedTractorDetails = () => {
 
               {/* Core condition rows */}
               <div className="border-t border-gray-100">
-                <DetailRow label="Overall Condition" value={tractor.overallCondition} />
-                <DetailRow label="Hours Meter" value={tractor.hoursMeterReading} />
+                <DetailRow
+                  label="Overall Condition"
+                  value={tractor.overallCondition}
+                />
+                <DetailRow
+                  label="Hours Meter"
+                  value={tractor.hoursMeterReading}
+                />
                 <DetailRow label="Owner Type" value={tractor.ownerType} />
-                <DetailRow label="RC Available" value={tractor.rcRegistrationNumber ? "Yes" : "No"} last />
+                <DetailRow
+                  label="RC Available"
+                  value={tractor.rcRegistrationNumber ? "Yes" : "No"}
+                  last
+                />
               </div>
 
               {/* Available Colors */}
@@ -1251,7 +1321,9 @@ const UsedTractorDetails = () => {
                 <div className="flex-1">
                   <h3 className="font-bold text-gray-900">{tractor.name}</h3>
                   <p className="text-sm text-gray-500 mb-2">
-                    {tractor.status === "DRAFT" ? "Listing in progress" : "Product Available"}
+                    {tractor.status === "DRAFT"
+                      ? "Listing in progress"
+                      : "Product Available"}
                   </p>
                   <button
                     onClick={() => setShowEnquiryModal(true)}
@@ -1570,7 +1642,8 @@ const UsedTractorDetails = () => {
       {/* Enquiry Modal */}
       <EnquiryModal
         isOpen={showEnquiryModal}
-        websiteVariantId={id}
+        enquiryMode="used"
+        usedWebsiteVariantId={id}
         onClose={() => setShowEnquiryModal(false)}
       />
     </div>
@@ -1602,27 +1675,61 @@ const DescriptionTab = ({ tractor, keyHighlights }) => (
 );
 
 // 2. Basic Info Tab
-const BasicInfoTab = ({ tractor }) => (
-  <SectionCard title="Basic Information" icon={Package}>
-    <DetailRow label="Product Name" value={tractor.name} />
-    <DetailRow label="Category" value={tractor.category} />
-    <DetailRow label="Brand" value={tractor.brand} />
-    <DetailRow label="Model" value={tractor.model} />
-    <DetailRow label="Variant" value={tractor.variant} />
-    <DetailRow label="Variant Code" value={tractor.variantCode} />
-    <DetailRow label="Status" value={tractor.status} />
-    <DetailRow label="Manufacturing Year" value={tractor.manufacturingYear} />
-    <DetailRow label="Purchase Year" value={tractor.purchaseYear} />
-    <DetailRow label="Tractor Category" value={tractor.tractorCategory} />
-    <DetailRow label="Fuel Type" value={tractor.fuelType} />
-    <DetailRow label="Drive Type" value={tractor.driveType} />
-    <DetailRow label="Hours Meter Reading" value={tractor.hoursMeterReading} />
-    <DetailRow label="Approx Working Hours" value={tractor.approxWorkingHours} />
-    <DetailRow label="Acres Worked" value={tractor.acresWorked} />
-    <DetailRow label="Purpose" value={tractor.purpose} />
-    <DetailRow label="RC Registration Number" value={tractor.rcRegistrationNumber} last />
-  </SectionCard>
-);
+const BasicInfoTab = ({ tractor }) => {
+  const leftItems = [
+    { label: "Product Name", value: tractor.name },
+    { label: "Category", value: tractor.category },
+    { label: "Brand", value: tractor.brand },
+    { label: "Model", value: tractor.model },
+    { label: "Variant", value: tractor.variant },
+    { label: "Variant Code", value: tractor.variantCode },
+    { label: "Status", value: tractor.status },
+
+    { label: "Purchase Year", value: tractor.purchaseYear },
+  ];
+
+  const rightItems = [
+    { label: "Tractor Category", value: tractor.tractorCategory },
+    { label: "Fuel Type", value: tractor.fuelType },
+    { label: "Drive Type", value: tractor.driveType },
+    { label: "Hours Meter Reading", value: tractor.hoursMeterReading },
+    { label: "Approx Working Hours", value: tractor.approxWorkingHours },
+    { label: "Acres Worked", value: tractor.acresWorked },
+    { label: "Purpose", value: tractor.purpose },
+    { label: "RC Registration Number", value: tractor.rcRegistrationNumber },
+    { label: "Manufacturing Year", value: tractor.manufacturingYear },
+  ];
+
+  return (
+    <SectionCard title="Basic Information" icon={Package}>
+      <div className="grid grid-cols-1 lg:grid-cols-2">
+        {/* Left Side */}
+        <div className="lg:border-r border-gray-300 dark:border-gray-700 lg:pr-6">
+          {leftItems.map((item, index) => (
+            <DetailRow
+              key={item.label}
+              label={item.label}
+              value={item.value}
+              last={index === leftItems.length - 1}
+            />
+          ))}
+        </div>
+
+        {/* Right Side */}
+        <div className="lg:pl-6">
+          {rightItems.map((item, index) => (
+            <DetailRow
+              key={item.label}
+              label={item.label}
+              value={item.value}
+              last={index === rightItems.length - 1}
+            />
+          ))}
+        </div>
+      </div>
+    </SectionCard>
+  );
+};
 
 // 3. Specifications Tab
 const SpecificationsTab = ({ tractor }) => (
@@ -1636,7 +1743,11 @@ const SpecificationsTab = ({ tractor }) => (
       <DetailRow label="Engine Cold Start" value={tractor.engineColdStart} />
       <DetailRow label="Engine Smoke" value={tractor.engineSmoke} />
       <DetailRow label="Engine Sound" value={tractor.engineSound} />
-      <DetailRow label="Engine Oil Leakage" value={tractor.engineOilLeakage} last />
+      <DetailRow
+        label="Engine Oil Leakage"
+        value={tractor.engineOilLeakage}
+        last
+      />
     </SectionCard>
 
     <SectionCard title="Ownership Details" icon={User}>
@@ -1646,7 +1757,11 @@ const SpecificationsTab = ({ tractor }) => (
       <DetailRow label="Second Owner" value={tractor.secondOwner} />
       <DetailRow label="Third Owner" value={tractor.thirdOwner} />
       <DetailRow label="Seller Type" value={tractor.sellerType} />
-      <DetailRow label="Ownership Proof" value={tractor.ownershipProofAvailable ? "Available" : "Not Available"} last />
+      <DetailRow
+        label="Ownership Proof"
+        value={tractor.ownershipProofAvailable ? "Available" : "Not Available"}
+        last
+      />
     </SectionCard>
   </div>
 );
@@ -1661,15 +1776,32 @@ const InspectionTab = ({ tractor }) => (
       <DetailRow label="Steering Type" value={tractor.steeringType} />
       <DetailRow label="Steering Condition" value={tractor.steeringCondition} />
       <DetailRow label="Brakes Condition" value={tractor.brakesCondition} />
-      <DetailRow label="Battery Condition" value={tractor.batteryCondition} last />
+      <DetailRow
+        label="Battery Condition"
+        value={tractor.batteryCondition}
+        last
+      />
     </SectionCard>
 
     <div className="flex flex-col gap-4">
       <SectionCard title="Lights & Electrical" icon={Zap}>
-        <DetailRow label="Head Light" value={tractor.lightsHeadLight ? "Working" : "Not Working"} />
-        <DetailRow label="Indicator" value={tractor.lightsIndicator ? "Working" : "Not Working"} />
-        <DetailRow label="Tail Light" value={tractor.lightsTailLight ? "Working" : "Not Working"} />
-        <DetailRow label="Horn" value={tractor.lightsHorn ? "Working" : "Not Working"} last />
+        <DetailRow
+          label="Head Light"
+          value={tractor.lightsHeadLight ? "Working" : "Not Working"}
+        />
+        <DetailRow
+          label="Indicator"
+          value={tractor.lightsIndicator ? "Working" : "Not Working"}
+        />
+        <DetailRow
+          label="Tail Light"
+          value={tractor.lightsTailLight ? "Working" : "Not Working"}
+        />
+        <DetailRow
+          label="Horn"
+          value={tractor.lightsHorn ? "Working" : "Not Working"}
+          last
+        />
       </SectionCard>
 
       <SectionCard title="Service History" icon={Wrench}>
@@ -1678,7 +1810,11 @@ const InspectionTab = ({ tractor }) => (
         <DetailRow label="Gearbox Repaired" value={tractor.gearboxRepaired} />
         <DetailRow label="Clutch Changed" value={tractor.clutchChanged} />
         <DetailRow label="Tyres Changed" value={tractor.tyresChanged} />
-        <DetailRow label="Battery Changed" value={tractor.batteryChanged} last />
+        <DetailRow
+          label="Battery Changed"
+          value={tractor.batteryChanged}
+          last
+        />
       </SectionCard>
     </div>
   </div>
@@ -1706,8 +1842,14 @@ const HydraulicTab = ({ tractor }) => (
   <SectionCard title="Hydraulic & PTO" icon={Droplets}>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div>
-        <DetailRow label="Hydraulic Lift Working" value={tractor.hydraulicLiftWorking} />
-        <DetailRow label="Hydraulic Condition" value={tractor.hydraulicCondition} />
+        <DetailRow
+          label="Hydraulic Lift Working"
+          value={tractor.hydraulicLiftWorking}
+        />
+        <DetailRow
+          label="Hydraulic Condition"
+          value={tractor.hydraulicCondition}
+        />
       </div>
       <div>
         <DetailRow label="PTO Status" value={tractor.ptoStatus} last />
@@ -1751,7 +1893,11 @@ const PricingTab = ({ tractor }) => (
       <DetailRow label="Insurance Expiry" value={tractor.insuranceExpiryDate} />
       <DetailRow label="Finance" value={tractor.finance} />
       <DetailRow label="Finance Company" value={tractor.financeCompany} />
-      <DetailRow label="Outstanding Amount" value={tractor.outstandingAmount} last />
+      <DetailRow
+        label="Outstanding Amount"
+        value={tractor.outstandingAmount}
+        last
+      />
     </SectionCard>
   </div>
 );
@@ -1771,7 +1917,9 @@ const LocationTab = ({ tractor }) => (
 
     <div className="flex flex-col gap-4">
       <SectionCard title="Full Address" icon={MapPin}>
-        <p className="text-gray-700">{tractor.fullAddress || "Address not available"}</p>
+        <p className="text-gray-700">
+          {tractor.fullAddress || "Address not available"}
+        </p>
         {tractor.latitude && tractor.longitude && (
           <div className="mt-2 text-sm text-gray-500">
             <p>Latitude: {tractor.latitude}</p>
@@ -1782,7 +1930,7 @@ const LocationTab = ({ tractor }) => (
 
       {tractor.availableStates?.length > 0 && (
         <SectionCard title="Available States" icon={MapPin}>
-          <BadgeList items={tractor.availableStates.map(s => s?.name || s)} />
+          <BadgeList items={tractor.availableStates.map((s) => s?.name || s)} />
         </SectionCard>
       )}
     </div>

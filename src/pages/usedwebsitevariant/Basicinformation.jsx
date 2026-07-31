@@ -12,7 +12,7 @@ import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { BasicInformationSchema } from "./schema";
 import apiHelper from "../../utils/apiHelper";
-
+import { useMemo } from "react"; 
 const tractorStatusOptions = [
   { label: "Available", value: "available" },
   { label: "Sold", value: "sold" },
@@ -522,7 +522,11 @@ export default function BasicInformation({
   const modelId = watch("modelId");
   const modelYearId = watch("modelYearId");
   const watchCountry = watch("country");
-  const watchAvailableStates = watch("availableStates") || [];
+const rawAvailableStates = watch("availableStates");
+const watchAvailableStates = useMemo(
+  () => rawAvailableStates || [],
+  [rawAvailableStates],
+);
 
   // Update state when watch values change
   useEffect(() => {

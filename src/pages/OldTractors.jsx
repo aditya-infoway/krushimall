@@ -34,10 +34,6 @@ import {
   MessageCircle,
   X,
 } from "lucide-react";
-import mah from "../assets/mahindra.png";
-import john from "../assets/johndeere.png";
-import swara from "../assets/swaraj.png";
-import logo from "../assets/massey.png";
 import sonalika from "../assets/sonalika.png";
 import eicher from "../assets/eicher.png";
 import escorts from "../assets/escorts.png";
@@ -48,7 +44,7 @@ import massey from "../assets/massey.png";
 import newinfo from "../assets/new.png";
 import swalogo from "../assets/swarajlogo.png";
 import tafe from "../assets/tafe.png";
-
+import apiHelper from "../utils/apiHelper";
 const UsedTractors = () => {
   const [popularIndex, setPopularIndex] = useState(0);
   const [latestIndex, setLatestIndex] = useState(0);
@@ -71,7 +67,82 @@ const UsedTractors = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const activeTab = location.pathname.includes("old") ? "used" : "new";
+  const [brandOptions, setBrandOptions] = useState(["All Brands"]);
+  const [hpOptions, setHpOptions] = useState(["All HP"]);
+  const [categoryOptions, setCategoryOptions] = useState(["All Categories"]);
+  const [stateOptions, setStateOptions] = useState(["All States"]);
+  const [cityOptions, setCityOptions] = useState(["All Cities"]);
+  const [transmissionOptions, setTransmissionOptions] = useState([
+    "All Transmissions",
+  ]);
+  useEffect(() => {
+    const fetchFilterOptions = async () => {
+      try {
+        // Brands
+        const brandRes = await apiHelper.get("/brand");
+        const brands = (brandRes.data || [])
+          .filter((b) => b.status === "ACTIVE")
+          .map((b) => b.brandName);
 
+        setBrandOptions(["All Brands", ...brands]);
+
+        // Categories
+        const categoryRes = await apiHelper.get("/category");
+        const categories = (categoryRes.data || [])
+          .filter((c) => c.status === "ACTIVE")
+          .map((c) => c.categoryName);
+
+        setCategoryOptions(["All Categories", ...categories]);
+
+        // Used tractors
+        const tractorRes = await apiHelper.get(
+          "/vendor-web/used-website-variant",
+        );
+
+        const tractors = tractorRes.data || [];
+
+        // HP
+        const hp = [
+          ...new Set(
+            tractors
+              .map((t) => Number(t.hp))
+              .filter((h) => !isNaN(h))
+              .sort((a, b) => a - b),
+          ),
+        ];
+
+        setHpOptions(["All HP", ...hp.map((h) => `${h} HP`)]);
+
+        // States
+        const states = [
+          ...new Set(tractors.map((t) => t.state).filter(Boolean)),
+        ];
+
+        setStateOptions(["All States", ...states]);
+
+        // Cities
+        const cities = [
+          ...new Set(
+            tractors
+              .filter((t) => !selectedState || t.state === selectedState)
+              .map((t) => t.city)
+              .filter(Boolean),
+          ),
+        ];
+
+        setCityOptions(["All Cities", ...cities]);
+        const transmissions = [
+          ...new Set(tractors.map((t) => t.transmission).filter(Boolean)),
+        ];
+
+        setTransmissionOptions(["All Transmissions", ...transmissions]);
+      } catch (err) {
+        console.log(err);
+      }
+    };
+
+    fetchFilterOptions();
+  }, [selectedState]);
   const [appliedFilters, setAppliedFilters] = useState({
     searchQuery: "",
     selectedBrand: "",
@@ -113,42 +184,34 @@ const UsedTractors = () => {
     { name: "Indo Farm", logo: indo },
   ];
 
-  const SUGGESTED_COMPARISONS = [
-    {
-      title: "Popular Used Mahindra Comparisons",
-      left: { name: "Mahindra 575 DI 2020", price: "₹ 3.85 Lakh*", image: mah },
-      right: {
-        name: "Mahindra 475 DI 2019",
-        price: "₹ 3.25 Lakh*",
-        image: swara,
-      },
-      buttonText: "Mahindra 575 DI vs Mahindra 475 DI",
-    },
-    {
-      title: "Cross-Brand Value Picks",
-      left: {
-        name: "John Deere 5310 2019",
-        price: "₹ 4.95 Lakh*",
-        image: john,
-      },
-      right: { name: "Swaraj 744 FE 2020", price: "₹ 4.25 Lakh*", image: mah },
-      buttonText: "Compare Now",
-    },
-    {
-      title: "Budget-Friendly Options",
-      left: {
-        name: "Eicher 380 Super DI",
-        price: "₹ 2.95 Lakh*",
-        image: swara,
-      },
-      right: {
-        name: "Escorts Powertrac 439",
-        price: "₹ 3.25 Lakh*",
-        image: john,
-      },
-      buttonText: "Compare Now",
-    },
-  ];
+  // ========== DYNAMIC COMPARISON DATA (replaces old SUGGESTED_COMPARISONS) ==========
+  const [comparisonPairs, setComparisonPairs] = useState([]);
+  const [comparisonsLoading, setComparisonsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTrendingUsedComparisons = async () => {
+      try {
+        setComparisonsLoading(true);
+        const response = await apiHelper.get("/compare-tractor/used-trending");
+        const tractors = response?.data || response || [];
+
+        const pairs = [];
+        for (let i = 0; i < tractors.length && pairs.length < 3; i++) {
+          for (let j = i + 1; j < tractors.length && pairs.length < 3; j++) {
+            pairs.push({ left: tractors[i], right: tractors[j] });
+          }
+        }
+        setComparisonPairs(pairs);
+      } catch (error) {
+        console.error("Failed to fetch trending used comparisons:", error);
+        setComparisonPairs([]);
+      } finally {
+        setComparisonsLoading(false);
+      }
+    };
+
+    fetchTrendingUsedComparisons();
+  }, []);
 
   const FAQ_DATA = [
     {
@@ -220,180 +283,38 @@ const UsedTractors = () => {
     }, 1500);
   };
 
-  const popularUsedTractors = [
-    {
-      id: 101,
-      name: "Mahindra 575 DI",
-      brand: "Mahindra",
-      price: 385000,
-      hp: "45 HP",
-      fuel: "Diesel",
-      year: "2020",
-      location: "Delhi, DL",
-      image: "/mah.png",
-      rating: 4.6,
-      transmission: "Manual",
-      category: "Utility Tractor",
-    },
-    {
-      id: 102,
-      name: "John Deere 5310",
-      brand: "John Deere",
-      price: 495000,
-      hp: "55 HP",
-      fuel: "Diesel",
-      year: "2019",
-      location: "Jaipur, RJ",
-      image: "/mah.png",
-      rating: 4.7,
-      transmission: "Collarshift",
-      category: "Heavy Duty",
-    },
-    {
-      id: 103,
-      name: "Swaraj 744 FE",
-      brand: "Swaraj",
-      price: 425000,
-      hp: "48 HP",
-      fuel: "Diesel",
-      year: "2020",
-      location: "Pune, MH",
-      image: "/mah.png",
-      rating: 4.5,
-      transmission: "Manual",
-      category: "Utility Tractor",
-    },
-    {
-      id: 104,
-      name: "Farmtrac 60 Powermaxx",
-      brand: "Farmtrac",
-      price: 415000,
-      hp: "50 HP",
-      fuel: "Diesel",
-      year: "2019",
-      location: "Ahmedabad, GJ",
-      image: "/mah.png",
-      rating: 4.4,
-      transmission: "Constant Mesh",
-      category: "Commercial",
-    },
-    {
-      id: 105,
-      name: "Sonalika DI 750 III",
-      brand: "Sonalika",
-      price: 365000,
-      hp: "50 HP",
-      fuel: "Diesel",
-      year: "2018",
-      location: "Bhopal, MP",
-      image: "/mah.png",
-      rating: 4.3,
-      transmission: "Manual",
-      category: "Utility Tractor",
-    },
-    {
-      id: 106,
-      name: "TAFE 5900 DI",
-      brand: "TAFE",
-      price: 345000,
-      hp: "42 HP",
-      fuel: "Diesel",
-      year: "2019",
-      location: "Chennai, TN",
-      image: "/mah.png",
-      rating: 4.2,
-      transmission: "Manual",
-      category: "Utility Tractor",
-    },
-  ];
+  const [popularUsedTractors, setPopularUsedTractors] = useState([]);
+  const [latestUsedTractors, setLatestUsedTractors] = useState([]);
+  const loadLatest = async () => {
+    try {
+      const res = await apiHelper.get(
+        "/vendor-web/used-website-variant/latest",
+      );
 
-  const latestUsedTractors = [
-    {
-      id: 107,
-      name: "Mahindra Arjun 605",
-      brand: "Mahindra",
-      price: 525000,
-      hp: "60 HP",
-      fuel: "Diesel",
-      year: "2022",
-      location: "Nagpur, MH",
-      image: "/mah.png",
-      rating: 4.8,
-      transmission: "Synchromesh",
-      category: "Heavy Duty",
-    },
-    {
-      id: 108,
-      name: "Escorts Powertrac 439",
-      brand: "Escorts",
-      price: 325000,
-      hp: "41 HP",
-      fuel: "Diesel",
-      year: "2019",
-      location: "Faridabad, HR",
-      image: "/mah.png",
-      rating: 4.2,
-      transmission: "Manual",
-      category: "Mini Tractor",
-    },
-    {
-      id: 109,
-      name: "Eicher 380 Super DI",
-      brand: "Eicher",
-      price: 295000,
-      hp: "40 HP",
-      fuel: "Diesel",
-      year: "2017",
-      location: "Indore, MP",
-      image: "/mah.png",
-      rating: 4.1,
-      transmission: "Partial Constant Mesh",
-      category: "Utility Tractor",
-    },
-    {
-      id: 110,
-      name: "Preet 3549",
-      brand: "Preet",
-      price: 335000,
-      hp: "49 HP",
-      fuel: "Diesel",
-      year: "2020",
-      location: "Chandigarh",
-      image: "/mah.png",
-      rating: 4.3,
-      transmission: "Manual",
-      category: "Utility Tractor",
-    },
-    {
-      id: 111,
-      name: "New Holland 3630 TX",
-      brand: "New Holland",
-      price: 445000,
-      hp: "50 HP",
-      fuel: "Diesel",
-      year: "2021",
-      location: "Lucknow, UP",
-      image: "/mah.png",
-      rating: 4.6,
-      transmission: "Constant Mesh",
-      category: "Commercial",
-    },
-    {
-      id: 112,
-      name: "Kubota NeoStar A211N",
-      brand: "Kubota",
-      price: 285000,
-      hp: "21 HP",
-      fuel: "Diesel",
-      year: "2021",
-      location: "Bangalore, KA",
-      image: "/mah.png",
-      rating: 4.5,
-      transmission: "Manual",
-      category: "Mini Tractor",
-    },
-  ];
+      if (res.success) {
+        setLatestUsedTractors(res.data);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  const loadPopular = async () => {
+    try {
+      const res = await apiHelper.get(
+        "/vendor-web/used-website-variant/popular",
+      );
 
+      if (res.success) {
+        setPopularUsedTractors(res.data);
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+  useEffect(() => {
+    loadLatest();
+    loadPopular();
+  }, []);
   const upcomingUsedTractors = [
     {
       id: 113,
@@ -481,9 +402,20 @@ const UsedTractors = () => {
     },
   ];
 
-  const parseLocation = (locString) => {
-    const parts = locString.split(",").map((p) => p.trim());
-    return { city: parts[0] || "", state: parts[1] || parts[0] || "" };
+  const parseLocation = (location = "") => {
+    if (!location) {
+      return {
+        city: "",
+        state: "",
+      };
+    }
+
+    const [city = "", state = ""] = location.split(",");
+
+    return {
+      city: city.trim(),
+      state: state.trim(),
+    };
   };
 
   const allTractors = [
@@ -491,34 +423,7 @@ const UsedTractors = () => {
     ...latestUsedTractors,
     ...upcomingUsedTractors,
   ];
-  const brandOptions = [
-    "All Brands",
-    ...new Set(allTractors.map((t) => t.brand)),
-  ];
-  const hpOptions = ["All HP", ...new Set(allTractors.map((t) => t.hp))];
-  const stateOptions = [
-    "All States",
-    ...new Set(allTractors.map((t) => parseLocation(t.location).state)),
-  ];
-  const transmissionOptions = [
-    "All Transmissions",
-    ...new Set(allTractors.map((t) => t.transmission)),
-  ];
-  const categoryOptions = [
-    "All Categories",
-    ...new Set(allTractors.map((t) => t.category)),
-  ];
-  const cityOptions = [
-    "All Cities",
-    ...new Set(
-      allTractors
-        .filter(
-          (t) =>
-            !selectedState || parseLocation(t.location).state === selectedState,
-        )
-        .map((t) => parseLocation(t.location).city),
-    ),
-  ];
+
   const maxPrice = 600000;
 
   const clearFilters = () => {
@@ -579,20 +484,44 @@ const UsedTractors = () => {
   }, []);
 
   useEffect(() => {
+    if (popularUsedTractors.length === 0 && latestUsedTractors.length === 0) {
+      return;
+    }
+
     const id = setInterval(() => {
       if (window.innerWidth >= 640) {
-        setPopularIndex((prev) => (prev + 1) % popularUsedTractors.length);
-        setLatestIndex((prev) => (prev + 1) % latestUsedTractors.length);
-        setUpcomingIndex((prev) => (prev + 1) % upcomingUsedTractors.length);
+        if (popularUsedTractors.length > 0) {
+          setPopularIndex((prev) => (prev + 1) % popularUsedTractors.length);
+        }
+
+        if (latestUsedTractors.length > 0) {
+          setLatestIndex((prev) => (prev + 1) % latestUsedTractors.length);
+        }
+
+        if (upcomingUsedTractors.length > 0) {
+          setUpcomingIndex((prev) => (prev + 1) % upcomingUsedTractors.length);
+        }
       }
     }, 3000);
+
     return () => clearInterval(id);
-  }, []);
+  }, [
+    popularUsedTractors.length,
+    latestUsedTractors.length,
+    upcomingUsedTractors.length,
+  ]);
 
   const getVisibleTractors = (tractors, startIndex) => {
+    if (!tractors || tractors.length === 0) return [];
+
     const visible = [];
-    for (let i = 0; i < cardsToShow; i++)
+
+    const count = Math.min(cardsToShow, tractors.length);
+
+    for (let i = 0; i < count; i++) {
       visible.push(tractors[(startIndex + i) % tractors.length]);
+    }
+
     return visible;
   };
 
@@ -608,12 +537,12 @@ const UsedTractors = () => {
     <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col flex-shrink-0 w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]">
       {/* Clickable Image */}
       <Link
-        to={`/tractor/${tractor.id}`}
+        to={`/used-tractor/${tractor.id}`}
         className="relative h-40 sm:h-44 overflow-hidden bg-gray-100 block"
       >
         <img
-          src={tractor.image}
-          alt={tractor.name}
+          src={apiHelper.image(tractor.frontView)}
+          alt={tractor.productName}
           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
         />
         <div className="absolute top-2 left-2">
@@ -637,23 +566,25 @@ const UsedTractors = () => {
         <div className="flex items-center justify-between mb-1">
           {/* Clickable Brand Name */}
           <Link
-            to={`/tractor/${tractor.id}`}
+            to={`/used-tractor/${tractor.id}`}
             className="text-xs font-semibold text-green-600 hover:text-green-700 transition-colors"
           >
-            {tractor.brand}
+            {tractor.brandRef?.brandName}
           </Link>
           <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
             <MapPin className="h-3 w-3 flex-shrink-0" />
-            <span className="truncate">{tractor.location}</span>
+            <span className="truncate">
+              {tractor.city}, {tractor.state}
+            </span>
           </div>
         </div>
         <div className="flex items-center justify-between mb-1">
           {/* Clickable Product Name */}
           <Link
-            to={`/tractor/${tractor.id}`}
+            to={`/used-tractor/${tractor.id}`}
             className="text-sm font-bold text-gray-900 mb-2 line-clamp-1 hover:text-green-600 transition-colors"
           >
-            {tractor.name}
+            {tractor.productName}
           </Link>
           <div className="flex items-center gap-1">
             <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
@@ -666,10 +597,10 @@ const UsedTractors = () => {
         <div className="mt-auto pt-2 border-t">
           <div className="flex items-center justify-between">
             <p className="text-sm font-black text-gray-900">
-              ₹{tractor.price.toLocaleString()}
+              ₹{Number(tractor.expectedPrice || 0).toLocaleString()}
             </p>
             <Link
-              to={`/tractor/${tractor.id}`}
+              to={`/used-tractor/${tractor.id}`}
               className="bg-green-700 hover:bg-green-800 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
             >
               Details
@@ -799,9 +730,14 @@ const UsedTractors = () => {
           </button>
           <div className="overflow-hidden">
             <div className="flex gap-3 sm:gap-4 transition-transform duration-500 ease-in-out">
-              {getVisibleTractors(tractors, index).map((tractor) => (
-                <TractorCard key={`${tractor.id}-${index}`} tractor={tractor} />
-              ))}
+              {getVisibleTractors(tractors, index)
+                .filter(Boolean)
+                .map((tractor) => (
+                  <TractorCard
+                    key={`${tractor.id}-${index}`}
+                    tractor={tractor}
+                  />
+                ))}
             </div>
           </div>
           <button
@@ -1646,7 +1582,7 @@ const UsedTractors = () => {
         </div>
       </div>
 
-      {/* ========== COMPARISON SECTION ========== */}
+      {/* ========== COMPARISON SECTION (DYNAMIC) ========== */}
       <div className="border-t border-gray-200">
         <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
@@ -1662,65 +1598,79 @@ const UsedTractors = () => {
           </div>
         </div>
         <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-12">
-          {SUGGESTED_COMPARISONS.map((pair, index) => (
-            <div
-              key={index}
-              className="bg-white border border-gray-100 rounded-xl p-2.5 sm:p-4 shadow-xs flex flex-col justify-between"
-            >
-              <div>
-                <div className="relative border border-gray-200 rounded-lg overflow-hidden mb-3 w-full h-24 sm:h-36">
-                  <div className="grid grid-cols-2 gap-0 h-full w-full relative">
-                    <div className="w-full h-full flex items-center justify-center">
-                      <img
-                        src={pair.left.image}
-                        alt={pair.left.name}
-                        className="w-full h-full object-cover relative z-10"
-                      />
-                    </div>
-                    <div className="w-full h-full flex items-center justify-center">
-                      <img
-                        src={pair.right.image}
-                        alt={pair.right.name}
-                        className="w-full h-full object-cover relative z-10"
-                      />
-                    </div>
-                  </div>
-                  <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-700 text-white text-[9px] sm:text-[10px] font-black w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center border-2 border-white shadow-md z-20">
-                    VS
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-1 mb-3 px-0.5 text-xs sm:text-sm">
-                  <div className="text-left">
-                    <p className="font-semibold text-gray-800 truncate">
-                      {pair.left.name}
-                    </p>
-                    <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5">
-                      From{" "}
-                      <span className="font-semibold text-gray-700">
-                        {pair.left.price}
-                      </span>
-                    </p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-semibold text-gray-800 truncate">
-                      {pair.right.name}
-                    </p>
-                    <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5">
-                      From{" "}
-                      <span className="font-semibold text-gray-700">
-                        {pair.right.price}
-                      </span>
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <Link to="/tractorcompare">
-                <button className="w-full cursor-pointer border border-green-200 bg-white hover:bg-green-50 text-green-700 transition-colors duration-150 text-[10px] sm:text-xs font-semibold py-1.5 px-2 rounded-md text-center truncate">
-                  {pair.buttonText}
-                </button>
-              </Link>
+          {comparisonsLoading ? (
+            <div className="col-span-full flex justify-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
             </div>
-          ))}
+          ) : comparisonPairs.length === 0 ? (
+            <p className="col-span-full text-center text-gray-500 py-8">
+              No comparisons available right now
+            </p>
+          ) : (
+            comparisonPairs.map((pair, index) => (
+              <div
+                key={index}
+                className="bg-white border border-gray-100 rounded-xl p-2.5 sm:p-4 shadow-xs flex flex-col justify-between"
+              >
+                <div>
+                  <div className="relative border border-gray-200 rounded-lg overflow-hidden mb-3 w-full h-24 sm:h-36">
+                    <div className="grid grid-cols-2 gap-0 h-full w-full relative">
+                      <div className="w-full h-full flex items-center justify-center">
+                        <img
+                          src={apiHelper.image(pair.left.frontView)}
+                          alt={pair.left.productName}
+                          className="w-full h-full object-cover relative z-10"
+                        />
+                      </div>
+                      <div className="w-full h-full flex items-center justify-center">
+                        <img
+                          src={apiHelper.image(pair.right.frontView)}
+                          alt={pair.right.productName}
+                          className="w-full h-full object-cover relative z-10"
+                        />
+                      </div>
+                    </div>
+                    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-green-700 text-white text-[9px] sm:text-[10px] font-black w-5 h-5 sm:w-6 sm:h-6 rounded-full flex items-center justify-center border-2 border-white shadow-md z-20">
+                      VS
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-1 mb-3 px-0.5 text-xs sm:text-sm">
+                    <div className="text-left">
+                      <p className="font-semibold text-gray-800 truncate">
+                        {pair.left.productName}
+                      </p>
+                      <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5">
+                        From{" "}
+                        <span className="font-semibold text-gray-700">
+                          ₹{(pair.left.expectedPrice / 100000).toFixed(2)} Lakh*
+                        </span>
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-semibold text-gray-800 truncate">
+                        {pair.right.productName}
+                      </p>
+                      <p className="text-[10px] sm:text-xs text-gray-600 mt-0.5">
+                        From{" "}
+                        <span className="font-semibold text-gray-700">
+                          ₹{(pair.right.expectedPrice / 100000).toFixed(2)}{" "}
+                          Lakh*
+                        </span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <Link
+                  to={`/tractorcompare?type=used&v1=${pair.left.id}&v2=${pair.right.id}`}
+                >
+                  <button className="w-full cursor-pointer border border-green-200 bg-white hover:bg-green-50 text-green-700 transition-colors duration-150 text-[10px] sm:text-xs font-semibold py-1.5 px-2 rounded-md text-center truncate">
+                    {pair.left.productName?.split(" ").slice(0, 2).join(" ")} vs{" "}
+                    {pair.right.productName}
+                  </button>
+                </Link>
+              </div>
+            ))
+          )}
         </div>
       </div>
 
