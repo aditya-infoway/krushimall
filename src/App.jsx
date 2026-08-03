@@ -41,8 +41,8 @@ import VendorFollowup from "./pages/Vendorfollowup.jsx";
 import { useEffect } from "react";
 import { requestNotificationPermission } from "./firebase-messaging";
 import UsedWebsiteVariant from "./pages/usedwebsitevariant/index.jsx";
+import BottomNavigation from "./components/BottomNavigation.jsx";
 function App() {
-
   useEffect(() => {
     requestNotificationPermission();
   }, []);
@@ -74,9 +74,9 @@ function App() {
                   <Route path="/product/:id" element={<ProductDetail />} />
                   <Route path="/tractor/:id" element={<TractorDetail />} />
                   <Route
-  path="/used-tractor/:id"
-  element={<UsedTractorDetails />}
-/>
+                    path="/used-tractor/:id"
+                    element={<UsedTractorDetails />}
+                  />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="service" element={<Service />} />
                   <Route path="booking" element={<BookingService />} />
@@ -84,7 +84,10 @@ function App() {
                   <Route path="/become-vendor" element={<BecomeVendor />} />
                   <Route path="/vendor-profile" element={<VendorProfile />} />
                   <Route path="/vendor-login" element={<VendorLogin />} />
-                  <Route path="/vendor/followup/:id" element={<VendorFollowup />} />
+                  <Route
+                    path="/vendor/followup/:id"
+                    element={<VendorFollowup />}
+                  />
                   <Route path="/register" element={<Register />} />
                   <Route path="/profile" element={<Profile />} />
                   <Route
@@ -96,14 +99,14 @@ function App() {
                     element={<WebsiteVariant />}
                   />
                   <Route
-  path="/vendor/add-used-product"
-  element={<UsedWebsiteVariant />}
- />
+                    path="/vendor/add-used-product"
+                    element={<UsedWebsiteVariant />}
+                  />
 
-<Route
-  path="/vendor/edit-used-product/:id"
-  element={<UsedWebsiteVariant />}
- />
+                  <Route
+                    path="/vendor/edit-used-product/:id"
+                    element={<UsedWebsiteVariant />}
+                  />
                   <Route path="/help" element={<Help />} />
                   <Route path="/booking-history" element={<BookingHistory />} />
                   <Route path="/tractorcompare" element={<TractorCompare />} />
@@ -244,7 +247,10 @@ function App() {
                 </Routes>
               </main>
 
-              <Footer />
+              <div className="pb-15 md:pb-0">
+                <Footer />
+              </div>
+              <BottomNavigation />
             </div>
           </WishlistProvider>
         </CartProvider>
