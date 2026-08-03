@@ -285,6 +285,20 @@ const UsedTractors = () => {
 
   const [popularUsedTractors, setPopularUsedTractors] = useState([]);
   const [latestUsedTractors, setLatestUsedTractors] = useState([]);
+  const [bestValueUsedTractors, setBestValueUsedTractors] = useState([]);
+  const loadBestValue = async () => {
+  try {
+    const res = await apiHelper.get(
+      "/vendor-web/used-website-variant/best-value",
+    );
+
+    if (res.success) {
+      setBestValueUsedTractors(res.data);
+    }
+  } catch (err) {
+    console.log(err);
+  }
+};
   const loadLatest = async () => {
     try {
       const res = await apiHelper.get(
@@ -314,6 +328,7 @@ const UsedTractors = () => {
   useEffect(() => {
     loadLatest();
     loadPopular();
+      loadBestValue();
   }, []);
   const upcomingUsedTractors = [
     {
@@ -417,12 +432,11 @@ const UsedTractors = () => {
       state: state.trim(),
     };
   };
-
-  const allTractors = [
-    ...popularUsedTractors,
-    ...latestUsedTractors,
-    ...upcomingUsedTractors,
-  ];
+const allTractors = [
+  ...popularUsedTractors,
+  ...latestUsedTractors,
+  ...bestValueUsedTractors,
+];
 
   const maxPrice = 600000;
 
@@ -497,10 +511,9 @@ const UsedTractors = () => {
         if (latestUsedTractors.length > 0) {
           setLatestIndex((prev) => (prev + 1) % latestUsedTractors.length);
         }
-
-        if (upcomingUsedTractors.length > 0) {
-          setUpcomingIndex((prev) => (prev + 1) % upcomingUsedTractors.length);
-        }
+if (bestValueUsedTractors.length > 0) {
+  setUpcomingIndex((prev) => (prev + 1) % bestValueUsedTractors.length);
+}
       }
     }, 3000);
 
@@ -534,6 +547,7 @@ const UsedTractors = () => {
   };
 
   const TractorCard = ({ tractor }) => (
+    
     <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col flex-shrink-0 w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]">
       {/* Clickable Image */}
       <Link
@@ -1523,16 +1537,17 @@ const UsedTractors = () => {
             badgeColor="bg-green-700"
           />
         </div>
-
+  <div className="mb-8 md:mb-14 lg:mb-20">
         <SliderSection
           title="Best Value Opportunities"
           subtitle="Highly competitive price points"
-          tractors={upcomingUsedTractors}
+          tractors={bestValueUsedTractors} 
           index={upcomingIndex}
           setIndex={setUpcomingIndex}
           linkTo="/tractors?type=used&section=deals"
           badgeColor="bg-green-700"
         />
+        </div>
       </div>
 
       {/* ========== POPULAR BRANDS MARQUEE ========== */}
