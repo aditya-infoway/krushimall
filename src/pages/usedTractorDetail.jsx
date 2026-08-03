@@ -615,9 +615,9 @@ const UsedTractorDetails = () => {
       try {
         setLoading(true);
         setError(null);
-        const response = await apiHelper.get(
-          `/vendor-web/used-website-variant/${id}`,
-        );
+       const response = await apiHelper.get(
+  `/vendor-web/used-website-variant/public/${id}`,
+);
         setTractorData(response.data);
       } catch (error) {
         console.error("Error fetching tractor data:", error);
@@ -1848,11 +1848,11 @@ const HydraulicTab = ({ tractor }) => (
         />
         <DetailRow
           label="Hydraulic Condition"
-          value={tractor.hydraulicCondition}
+          value={tractor.hydraulicCondition} last
         />
       </div>
       <div>
-        <DetailRow label="PTO Status" value={tractor.ptoStatus} last />
+        <DetailRow label="PTO Status" value={tractor.ptoStatus}  />
       </div>
     </div>
   </SectionCard>

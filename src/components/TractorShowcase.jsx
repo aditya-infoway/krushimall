@@ -65,7 +65,7 @@ const TractorShowcase = () => {
                 apiTractor.productName || apiTractor.name || "Unknown Tractor",
               price:
                 typeof (apiTractor.exShowroomPrice || apiTractor.price) ===
-                "number"
+                  "number"
                   ? `₹${(apiTractor.exShowroomPrice || apiTractor.price).toLocaleString("en-IN")}`
                   : apiTractor.exShowroomPrice || apiTractor.price || "₹0",
               location:
@@ -93,211 +93,73 @@ const TractorShowcase = () => {
     fetchData();
   }, []);
 
-  // const allUsedTractors = [
-  //   {
-  //     id: 101,
-  //     name: "Mahindra 575 DI",
-  //     brand: "Mahindra",
-  //     price: "₹4,50,000",
-  //     originalPrice: "₹6,85,000",
-  //     hp: "45 HP",
-  //     year: "2021",
-  //     hours: "2,450 hrs",
-  //     location: "Meerut, UP",
-  //     image: "/mah.png",
-  //     rating: 4.3,
-  //     condition: "Excellent",
-  //     verified: true,
-  //     sellerType: "Individual",
-  //     warranty: "6 Months",
-  //   },
-  //   {
-  //     id: 102,
-  //     name: "Swaraj 855 FE",
-  //     brand: "Swaraj",
-  //     price: "₹5,20,000",
-  //     originalPrice: "₹8,25,000",
-  //     hp: "52 HP",
-  //     year: "2020",
-  //     hours: "3,120 hrs",
-  //     location: "Karnal, HR",
-  //     image: "/mah.png",
-  //     rating: 4.1,
-  //     condition: "Good",
-  //     verified: true,
-  //     sellerType: "Dealer",
-  //     warranty: "3 Months",
-  //   },
-  //   {
-  //     id: 103,
-  //     name: "John Deere 5050D",
-  //     brand: "John Deere",
-  //     price: "₹6,80,000",
-  //     originalPrice: "₹9,95,000",
-  //     hp: "50 HP",
-  //     year: "2022",
-  //     hours: "1,850 hrs",
-  //     location: "Ludhiana, PB",
-  //     image: "/mah.png",
-  //     rating: 4.5,
-  //     condition: "Like New",
-  //     verified: true,
-  //     sellerType: "Dealer",
-  //     warranty: "1 Year",
-  //   },
-  //   {
-  //     id: 104,
-  //     name: "Eicher 380",
-  //     brand: "Eicher",
-  //     price: "₹3,20,000",
-  //     originalPrice: "₹5,25,000",
-  //     hp: "40 HP",
-  //     year: "2019",
-  //     hours: "4,200 hrs",
-  //     location: "Indore, MP",
-  //     image: "/mah.png",
-  //     rating: 4.0,
-  //     condition: "Good",
-  //     verified: false,
-  //     sellerType: "Individual",
-  //     warranty: "No",
-  //   },
-  //   {
-  //     id: 105,
-  //     name: "TAFE MF 245",
-  //     brand: "TAFE",
-  //     price: "₹3,80,000",
-  //     originalPrice: "₹5,95,000",
-  //     hp: "42 HP",
-  //     year: "2020",
-  //     hours: "3,800 hrs",
-  //     location: "Coimbatore, TN",
-  //     image: "/mah.png",
-  //     rating: 4.2,
-  //     condition: "Good",
-  //     verified: true,
-  //     sellerType: "Dealer",
-  //     warranty: "3 Months",
-  //   },
-  //   {
-  //     id: 106,
-  //     name: "New Holland 3630",
-  //     brand: "New Holland",
-  //     price: "₹5,50,000",
-  //     originalPrice: "₹7,75,000",
-  //     hp: "50 HP",
-  //     year: "2021",
-  //     hours: "2,100 hrs",
-  //     location: "Varanasi, UP",
-  //     image: "/mah.png",
-  //     rating: 4.4,
-  //     condition: "Excellent",
-  //     verified: true,
-  //     sellerType: "Individual",
-  //     warranty: "6 Months",
-  //   },
-  //   {
-  //     id: 107,
-  //     name: "Sonalika 745 DI",
-  //     brand: "Sonalika",
-  //     price: "₹4,20,000",
-  //     originalPrice: "₹6,35,000",
-  //     hp: "50 HP",
-  //     year: "2021",
-  //     hours: "2,900 hrs",
-  //     location: "Patna, BR",
-  //     image: "/mah.png",
-  //     rating: 4.1,
-  //     condition: "Good",
-  //     verified: true,
-  //     sellerType: "Dealer",
-  //     warranty: "3 Months",
-  //   },
-  //   {
-  //     id: 108,
-  //     name: "Escorts Powertrac 439",
-  //     brand: "Escorts",
-  //     price: "₹3,60,000",
-  //     originalPrice: "₹5,45,000",
-  //     hp: "41 HP",
-  //     year: "2019",
-  //     hours: "3,600 hrs",
-  //     location: "Alwar, RJ",
-  //     image: "/mah.png",
-  //     rating: 3.9,
-  //     condition: "Fair",
-  //     verified: false,
-  //     sellerType: "Individual",
-  //     warranty: "No",
-  //   },
-  // ];
-useEffect(() => {
-  const fetchUsedTractors = async () => {
-    try {
-      const res = await apiHelper.get("/vendor-web/used-website-variant?status=ACTIVE");
 
-      const tractors = (res.data || []).map((item) => ({
-        id: item.id,
-        brand:
-          item.brandRef?.brandName ||
-          item.brand ||
-          "Unknown",
+  useEffect(() => {
+    const fetchUsedTractors = async () => {
+      try {
+        const res = await apiHelper.get("/vendor-web/used-website-variant/latest");
 
-        name:
-          `${item.brandRef?.brandName || item.brand || ""} ${
-            item.modelRef?.modelName || item.model || ""
-          }`.trim(),
+        const tractors = (res.data || []).map((item) => ({
+          id: item.id,
+          brand:
+            item.brandRef?.brandName ||
+            item.brand ||
+            "Unknown",
 
-        price: item.expectedPrice
-          ? `₹${Number(item.expectedPrice).toLocaleString("en-IN")}`
-          : "₹0",
+          name:
+            `${item.brandRef?.brandName || item.brand || ""} ${item.modelRef?.modelName || item.model || ""
+              }`.trim(),
 
-        originalPrice: item.originalPrice
-          ? `₹${Number(item.originalPrice).toLocaleString("en-IN")}`
-          : null,
+          price: item.expectedPrice
+            ? `₹${Number(item.expectedPrice).toLocaleString("en-IN")}`
+            : "₹0",
 
-        hp: item.hp ? `${item.hp} HP` : "",
+          originalPrice: item.originalPrice
+            ? `₹${Number(item.originalPrice).toLocaleString("en-IN")}`
+            : null,
 
-        year:
-          item.manufacturingYear ||
-          item.purchaseYear,
+          hp: item.hp ? `${item.hp} HP` : "",
 
-        hours:
-          item.hoursMeterReading
-            ? `${item.hoursMeterReading} hrs`
-            : "",
+          year:
+            item.manufacturingYear ||
+            item.purchaseYear,
 
-        location:
-          item.city ||
-          item.district ||
-          item.state ||
-          "Location",
+          hours:
+            item.hoursMeterReading
+              ? `${item.hoursMeterReading} hrs`
+              : "",
 
-        image: item.frontView
-          ? apiHelper.image(item.frontView)
-          : "/mah.png",
+          location:
+            item.city ||
+            item.district ||
+            item.state ||
+            "Location",
 
-        condition:
-          item.overallCondition || "Good",
+          image: item.frontView
+            ? apiHelper.image(item.frontView)
+            : "/mah.png",
 
-        verified: true,
+          condition:
+            item.overallCondition || "Good",
 
-        sellerType:
-          item.sellerType || "",
+          verified: true,
 
-        warranty:
-          item.warranty || "No",
-      }));
+          sellerType:
+            item.sellerType || "",
 
-      setUsedTractors(tractors);
-    } catch (err) {
-      console.error(err);
-      setUsedTractors([]);
-    }
-  };
+          warranty:
+            item.warranty || "No",
+        }));
 
-  fetchUsedTractors();
-}, []);
+        setUsedTractors(tractors);
+      } catch (err) {
+        console.error(err);
+        setUsedTractors([]);
+      }
+    };
+
+    fetchUsedTractors();
+  }, []);
   const [comparisonPairs, setComparisonPairs] = useState([]);
   const [comparisonsLoading, setComparisonsLoading] = useState(true);
 
@@ -415,11 +277,11 @@ useEffect(() => {
 
   const TractorCard = ({ tractor, isUsed = false, className = "" }) => (
     <Link
-        to={
-      isUsed
-        ? `/used-tractor/${tractor.id}`
-        : `/tractor/${tractor.id}`
-    }
+      to={
+        isUsed
+          ? `/used-tractor/${tractor.id}`
+          : `/tractor/${tractor.id}`
+      }
       className={`group bg-white rounded-2xl border-2 border-gray-200 hover:border-green-400 shadow-sm hover:shadow-2xl hover:shadow-green-100/50 transition-all duration-500 flex flex-col flex-shrink-0 hover:-translate-y-2 cursor-pointer h-full ${className}`}
     >
       {/* Image Section - Fixed height */}
@@ -460,11 +322,10 @@ useEffect(() => {
             className="p-1 sm:p-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white transition-all"
           >
             <Heart
-              className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors ${
-                isInWishlist(tractor.id)
+              className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors ${isInWishlist(tractor.id)
                   ? "fill-green-500 text-green-500"
                   : "text-gray-600 hover:text-green-500"
-              }`}
+                }`}
             />
           </button>
         </div>
@@ -491,24 +352,22 @@ useEffect(() => {
           </h3>
           {isUsed ? (
             <span
-              className={`flex-shrink-0 inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-full ${
-                tractor.condition === "Excellent" ||
-                tractor.condition === "Like New"
+              className={`flex-shrink-0 inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-full ${tractor.condition === "Excellent" ||
+                  tractor.condition === "Like New"
                   ? "bg-green-100 text-green-700 border border-green-200"
                   : tractor.condition === "Good"
                     ? "bg-green-100 text-green-700 border border-green-200"
                     : "bg-gray-100 text-gray-700 border border-gray-200"
-              }`}
+                }`}
             >
               <span
-                className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${
-                  tractor.condition === "Excellent" ||
-                  tractor.condition === "Like New"
+                className={`w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full ${tractor.condition === "Excellent" ||
+                    tractor.condition === "Like New"
                     ? "bg-green-500"
                     : tractor.condition === "Good"
                       ? "bg-green-500"
                       : "bg-gray-500"
-                }`}
+                  }`}
               />
               {tractor.condition}
             </span>
@@ -622,11 +481,10 @@ useEffect(() => {
           {/* Left Arrow */}
           <button
             onClick={() => scrollSlider("left")}
-            className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
-              isScrolling
+            className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${isScrolling
                 ? "opacity-100 translate-x-0"
                 : "opacity-0 -translate-x-2"
-            }`}
+              }`}
           >
             <ChevronLeft className="w-4 h-4" />
           </button>
@@ -650,11 +508,10 @@ useEffect(() => {
           {/* Right Arrow */}
           <button
             onClick={() => scrollSlider("right")}
-            className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${
-              isScrolling
+            className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-8 h-8 border border-green-200 text-green-700 rounded-full bg-white shadow-lg hover:bg-green-50 transition-all duration-300 ${isScrolling
                 ? "opacity-100 translate-x-0"
                 : "opacity-0 translate-x-2"
-            }`}
+              }`}
           >
             <ChevronRight className="w-4 h-4" />
           </button>

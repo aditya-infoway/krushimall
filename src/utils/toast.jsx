@@ -1,13 +1,22 @@
-import toast from 'react-hot-toast';
-import { ShoppingCart, Heart, Trash2, Package, Lock, CheckCircle, X, AlertCircle } from 'lucide-react';
+import toast from "react-hot-toast";
+import {
+  ShoppingCart,
+  Heart,
+  Trash2,
+  Package,
+  Lock,
+  CheckCircle,
+  X,
+  AlertCircle,
+} from "lucide-react";
 
 // Common animation wrapper
 const ToastWrapper = ({ t, children, borderColor, closeColor }) => (
- <div
-  className={`${
-    t.visible ? "animate-slide-up" : "animate-slide-down"
-  } max-w-[340px] w-full bg-white shadow-xl rounded-xl pointer-events-auto flex ring-1 ring-black/5 ${borderColor}`}
->
+  <div
+    className={`${
+      t.visible ? "animate-slide-up" : "animate-slide-down"
+    } max-w-[340px] w-full bg-white shadow-xl rounded-xl pointer-events-auto flex ring-1 ring-black/5 ${borderColor}`}
+  >
     {children}
     <div className="flex border-l border-gray-100">
       <button
@@ -21,201 +30,321 @@ const ToastWrapper = ({ t, children, borderColor, closeColor }) => (
 );
 
 const IconBox = ({ bg, icon, iconColor }) => (
-  <div className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center`}>
+  <div
+    className={`w-10 h-10 rounded-xl ${bg} flex items-center justify-center`}
+  >
     {icon}
   </div>
 );
 
 // Cart toasts
 export const showCartAddedToast = (productName) => {
-  toast.custom((t) => (
-    <ToastWrapper t={t} borderColor="border-green-200" closeColor="text-green-500 hover:text-green-600 hover:bg-green-50">
-      <div className="flex-1 w-0 p-4">
-        <div className="flex items-start gap-3">
-          <IconBox bg="bg-green-100" icon={<ShoppingCart className="h-5 w-5 text-green-600" />} />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-900">Added to Cart!</p>
-            <p className="mt-1 text-xs text-gray-500 truncate">{productName}</p>
+  toast.custom(
+    (t) => (
+      <ToastWrapper
+        t={t}
+        borderColor="border-green-200"
+        closeColor="text-green-500 hover:text-green-600 hover:bg-green-50"
+      >
+        <div className="flex-1 w-0 p-4">
+          <div className="flex items-start gap-3">
+            <IconBox
+              bg="bg-green-100"
+              icon={<ShoppingCart className="h-5 w-5 text-green-600" />}
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-gray-900">Added to Cart!</p>
+              <p className="mt-1 text-xs text-gray-500 truncate">
+                {productName}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    </ToastWrapper>
-  ), {
-    duration: 3000,
-    position: 'top-right',
-  });
+      </ToastWrapper>
+    ),
+    {
+      duration: 3000,
+      position: "top-right",
+    },
+  );
 };
 
 export const showWishlistAddedToast = (productName) => {
-  toast.custom((t) => (
-    <ToastWrapper t={t} borderColor="border-red-200" closeColor="text-red-400 hover:text-red-500 hover:bg-red-50">
-      <div className="flex-1 w-0 p-4">
-        <div className="flex items-start gap-3">
-          <IconBox bg="bg-red-50" icon={<Heart className="h-5 w-5 text-red-500 fill-red-500" />} />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-900">Added to Wishlist!</p>
-            <p className="mt-1 text-xs text-gray-500 truncate">{productName}</p>
+  toast.custom(
+    (t) => (
+      <ToastWrapper
+        t={t}
+        borderColor="border-red-200"
+        closeColor="text-red-400 hover:text-red-500 hover:bg-red-50"
+      >
+        <div className="flex-1 w-0 p-4">
+          <div className="flex items-start gap-3">
+            <IconBox
+              bg="bg-red-50"
+              icon={<Heart className="h-5 w-5 text-red-500 fill-red-500" />}
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-gray-900">
+                Added to Wishlist!
+              </p>
+              <p className="mt-1 text-xs text-gray-500 truncate">
+                {productName}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    </ToastWrapper>
-  ), {
-    duration: 3000,
-    position: 'top-right',
-  });
+      </ToastWrapper>
+    ),
+    {
+      duration: 3000,
+      position: "top-right",
+    },
+  );
 };
 
 export const showWishlistRemovedToast = (productName) => {
-  toast.custom((t) => (
-    <ToastWrapper t={t} borderColor="border-gray-200" closeColor="text-gray-400 hover:text-gray-600 hover:bg-gray-50">
-      <div className="flex-1 w-0 p-4">
-        <div className="flex items-start gap-3">
-          <IconBox bg="bg-gray-100" icon={<Heart className="h-5 w-5 text-gray-400" />} />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-900">Removed from Wishlist</p>
-            <p className="mt-1 text-xs text-gray-500 truncate">{productName}</p>
+  toast.custom(
+    (t) => (
+      <ToastWrapper
+        t={t}
+        borderColor="border-gray-200"
+        closeColor="text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+      >
+        <div className="flex-1 w-0 p-4">
+          <div className="flex items-start gap-3">
+            <IconBox
+              bg="bg-gray-100"
+              icon={<Heart className="h-5 w-5 text-gray-400" />}
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-gray-900">
+                Removed from Wishlist
+              </p>
+              <p className="mt-1 text-xs text-gray-500 truncate">
+                {productName}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    </ToastWrapper>
-  ), {
-    duration: 3000,
-    position: 'top-right',
-  });
+      </ToastWrapper>
+    ),
+    {
+      duration: 3000,
+      position: "top-right",
+    },
+  );
 };
 
 export const showCartRemovedToast = (productName) => {
-  toast.custom((t) => (
-    <ToastWrapper t={t} borderColor="border-gray-200" closeColor="text-gray-400 hover:text-gray-600 hover:bg-gray-50">
-      <div className="flex-1 w-0 p-4">
-        <div className="flex items-start gap-3">
-          <IconBox bg="bg-gray-100" icon={<Trash2 className="h-5 w-5 text-gray-500" />} />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-900">Removed from Cart</p>
-            <p className="mt-1 text-xs text-gray-500 truncate">{productName}</p>
+  toast.custom(
+    (t) => (
+      <ToastWrapper
+        t={t}
+        borderColor="border-gray-200"
+        closeColor="text-gray-400 hover:text-gray-600 hover:bg-gray-50"
+      >
+        <div className="flex-1 w-0 p-4">
+          <div className="flex items-start gap-3">
+            <IconBox
+              bg="bg-gray-100"
+              icon={<Trash2 className="h-5 w-5 text-gray-500" />}
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-gray-900">
+                Removed from Cart
+              </p>
+              <p className="mt-1 text-xs text-gray-500 truncate">
+                {productName}
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    </ToastWrapper>
-  ), {
-    duration: 3000,
-    position: 'top-right',
-  });
+      </ToastWrapper>
+    ),
+    {
+      duration: 3000,
+      position: "top-right",
+    },
+  );
 };
 
 export const showOrderPlacedToast = (orderId) => {
-  toast.custom((t) => (
-    <ToastWrapper t={t} borderColor="border-green-200" closeColor="text-green-500 hover:text-green-600 hover:bg-green-50">
-      <div className="flex-1 w-0 p-4">
-        <div className="flex items-start gap-3">
-          <IconBox bg="bg-green-100" icon={<Package className="h-5 w-5 text-green-600" />} />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-900">Order Placed!</p>
-            <p className="mt-1 text-xs text-gray-500">Order #{orderId} confirmed successfully</p>
+  toast.custom(
+    (t) => (
+      <ToastWrapper
+        t={t}
+        borderColor="border-green-200"
+        closeColor="text-green-500 hover:text-green-600 hover:bg-green-50"
+      >
+        <div className="flex-1 w-0 p-4">
+          <div className="flex items-start gap-3">
+            <IconBox
+              bg="bg-green-100"
+              icon={<Package className="h-5 w-5 text-green-600" />}
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-gray-900">Order Placed!</p>
+              <p className="mt-1 text-xs text-gray-500">
+                Order #{orderId} confirmed successfully
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    </ToastWrapper>
-  ), {
-    duration: 5000,
-    position: 'top-right',
-  });
+      </ToastWrapper>
+    ),
+    {
+      duration: 5000,
+      position: "top-right",
+    },
+  );
 };
 
 export const showLoginRequiredToast = () => {
-  toast.custom((t) => (
-    <ToastWrapper t={t} borderColor="border-amber-200" closeColor="text-amber-500 hover:text-amber-600 hover:bg-amber-50">
-      <div className="flex-1 w-0 p-4">
-        <div className="flex items-start gap-3">
-          <IconBox bg="bg-amber-100" icon={<Lock className="h-5 w-5 text-amber-600" />} />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-900">Login Required</p>
-            <p className="mt-1 text-xs text-gray-500">Please login to continue</p>
+  toast.custom(
+    (t) => (
+      <ToastWrapper
+        t={t}
+        borderColor="border-amber-200"
+        closeColor="text-amber-500 hover:text-amber-600 hover:bg-amber-50"
+      >
+        <div className="flex-1 w-0 p-4">
+          <div className="flex items-start gap-3">
+            <IconBox
+              bg="bg-amber-100"
+              icon={<Lock className="h-5 w-5 text-amber-600" />}
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-gray-900">Login Required</p>
+              <p className="mt-1 text-xs text-gray-500">
+                Please login to continue
+              </p>
+            </div>
           </div>
         </div>
-      </div>
-    </ToastWrapper>
-  ), {
-    duration: 4000,
-    position: 'top-right',
-  });
+      </ToastWrapper>
+    ),
+    {
+      duration: 4000,
+      position: "top-right",
+    },
+  );
 };
 
 export const showSuccessToast = (message) => {
-  toast.custom((t) => (
-    <ToastWrapper t={t} borderColor="border-green-200" closeColor="text-green-500 hover:text-green-600 hover:bg-green-50">
-      <div className="flex-1 w-0 p-4">
-        <div className="flex items-start gap-3">
-          <IconBox bg="bg-green-100" icon={<CheckCircle className="h-5 w-5 text-green-600" />} />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-900">Success!</p>
-            <p className="mt-1 text-xs text-gray-500">{message}</p>
+  toast.custom(
+    (t) => (
+      <ToastWrapper
+        t={t}
+        borderColor="border-green-200"
+        closeColor="text-green-500 hover:text-green-600 hover:bg-green-50"
+      >
+        <div className="flex-1 w-0 p-4">
+          <div className="flex items-start gap-3">
+            <IconBox
+              bg="bg-green-100"
+              icon={<CheckCircle className="h-5 w-5 text-green-600" />}
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-gray-900">Success!</p>
+              <p className="mt-1 text-xs text-gray-500">{message}</p>
+            </div>
           </div>
         </div>
-      </div>
-    </ToastWrapper>
-  ), {
-    duration: 3000,
-    position: 'top-right',
-  });
+      </ToastWrapper>
+    ),
+    {
+      duration: 3000,
+      position: "top-right",
+    },
+  );
 };
 
 // ADD THIS: Error Toast
 export const showErrorToast = (message) => {
-  toast.custom((t) => (
-    <ToastWrapper t={t} borderColor="border-red-200" closeColor="text-red-500 hover:text-red-600 hover:bg-red-50">
-      <div className="flex-1 w-0 p-4">
-        <div className="flex items-start gap-3">
-          <IconBox bg="bg-red-100" icon={<AlertCircle className="h-5 w-5 text-red-600" />} />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-900">Error!</p>
-            <p className="mt-1 text-xs text-gray-500">{message}</p>
+  toast.custom(
+    (t) => (
+      <ToastWrapper
+        t={t}
+        borderColor="border-red-200"
+        closeColor="text-red-500 hover:text-red-600 hover:bg-red-50"
+      >
+        <div className="flex-1 w-0 p-4">
+          <div className="flex items-start gap-3">
+            <IconBox
+              bg="bg-red-100"
+              icon={<AlertCircle className="h-5 w-5 text-red-600" />}
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-gray-900">Error!</p>
+              <p className="mt-1 text-xs text-gray-500">{message}</p>
+            </div>
           </div>
         </div>
-      </div>
-    </ToastWrapper>
-  ), {
-    duration: 4000,
-    position: 'top-right',
-  });
+      </ToastWrapper>
+    ),
+    {
+      duration: 4000,
+      position: "top-right",
+    },
+  );
 };
 
 // ADD THIS: Info Toast (optional but useful)
 export const showInfoToast = (message) => {
-  toast.custom((t) => (
-    <ToastWrapper t={t} borderColor="border-blue-200" closeColor="text-blue-500 hover:text-blue-600 hover:bg-blue-50">
-      <div className="flex-1 w-0 p-4">
-        <div className="flex items-start gap-3">
-          <IconBox bg="bg-blue-100" icon={<AlertCircle className="h-5 w-5 text-blue-600" />} />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-900">Info</p>
-            <p className="mt-1 text-xs text-gray-500">{message}</p>
+  toast.custom(
+    (t) => (
+      <ToastWrapper
+        t={t}
+        borderColor="border-blue-200"
+        closeColor="text-blue-500 hover:text-blue-600 hover:bg-blue-50"
+      >
+        <div className="flex-1 w-0 p-4">
+          <div className="flex items-start gap-3">
+            <IconBox
+              bg="bg-blue-100"
+              icon={<AlertCircle className="h-5 w-5 text-blue-600" />}
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-gray-900">Info</p>
+              <p className="mt-1 text-xs text-gray-500">{message}</p>
+            </div>
           </div>
         </div>
-      </div>
-    </ToastWrapper>
-  ), {
-    duration: 3000,
-    position: 'top-right',
-  });
+      </ToastWrapper>
+    ),
+    {
+      duration: 3000,
+      position: "top-right",
+    },
+  );
 };
 
 // ADD THIS: Warning Toast (optional but useful)
 export const showWarningToast = (message) => {
-  toast.custom((t) => (
-    <ToastWrapper t={t} borderColor="border-yellow-200" closeColor="text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50">
-      <div className="flex-1 w-0 p-4">
-        <div className="flex items-start gap-3">
-          <IconBox bg="bg-yellow-100" icon={<AlertCircle className="h-5 w-5 text-yellow-600" />} />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-bold text-gray-900">Warning</p>
-            <p className="mt-1 text-xs text-gray-500">{message}</p>
+  toast.custom(
+    (t) => (
+      <ToastWrapper
+        t={t}
+        borderColor="border-yellow-200"
+        closeColor="text-yellow-500 hover:text-yellow-600 hover:bg-yellow-50"
+      >
+        <div className="flex-1 w-0 p-4">
+          <div className="flex items-start gap-3">
+            <IconBox
+              bg="bg-yellow-100"
+              icon={<AlertCircle className="h-5 w-5 text-yellow-600" />}
+            />
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-bold text-gray-900">Warning</p>
+              <p className="mt-1 text-xs text-gray-500">{message}</p>
+            </div>
           </div>
         </div>
-      </div>
-    </ToastWrapper>
-  ), {
-    duration: 4000,
-    position: 'top-right',
-  });
+      </ToastWrapper>
+    ),
+    {
+      duration: 4000,
+      position: "top-right",
+    },
+  );
 };

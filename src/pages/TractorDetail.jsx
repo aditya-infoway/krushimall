@@ -1675,7 +1675,7 @@ const ProductDetailsTab = ({ tractor }) => (
       <div>
         <DetailRow label="Horse Power" value={tractor.hp} />
         <DetailRow label="Cubic Capacity" value={tractor.cc} />
-        <DetailRow label="Engine Condition" value={tractor.engineCondition} />
+        <DetailRow label="Engine Condition" value={tractor.engineCondition} last/>
       </div>
       <div>
         <DetailRow label="RC Available" value={tractor.rc} />
