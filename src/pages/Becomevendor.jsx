@@ -3,11 +3,6 @@ import { Link, useNavigate } from "react-router-dom";
 import { Field, Label, Radio, RadioGroup } from "@headlessui/react";
 import {
   Store,
-  Package,
-  Wrench,
-  Truck,
-  Briefcase,
-  Calendar,
   MapPin,
   AlertCircle,
   CheckCircle,
@@ -25,10 +20,6 @@ import {
   Hash,
   Shield,
   Check,
-  Send,
-  CreditCard,
-  FileText,
-  UserCheck,
 } from "lucide-react";
 import { showSuccessToast, showErrorToast } from "../utils/toast";
 import { Combobox } from "@headlessui/react";
@@ -147,11 +138,13 @@ const ComboboxWrapper = ({
   );
 };
 
-const BecomeVendor = () => {
+const TOTAL_STEPS = 4; // 1: personal, 2: address, 3: password (registers here), 4: OTP verify
 
+const BecomeVendor = () => {
   const navigate = useNavigate();
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [timer, setTimer] = useState(0);
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -163,7 +156,6 @@ const BecomeVendor = () => {
     name: "",
     number: "",
     email: "",
-    otp: "",
   });
 
   // Step 2: Address Details with Dynamic Dropdowns
@@ -193,13 +185,25 @@ const BecomeVendor = () => {
     confirmPassword: "",
   });
 
+  // Step 4: OTP
+  const [otpData, setOtpData] = useState({
+    otp: "",
+  });
+
   const [errors, setErrors] = useState({});
 
   // Load countries on mount
   useEffect(() => {
-    const allCountries = Country.getAllCountries();
-    setCountries(allCountries);
+    setCountries(Country.getAllCountries());
   }, []);
+
+  // Timer for OTP resend
+  useEffect(() => {
+    if (timer > 0) {
+      const interval = setInterval(() => setTimer((t) => t - 1), 1000);
+      return () => clearInterval(interval);
+    }
+  }, [timer]);
 
   // Update states when country changes
   useEffect(() => {
@@ -265,20 +269,14 @@ const BecomeVendor = () => {
     return newErrors;
   };
 
-  const handleResendOTP = () => {
-    if (timer === 0) {
-      handleSendOTP();
-    }
-  };
-
   const handleStep1Next = () => {
     const newErrors = validateStep1();
-    if (!personalData.name || !personalData.number || !personalData.email) {
-      toast.error("Please fill all required fields");
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      showErrorToast("Please fill all required fields correctly");
       return;
     }
-
-    setCurrentStep(2);
+    setErrors({});
     setCurrentStep(2);
   };
 
@@ -292,25 +290,28 @@ const BecomeVendor = () => {
   const handleCountryChange = (value) => {
     setSelectedCountry(value);
     setAddressData((prev) => ({ ...prev, country: value?.name || "" }));
+    if (errors.country) setErrors((prev) => ({ ...prev, country: "" }));
   };
 
   const handleStateChange = (value) => {
     setSelectedState(value);
     setAddressData((prev) => ({ ...prev, state: value?.name || "" }));
+    if (errors.state) setErrors((prev) => ({ ...prev, state: "" }));
   };
 
   const handleCityChange = (value) => {
     setSelectedCity(value);
     setAddressData((prev) => ({ ...prev, city: value?.name || "" }));
+    if (errors.city) setErrors((prev) => ({ ...prev, city: "" }));
   };
 
   const handleDistrictChange = (value) => {
     setSelectedDistrict(value);
-
     setAddressData((prev) => ({
       ...prev,
       district: value?.name || "",
     }));
+    if (errors.district) setErrors((prev) => ({ ...prev, district: "" }));
   };
 
   const validateStep2 = () => {
@@ -333,6 +334,7 @@ const BecomeVendor = () => {
       showErrorToast("Please fill all address fields correctly");
       return;
     }
+    setErrors({});
     setCurrentStep(3);
   };
 
@@ -356,50 +358,107 @@ const BecomeVendor = () => {
     return newErrors;
   };
 
-  const handleSubmit = async () => {
-  
+  // Step 4: OTP Handlers
+  const handleOtpChange = (e) => {
+    const { name, value } = e.target;
+    setOtpData((prev) => ({ ...prev, [name]: value }));
+    if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
+  };
 
+  // Step 3 submit — THIS is where the vendor account actually gets created
+  // and an OTP is sent. Nothing before this point hits the backend.
+  const handleRegisterVendor = async () => {
     const newErrors = validateStep3();
 
     if (Object.keys(newErrors).length > 0) {
-      console.log("Validation failed", newErrors);
       setErrors(newErrors);
+      showErrorToast("Please fix the password errors");
       return;
     }
 
-
-
     setIsLoading(true);
+    setErrors({});
 
     try {
       const payload = {
         vendorType,
         vehicleType: vendorType === "vehicle" ? vehicleType : null,
-
         name: personalData.name,
         number: personalData.number,
         email: personalData.email,
-
         country: addressData.country,
         state: addressData.state,
         district: addressData.district,
         city: addressData.city,
         address: addressData.address,
         pincode: addressData.pincode,
-
         vendorPassword: passwordData.password,
       };
-
-  
 
       const response = await apiHelper.post("/vendor/become", payload);
 
       if (response.success) {
-        showSuccessToast(response.message);
-        navigate("/vendor-login");
+        setTimer(60);
+        showSuccessToast(
+          response.message ||
+            "Vendor account created! Check your email/phone for the OTP.",
+        );
+        setCurrentStep(4);
       }
     } catch (err) {
       console.log("ERROR", err);
+      showErrorToast(
+        err.response?.data?.message || "Registration failed. Please try again.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // Step 4: Verify OTP — account is already created in DB at this point
+  const handleVerifyOTP = async () => {
+    if (!otpData.otp || otpData.otp.length < 4) {
+      setErrors((prev) => ({ ...prev, otp: "Please enter the OTP" }));
+      showErrorToast("Please enter the OTP");
+      return;
+    }
+
+    setIsLoading(true);
+    setErrors({});
+
+    try {
+      const response = await apiHelper.post("/vendor/verify-otp", {
+        email: personalData.email,
+        otp: otpData.otp,
+      });
+
+      if (response.success) {
+        showSuccessToast("Vendor account verified successfully!");
+        setTimeout(() => navigate("/vendor-login"), 1200);
+      }
+    } catch (error) {
+      console.error("OTP verification error:", error);
+      showErrorToast(
+        error.response?.data?.message ||
+          "OTP verification failed. Please try again.",
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResendOTP = async () => {
+    if (timer > 0) return;
+
+    setIsLoading(true);
+    try {
+      await apiHelper.post("/vendor/resend-otp", { email: personalData.email });
+      setTimer(60);
+      showSuccessToast("OTP resent successfully!");
+    } catch (error) {
+      showErrorToast(
+        error.response?.data?.message || "Failed to resend OTP. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -407,7 +466,7 @@ const BecomeVendor = () => {
 
   const renderStepIndicator = () => (
     <div className="flex items-center justify-center mb-8">
-      {[1, 2, 3].map((step) => (
+      {[1, 2, 3, 4].map((step) => (
         <React.Fragment key={step}>
           <div className="flex items-center">
             <div
@@ -422,9 +481,9 @@ const BecomeVendor = () => {
               {currentStep > step ? <Check className="h-5 w-5" /> : step}
             </div>
           </div>
-          {step < 3 && (
+          {step < TOTAL_STEPS && (
             <div
-              className={`w-16 h-0.5 mx-2 transition-all ${
+              className={`w-12 h-0.5 mx-1 transition-all ${
                 currentStep > step ? "bg-green-600" : "bg-gray-200"
               }`}
             />
@@ -454,7 +513,10 @@ const BecomeVendor = () => {
                 Register as a Vendor
               </h1>
               <p className="text-gray-600">
-                Tell us about your business to start selling on KrushiMall
+                {currentStep === 1 && "Tell us about your business"}
+                {currentStep === 2 && "Where is your business located?"}
+                {currentStep === 3 && "Create your vendor account password"}
+                {currentStep === 4 && "Verify your email & phone"}
               </p>
             </div>
 
@@ -782,11 +844,12 @@ const BecomeVendor = () => {
                       name="password"
                       value={passwordData.password}
                       onChange={handlePasswordChange}
+                      disabled={isLoading}
                       className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
                         errors.password
                           ? "border-red-300 bg-red-50"
                           : "border-gray-300"
-                      }`}
+                      } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                       placeholder="Min 8 characters"
                     />
                     <button
@@ -820,11 +883,12 @@ const BecomeVendor = () => {
                       name="confirmPassword"
                       value={passwordData.confirmPassword}
                       onChange={handlePasswordChange}
+                      disabled={isLoading}
                       className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
                         errors.confirmPassword
                           ? "border-red-300 bg-red-50"
                           : "border-gray-300"
-                      }`}
+                      } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                       placeholder="Confirm your password"
                     />
                     <button
@@ -853,22 +917,110 @@ const BecomeVendor = () => {
                   <button
                     type="button"
                     onClick={() => setCurrentStep(2)}
-                    className="cursor-pointer flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2"
+                    disabled={isLoading}
+                    className="cursor-pointer flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     <ChevronLeft className="h-5 w-5" />
                     Back
                   </button>
                   <button
                     type="button"
-                    onClick={() => {
-                 
-                      handleSubmit();
-                    }}
-                    className="cursor-pointer flex-1 bg-gradient-to-r from-green-600 to-green-700"
+                    onClick={handleRegisterVendor}
+                    disabled={isLoading}
+                    className="cursor-pointer flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-green-700/20 hover:shadow-green-700/40"
                   >
-                    Register as Vendor
+                    {isLoading ? (
+                      <>
+                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Creating Account...
+                      </>
+                    ) : (
+                      <>
+                        Register as Vendor
+                        <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                      </>
+                    )}
                   </button>
                 </div>
+              </div>
+            )}
+
+            {/* Step 4: OTP Verification - Same pattern as Register page */}
+            {currentStep === 4 && (
+              <div className="space-y-6">
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p className="text-sm text-blue-700 flex items-center gap-2">
+                    <Shield className="h-5 w-5" />
+                    We've sent a verification code to your email and phone.
+                    Enter it below to activate your vendor account.
+                  </p>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Enter OTP <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="otp"
+                    value={otpData.otp}
+                    onChange={handleOtpChange}
+                    disabled={isLoading}
+                    className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
+                      errors.otp ? "border-red-300 bg-red-50" : "border-gray-300"
+                    } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
+                    placeholder="Enter 6-digit OTP"
+                  />
+                  {errors.otp && (
+                    <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
+                      <AlertCircle className="w-3 h-3" /> {errors.otp}
+                    </p>
+                  )}
+                </div>
+
+                <div className="flex items-center justify-between">
+                  <button
+                    type="button"
+                    onClick={handleResendOTP}
+                    disabled={timer > 0 || isLoading}
+                    className="text-sm text-green-600 hover:text-green-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {timer > 0 ? `Resend in ${timer}s` : "Resend OTP"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setCurrentStep(3)}
+                    disabled={isLoading}
+                    className="text-sm text-gray-500 hover:text-gray-700 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    Back to Password
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={handleVerifyOTP}
+                  disabled={isLoading}
+                  className="w-full cursor-pointer bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-green-700/20 hover:shadow-green-700/40"
+                >
+                  {isLoading ? (
+                    <>
+                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                      Verifying...
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="h-5 w-5" />
+                      Verify & Continue to Login
+                    </>
+                  )}
+                </button>
               </div>
             )}
           </div>

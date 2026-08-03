@@ -6,16 +6,6 @@ import {
   MapPin,
   Heart,
   Star,
-  Fuel,
-  Gauge,
-  Calendar,
-  Sparkles,
-  ArrowRight,
-  BadgeCheck,
-  Shield,
-  Clock,
-  Phone,
-  Filter,
   Search,
   ChevronDown,
   Check,
@@ -26,55 +16,94 @@ const TractorList = () => {
   const [searchParams] = useSearchParams();
   const type = searchParams.get("type") || "new"; // 'new' or 'used'
   const brandFilter = searchParams.get("brand");
-  const section = searchParams.get("section"); // 'popular', 'latest', 'upcoming', 'recent', 'deals'
+  const section = searchParams.get("section"); // 'popular', 'recent'/'latest', 'deals'
 
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedBrand, setSelectedBrand] = useState(brandFilter || "");
   const [selectedHp, setSelectedHp] = useState("");
   const [priceRange, setPriceRange] = useState([
-    0,
-    type === "new" ? 1000000 : 600000,
+  
   ]);
   const [sortBy, setSortBy] = useState("popular");
   const [newTractors, setNewTractors] = useState([]);
+  const [usedTractors, setUsedTractors] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch only NEW tractors from API
+  // Fetch real tractors from the backend — NEW or USED depending on `type`,
+  // and for USED, the right section endpoint (popular/latest/best-value/all).
   useEffect(() => {
     const fetchNewTractors = async () => {
       try {
         const response = await apiHelper.get("/website-variants");
-
         const tractorList = response.data || [];
 
-        if (tractorList.length > 0) {
-          const formattedTractors = tractorList.map((apiTractor) => ({
-            id: apiTractor.id,
-            name: apiTractor.productName || "Tractor",
-            brand:
-              apiTractor.brand?.brandName || apiTractor.brandName || "Brand",
-            price: apiTractor.exShowroomPrice || 0,
-            hp: apiTractor.horsePower ? `${apiTractor.horsePower} HP` : "N/A",
-            fuel: "Diesel",
-            year: apiTractor.modelYear?.modelYear || "2024",
-            location: apiTractor.city || apiTractor.district || "Location",
-            image: apiTractor.frontView
-              ? apiHelper.image(apiTractor.frontView)
-              : "/mah.png",
-            rating: 4.5,
-          }));
+        const formattedTractors = tractorList.map((apiTractor) => ({
+          id: apiTractor.id,
+          name: apiTractor.productName || "Tractor",
+          brand:
+            apiTractor.brand?.brandName || apiTractor.brandName || "Brand",
+          price: apiTractor.exShowroomPrice || 0,
+          hp: apiTractor.horsePower ? `${apiTractor.horsePower} HP` : "N/A",
+          fuel: "Diesel",
+          year: apiTractor.modelYear?.modelYear || "2024",
+          location: apiTractor.city || apiTractor.district || "Location",
+          image: apiTractor.frontView
+            ? apiHelper.image(apiTractor.frontView)
+            : "/mah.png",
+          rating: 4.5,
+        }));
 
-          setNewTractors(formattedTractors);
-        }
-        setLoading(false);
+        setNewTractors(formattedTractors);
       } catch (error) {
         console.error("Error fetching new tractors:", error);
-        setLoading(false);
       }
     };
 
-    fetchNewTractors();
-  }, []);
+    const fetchUsedTractors = async () => {
+      try {
+        // Pick the right endpoint based on which "View All" was clicked.
+        let endpoint = "/vendor-web/used-website-variant/public"; // default: all
+        if (section === "popular") {
+          endpoint = "/vendor-web/used-website-variant/popular";
+        } else if (section === "recent" || section === "latest") {
+          endpoint = "/vendor-web/used-website-variant/latest";
+        } else if (section === "deals") {
+          endpoint = "/vendor-web/used-website-variant/best-value";
+        }
+
+        const response = await apiHelper.get(endpoint);
+        const tractorList = response.data || [];
+
+        const formattedTractors = tractorList.map((apiTractor) => ({
+          id: apiTractor.id,
+          name: apiTractor.productName || "Tractor",
+          brand: apiTractor.brandRef?.brandName || "Brand",
+          price: apiTractor.expectedPrice || 0,
+          hp: apiTractor.hp ? `${apiTractor.hp} HP` : "N/A",
+          fuel: apiTractor.fuelType || "Diesel",
+          year: apiTractor.manufacturingYear || "N/A",
+          location: apiTractor.city || apiTractor.state || "Location",
+          image: apiTractor.frontView
+            ? apiHelper.image(apiTractor.frontView)
+            : "/mah.png",
+          rating: 4.5,
+        }));
+
+        setUsedTractors(formattedTractors);
+      } catch (error) {
+        console.error("Error fetching used tractors:", error);
+      }
+    };
+
+    setLoading(true);
+    if (type === "new") {
+      fetchNewTractors().finally(() => setLoading(false));
+    } else {
+      fetchUsedTractors().finally(() => setLoading(false));
+    }
+    // Re-fetch whenever the type or section in the URL changes
+    // (e.g. clicking a different "View All" link).
+  }, [type, section]);
 
   useEffect(() => {
     setSelectedBrand(brandFilter || "");
@@ -85,484 +114,8 @@ const TractorList = () => {
     setSelectedHp(""); // clear HP whenever brand changes
   }, [selectedBrand]);
 
-  // Debug: Log the URL parameters
-  // useEffect(() => {
-  //   console.log(
-  //     "URL params - type:",
-  //     type,
-  //     "section:",
-  //     section,
-  //     "brand:",
-  //     brandFilter,
-  //   );
-  // }, [type, section, brandFilter]);
-
-  // Tractor data based on type
-  const tractorsData = {
-    new: {
-      popular: [
-        {
-          id: 2,
-          name: "Mahindra 575 DI",
-          brand: "Mahindra",
-          price: 685000,
-          hp: "45 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Delhi",
-          image: "/mah.png",
-          rating: 4.8,
-        },
-        {
-          id: 3,
-          name: "John Deere 5310",
-          brand: "John Deere",
-          price: 895000,
-          hp: "55 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Jaipur, RJ",
-          image: "/mah.png",
-          rating: 4.9,
-        },
-        {
-          id: 7,
-          name: "Mahindra Arjun 605",
-          brand: "Mahindra",
-          price: 925000,
-          hp: "60 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Nagpur, MH",
-          image: "/mah.png",
-          rating: 4.9,
-        },
-        {
-          id: 11,
-          name: "Farmtrac 60 Powermaxx",
-          brand: "Farmtrac",
-          price: 715000,
-          hp: "50 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Ahmedabad, GJ",
-          image: "/mah.png",
-          rating: 4.6,
-        },
-        {
-          id: 1,
-          name: "Swaraj 744 FE",
-          brand: "Swaraj",
-          price: 725000,
-          hp: "48 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Pune, MH",
-          image: "/mah.png",
-          rating: 4.7,
-        },
-        {
-          id: 5,
-          name: "New Holland 3630 TX",
-          brand: "New Holland",
-          price: 775000,
-          hp: "50 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Lucknow, UP",
-          image: "/mah.png",
-          rating: 4.8,
-        },
-      ],
-      latest: [
-        {
-          id: 1,
-          name: "Swaraj 744 FE",
-          brand: "Swaraj",
-          price: 725000,
-          hp: "48 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Pune, MH",
-          image: "/mah.png",
-          rating: 4.7,
-        },
-        {
-          id: 4,
-          name: "TAFE 5900 DI",
-          brand: "TAFE",
-          price: 595000,
-          hp: "42 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Chennai, TN",
-          image: "/mah.png",
-          rating: 4.6,
-        },
-        {
-          id: 8,
-          name: "Escorts Powertrac 439",
-          brand: "Escorts",
-          price: 545000,
-          hp: "41 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Faridabad, HR",
-          image: "/mah.png",
-          rating: 4.4,
-        },
-        {
-          id: 10,
-          name: "Eicher 380 Super DI",
-          brand: "Eicher",
-          price: 525000,
-          hp: "40 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Indore, MP",
-          image: "/mah.png",
-          rating: 4.5,
-        },
-        {
-          id: 12,
-          name: "Preet 3549",
-          brand: "Preet",
-          price: 585000,
-          hp: "49 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Chandigarh",
-          image: "/mah.png",
-          rating: 4.4,
-        },
-        {
-          id: 2,
-          name: "Mahindra 575 DI",
-          brand: "Mahindra",
-          price: 685000,
-          hp: "45 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Delhi",
-          image: "/mah.png",
-          rating: 4.8,
-        },
-      ],
-      upcoming: [
-        {
-          id: 5,
-          name: "New Holland 3630 TX",
-          brand: "New Holland",
-          price: 775000,
-          hp: "50 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Lucknow, UP",
-          image: "/mah.png",
-          rating: 4.8,
-        },
-        {
-          id: 6,
-          name: "Sonalika DI 750 III",
-          brand: "Sonalika",
-          price: 635000,
-          hp: "50 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Bhopal, MP",
-          image: "/mah.png",
-          rating: 4.5,
-        },
-        {
-          id: 9,
-          name: "Kubota NeoStar A211N",
-          brand: "Kubota",
-          price: 495000,
-          hp: "21 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Bangalore, KA",
-          image: "/mah.png",
-          rating: 4.3,
-        },
-        {
-          id: 3,
-          name: "John Deere 5310",
-          brand: "John Deere",
-          price: 895000,
-          hp: "55 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Jaipur, RJ",
-          image: "/mah.png",
-          rating: 4.9,
-        },
-        {
-          id: 7,
-          name: "Mahindra Arjun 605",
-          brand: "Mahindra",
-          price: 925000,
-          hp: "60 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Nagpur, MH",
-          image: "/mah.png",
-          rating: 4.9,
-        },
-        {
-          id: 1,
-          name: "Swaraj 744 FE",
-          brand: "Swaraj",
-          price: 725000,
-          hp: "48 HP",
-          fuel: "Diesel",
-          year: "2024",
-          location: "Pune, MH",
-          image: "/mah.png",
-          rating: 4.7,
-        },
-      ],
-    },
-    used: {
-      popular: [
-        {
-          id: 101,
-          name: "Mahindra 575 DI",
-          brand: "Mahindra",
-          price: 385000,
-          hp: "45 HP",
-          fuel: "Diesel",
-          year: "2020",
-          location: "Delhi",
-          image: "/mah.png",
-          rating: 4.6,
-        },
-        {
-          id: 102,
-          name: "John Deere 5310",
-          brand: "John Deere",
-          price: 495000,
-          hp: "55 HP",
-          fuel: "Diesel",
-          year: "2019",
-          location: "Jaipur, RJ",
-          image: "/mah.png",
-          rating: 4.7,
-        },
-        {
-          id: 103,
-          name: "Swaraj 744 FE",
-          brand: "Swaraj",
-          price: 425000,
-          hp: "48 HP",
-          fuel: "Diesel",
-          year: "2020",
-          location: "Pune, MH",
-          image: "/mah.png",
-          rating: 4.5,
-        },
-        {
-          id: 104,
-          name: "Farmtrac 60 Powermaxx",
-          brand: "Farmtrac",
-          price: 415000,
-          hp: "50 HP",
-          fuel: "Diesel",
-          year: "2019",
-          location: "Ahmedabad, GJ",
-          image: "/mah.png",
-          rating: 4.4,
-        },
-        {
-          id: 105,
-          name: "New Holland 3630 TX",
-          brand: "New Holland",
-          price: 475000,
-          hp: "50 HP",
-          fuel: "Diesel",
-          year: "2021",
-          location: "Lucknow, UP",
-          image: "/mah.png",
-          rating: 4.6,
-        },
-        {
-          id: 106,
-          name: "TAFE 5900 DI",
-          brand: "TAFE",
-          price: 355000,
-          hp: "42 HP",
-          fuel: "Diesel",
-          year: "2018",
-          location: "Chennai, TN",
-          image: "/mah.png",
-          rating: 4.3,
-        },
-      ],
-      recent: [
-        {
-          id: 107,
-          name: "Mahindra Arjun 605",
-          brand: "Mahindra",
-          price: 525000,
-          hp: "60 HP",
-          fuel: "Diesel",
-          year: "2022",
-          location: "Nagpur, MH",
-          image: "/mah.png",
-          rating: 4.8,
-        },
-        {
-          id: 108,
-          name: "Escorts Powertrac 439",
-          brand: "Escorts",
-          price: 325000,
-          hp: "41 HP",
-          fuel: "Diesel",
-          year: "2019",
-          location: "Faridabad, HR",
-          image: "/mah.png",
-          rating: 4.2,
-        },
-        {
-          id: 109,
-          name: "Eicher 380 Super DI",
-          brand: "Eicher",
-          price: 295000,
-          hp: "40 HP",
-          fuel: "Diesel",
-          year: "2017",
-          location: "Indore, MP",
-          image: "/mah.png",
-          rating: 4.1,
-        },
-        {
-          id: 110,
-          name: "Preet 3549",
-          brand: "Preet",
-          price: 345000,
-          hp: "49 HP",
-          fuel: "Diesel",
-          year: "2020",
-          location: "Chandigarh",
-          image: "/mah.png",
-          rating: 4.3,
-        },
-        {
-          id: 111,
-          name: "Sonalika DI 750 III",
-          brand: "Sonalika",
-          price: 365000,
-          hp: "50 HP",
-          fuel: "Diesel",
-          year: "2019",
-          location: "Bhopal, MP",
-          image: "/mah.png",
-          rating: 4.4,
-        },
-        {
-          id: 112,
-          name: "Kubota NeoStar A211N",
-          brand: "Kubota",
-          price: 285000,
-          hp: "21 HP",
-          fuel: "Diesel",
-          year: "2021",
-          location: "Bangalore, KA",
-          image: "/mah.png",
-          rating: 4.5,
-        },
-      ],
-      deals: [
-        {
-          id: 113,
-          name: "John Deere 5050D",
-          brand: "John Deere",
-          price: 455000,
-          hp: "50 HP",
-          fuel: "Diesel",
-          year: "2020",
-          location: "Punjab",
-          image: "/mah.png",
-          rating: 4.7,
-        },
-        {
-          id: 114,
-          name: "Mahindra 265 DI",
-          brand: "Mahindra",
-          price: 275000,
-          hp: "35 HP",
-          fuel: "Diesel",
-          year: "2018",
-          location: "Haryana",
-          image: "/mah.png",
-          rating: 4.2,
-        },
-        {
-          id: 115,
-          name: "Swaraj 855 FE",
-          brand: "Swaraj",
-          price: 395000,
-          hp: "55 HP",
-          fuel: "Diesel",
-          year: "2019",
-          location: "Maharashtra",
-          image: "/mah.png",
-          rating: 4.4,
-        },
-        {
-          id: 116,
-          name: "New Holland 4710",
-          brand: "New Holland",
-          price: 405000,
-          hp: "47 HP",
-          fuel: "Diesel",
-          year: "2020",
-          location: "Gujarat",
-          image: "/mah.png",
-          rating: 4.5,
-        },
-        {
-          id: 117,
-          name: "Farmtrac 45",
-          brand: "Farmtrac",
-          price: 315000,
-          hp: "45 HP",
-          fuel: "Diesel",
-          year: "2019",
-          location: "Rajasthan",
-          image: "/mah.png",
-          rating: 4.3,
-        },
-        {
-          id: 118,
-          name: "TAFE 45 DI",
-          brand: "TAFE",
-          price: 305000,
-          hp: "45 HP",
-          fuel: "Diesel",
-          year: "2018",
-          location: "Tamil Nadu",
-          image: "/mah.png",
-          rating: 4.2,
-        },
-      ],
-    },
-  };
-
-  // Get current tractors based on section
-  let currentTractors = [];
-  if (section) {
-    currentTractors = tractorsData[type][section] || [];
-  } else {
-    // If no section, combine all
-    currentTractors = [
-      ...(tractorsData[type].popular || []),
-      ...(tractorsData[type].latest || []),
-      ...(tractorsData[type].upcoming || []),
-      ...(tractorsData[type].recent || []),
-      ...(tractorsData[type].deals || []),
-    ];
-  }
+  // Current tractors = real fetched data (no more hardcoded dummy arrays)
+  const currentTractors = type === "new" ? newTractors : usedTractors;
 
   // Filter tractors
   const filteredTractors = currentTractors.filter((tractor) => {
@@ -613,10 +166,22 @@ const TractorList = () => {
     setPriceRange([0, maxPrice]);
     setSortBy("popular");
   };
-
+useEffect(() => { 
+  if (currentTractors.length > 0) { 
+    const highest = Math.max(...currentTractors.map((t) => t.price)); 
+    setPriceRange([0, highest]); 
+  } 
+}, [currentTractors]);
   const TractorCard = ({ tractor }) => (
     <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
-      <Link to={`/tractor/${tractor.id}`} className="block">
+      <Link
+        to={
+          type === "new"
+            ? `/tractor/${tractor.id}`
+            : `/used-tractor/${tractor.id}`
+        }
+        className="block"
+      >
         <div className="relative h-48 overflow-hidden bg-gray-100">
           <img
             src={tractor.image}
@@ -624,9 +189,7 @@ const TractorList = () => {
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
           <div className="absolute top-2 left-2">
-            <span
-              className={`text-white text-[10px] font-bold px-2 py-0.5 rounded-full ${type === "new" ? "bg-green-600" : "bg-green-600"}`}
-            >
+            <span className="text-white text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-600">
               {type === "new" ? "New" : "Pre-owned"}
             </span>
           </div>
@@ -636,11 +199,16 @@ const TractorList = () => {
         </div>
       </Link>
       <div className="p-4">
-        <Link to={`/tractor/${tractor.id}`} className="block">
+        <Link
+          to={
+            type === "new"
+              ? `/tractor/${tractor.id}`
+              : `/used-tractor/${tractor.id}`
+          }
+          className="block"
+        >
           <div className="flex items-center justify-between mb-3">
-            <span
-              className={`text-xs font-semibold ${type === "new" ? "text-green-600" : "text-green-600"}`}
-            >
+            <span className="text-xs font-semibold text-green-600">
               {tractor.brand}
             </span>
             <div className="flex items-center gap-1 text-xs text-gray-500 ">
@@ -667,7 +235,11 @@ const TractorList = () => {
               ₹{tractor.price.toLocaleString()}
             </p>
             <Link
-              to={`/tractor/${tractor.id}`}
+              to={
+                type === "new"
+                  ? `/tractor/${tractor.id}`
+                  : `/used-tractor/${tractor.id}`
+              }
               className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg"
             >
               Details
@@ -698,7 +270,7 @@ const TractorList = () => {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900">{getTitle()}</h1>
           <p className="text-gray-500 mt-1">
-            Showing {sortedTractors.length}tractors
+            Showing {sortedTractors.length} tractors
           </p>
           {selectedBrand && (
             <div className="mt-2 inline-flex items-center gap-2 bg-green-50 text-green-600 px-3 py-1 rounded-full text-sm">
@@ -867,7 +439,11 @@ const TractorList = () => {
         </div>
 
         {/* Results */}
-        {sortedTractors.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-16">
+            <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-green-700 mx-auto"></div>
+          </div>
+        ) : sortedTractors.length === 0 ? (
           <div className="text-center py-16 bg-white rounded-2xl">
             <Tractor className="h-16 w-16 text-gray-300 mx-auto mb-4" />
             <h3 className="text-lg font-semibold text-gray-900 mb-2">
