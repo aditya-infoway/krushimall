@@ -233,7 +233,7 @@ const TABS = [
   { id: "inspection", label: "Inspection" },
   { id: "tyres", label: "Tyres" },
   { id: "hydraulic", label: "Hydraulic & PTO" },
-  // { id: "attachments", label: "Attachments" },
+  { id: "attachments", label: "Attachments" },
   { id: "pricing", label: "Pricing" },
   { id: "location", label: "Location" },
 ];
@@ -892,42 +892,26 @@ const UsedTractorDetails = () => {
       ? d.description
       : "Used Tractor in excellent condition",
 
-    similar: [
-      { name: "Mahindra 265 DI", price: "₹ 4,60,000", image: "/mah.png" },
-      { name: "Mahindra 575 DI", price: "₹ 1,65,000", image: "/mah.png" },
-      { name: "HMT 5911 Tractor", price: "₹ 3,95,000", image: "/mah.png" },
-      { name: "Eicher 241", price: "₹ 1,55,000", image: "/mah.png" },
-    ],
-    relatedProducts: [
-      {
-        id: 5,
-        name: "Mahindra Arjun 605",
-        location: "Mettur",
-        price: "₹8,50,000",
-        image: "/mah.png",
-      },
-      {
-        id: 6,
-        name: "Best Swaraj Tractor",
-        location: "Bengaluru",
-        price: "₹4,45,000",
-        image: "/mah.png",
-      },
-      {
-        id: 7,
-        name: "Eicher 380 Tractor",
-        location: "Karimnagar",
-        price: "₹3,50,000",
-        image: "/mah.png",
-      },
-      {
-        id: 8,
-        name: "Swaraj 744 FE",
-        location: "Sandila",
-        price: "₹3,70,000",
-        image: "/mah.png",
-      },
-    ],
+   similar:
+  (d.similarProducts || []).map((item) => ({
+    id: item.id,
+    name: item.productName,
+    location: item.city,
+    price: `₹ ${Number(item.expectedPrice || 0).toLocaleString("en-IN")}`,
+    image: item.frontView
+      ? apiHelper.image(item.frontView)
+      : "/mah.png",
+  })),
+   relatedProducts:
+  (d.relatedProducts || []).map((item) => ({
+    id: item.id,
+    name: item.productName,
+    location: item.city,
+    price: `₹ ${Number(item.expectedPrice || 0).toLocaleString("en-IN")}`,
+    image: item.frontView
+      ? apiHelper.image(item.frontView)
+      : "/mah.png",
+  })),
   };
 
   const wishlistProduct = {
@@ -947,27 +931,32 @@ const UsedTractorDetails = () => {
   };
 
   // ─── Auto Slider ──────────────────────────────────────────────────────────
-  useEffect(() => {
-    intervalRef.current = setInterval(() => {
-      if (window.innerWidth >= 640) {
-        setRelatedIndex((prev) => (prev + 1) % tractor.relatedProducts.length);
-      }
-    }, 3000);
-    return () => clearInterval(intervalRef.current);
-  }, [tractor.relatedProducts.length]);
+ useEffect(() => {
+  if (!tractor.relatedProducts?.length) return;
+
+  intervalRef.current = setInterval(() => {
+    setRelatedIndex(prev => (prev + 1) % tractor.relatedProducts.length);
+  }, 3000);
+
+  return () => clearInterval(intervalRef.current);
+}, [tractor.relatedProducts.length]);
 
   const cardsToShow = 4;
-  const getVisibleRelated = () => {
-    const visible = [];
-    for (let i = 0; i < cardsToShow; i++) {
-      visible.push(
-        tractor.relatedProducts[
-          (relatedIndex + i) % tractor.relatedProducts.length
-        ],
-      );
-    }
-    return visible;
-  };
+const getVisibleRelated = () => {
+  if (!tractor.relatedProducts?.length) return [];
+
+  const visible = [];
+
+  for (let i = 0; i < Math.min(cardsToShow, tractor.relatedProducts.length); i++) {
+    visible.push(
+      tractor.relatedProducts[
+        (relatedIndex + i) % tractor.relatedProducts.length
+      ]
+    );
+  }
+
+  return visible;
+};
 
   const slideRelated = (direction) => {
     clearInterval(intervalRef.current);
@@ -1365,6 +1354,11 @@ const UsedTractorDetails = () => {
               </h3>
               <div className="space-y-4">
                 {tractor.similar.map((item, index) => (
+                   <Link
+    key={item.id}
+    to={`/used-tractor/${item.id}`}
+    className="block"
+  >
                   <div
                     key={index}
                     className="bg-white rounded-2xl border border-green-400 shadow-sm p-3 flex gap-3 hover:shadow-lg transition-all"
@@ -1388,6 +1382,7 @@ const UsedTractorDetails = () => {
                       <p className="font-bold text-gray-900">{item.price}</p>
                     </div>
                   </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -1429,7 +1424,8 @@ const UsedTractorDetails = () => {
             </h2>
             <div className="flex-1 h-px bg-gray-200"></div>
             <Link
-              to="/tractors"
+              to="/used-tractor"
+            
               className="text-sm font-semibold text-green-600 hover:text-green-700 flex items-center gap-1 transition-colors whitespace-nowrap"
             >
               View All
@@ -1541,10 +1537,12 @@ const UsedTractorDetails = () => {
             </button>
             <div className="overflow-hidden">
               <div className="flex gap-4 sm:gap-5 transition-transform duration-500 ease-in-out">
-                {getVisibleRelated().map((product, idx) => (
+                  {getVisibleRelated()
+                  .filter(Boolean)
+               .map((product, idx) => (
                   <Link
                     key={`${product.id}-${relatedIndex}-${idx}`}
-                    to={`/tractor/${product.id}`}
+                    to={`/used-tractor/${product.id}`}
                     className="flex-shrink-0 group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-green-300 transition-all duration-300 w-full sm:w-[calc(50%-6px)] lg:w-[calc(25%-12px)]"
                   >
                     <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 h-48 overflow-hidden">
