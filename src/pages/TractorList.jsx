@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useSearchParams, Link } from "react-router-dom";
+import { useSearchParams, Link,useNavigate } from "react-router-dom";
 import { Listbox } from "@headlessui/react";
 import {
   Tractor,
@@ -8,6 +8,7 @@ import {
   Star,
   Search,
   ChevronDown,
+  ChevronLeft,
   Check,
 } from "lucide-react";
 import apiHelper from "../utils/apiHelper";
@@ -17,14 +18,36 @@ const TractorList = () => {
   const type = searchParams.get("type") || "new"; // 'new' or 'used'
   const brandFilter = searchParams.get("brand");
   const section = searchParams.get("section"); // 'popular', 'recent'/'latest', 'deals'
+  const searchFilter = searchParams.get("search") || "";
+  const navigate = useNavigate();
+  const hpFilter = searchParams.get("hp") || "";
+  const categoryFilter = searchParams.get("category") || "";
+  const transmissionFilter = searchParams.get("transmission") || "";
+  const driveTypeFilter = searchParams.get("driveType") || "";
+  const stateFilter = searchParams.get("state") || "";
+  const cityFilter = searchParams.get("city") || "";
+ const minPrice = Number(searchParams.get("minPrice")) || 0;
 
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedBrand, setSelectedBrand] = useState(brandFilter || "");
-  const [selectedHp, setSelectedHp] = useState("");
-  const [priceRange, setPriceRange] = useState([
-  
-  ]);
-  const [sortBy, setSortBy] = useState("popular");
+const maxPrice =
+  Number(searchParams.get("maxPrice")) ||
+  (type === "new" ? 1000000 : 600000);
+
+
+  const sort = searchParams.get("sort") || "popular";
+  const [searchQuery, setSearchQuery] = useState(searchFilter);
+  const [selectedBrand, setSelectedBrand] = useState(brandFilter);
+  const [selectedHp, setSelectedHp] = useState(hpFilter);
+  const [selectedCategory, setSelectedCategory] = useState(categoryFilter);
+  const [selectedTransmission, setSelectedTransmission] =
+    useState(transmissionFilter);
+  const [selectedDriveType, setSelectedDriveType] = useState(driveTypeFilter);
+
+  const [selectedState, setSelectedState] = useState(stateFilter);
+
+  const [selectedCity, setSelectedCity] = useState(cityFilter);
+  const [priceRange, setPriceRange] = useState([minPrice, maxPrice]);
+  const [sortBy, setSortBy] = useState(sort);
+
   const [newTractors, setNewTractors] = useState([]);
   const [usedTractors, setUsedTractors] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -40,10 +63,17 @@ const TractorList = () => {
         const formattedTractors = tractorList.map((apiTractor) => ({
           id: apiTractor.id,
           name: apiTractor.productName || "Tractor",
-          brand:
-            apiTractor.brand?.brandName || apiTractor.brandName || "Brand",
+          brand: apiTractor.brand?.brandName || apiTractor.brandName || "",
+          category:
+            apiTractor.category?.categoryName || apiTractor.categoryName || "",
+          transmission:
+            apiTractor.transmissionType || apiTractor.transmission || "",
           price: apiTractor.exShowroomPrice || 0,
-          hp: apiTractor.horsePower ? `${apiTractor.horsePower} HP` : "N/A",
+          hp: apiTractor.horsePower
+            ? `${apiTractor.horsePower} HP`
+            : apiTractor.hp
+              ? `${apiTractor.hp} HP`
+              : "",
           fuel: "Diesel",
           year: apiTractor.modelYear?.modelYear || "2024",
           location: apiTractor.city || apiTractor.district || "Location",
@@ -76,17 +106,17 @@ const TractorList = () => {
 
         const formattedTractors = tractorList.map((apiTractor) => ({
           id: apiTractor.id,
-          name: apiTractor.productName || "Tractor",
-          brand: apiTractor.brandRef?.brandName || "Brand",
-          price: apiTractor.expectedPrice || 0,
-          hp: apiTractor.hp ? `${apiTractor.hp} HP` : "N/A",
-          fuel: apiTractor.fuelType || "Diesel",
-          year: apiTractor.manufacturingYear || "N/A",
-          location: apiTractor.city || apiTractor.state || "Location",
+          name: apiTractor.productName,
+          brand: apiTractor.brandRef?.brandName,
+          category: apiTractor.category?.categoryName,
+          hp: apiTractor.hp ? `${apiTractor.hp} HP` : "",
+          driveType: apiTractor.driveType,
+          state: apiTractor.state,
+          city: apiTractor.city,
+          price: apiTractor.expectedPrice,
           image: apiTractor.frontView
             ? apiHelper.image(apiTractor.frontView)
             : "/mah.png",
-          rating: 4.5,
         }));
 
         setUsedTractors(formattedTractors);
@@ -107,12 +137,21 @@ const TractorList = () => {
 
   useEffect(() => {
     setSelectedBrand(brandFilter || "");
-    setSelectedHp(""); // clear HP when coming from a brand link
-  }, [brandFilter]);
-
-  useEffect(() => {
-    setSelectedHp(""); // clear HP whenever brand changes
-  }, [selectedBrand]);
+    setSelectedHp(hpFilter || "");
+    setSelectedCategory(categoryFilter || "");
+    setSelectedTransmission(transmissionFilter || "");
+    setSelectedDriveType(driveTypeFilter || "");
+    setSelectedState(stateFilter || "");
+    setSelectedCity(cityFilter || "");
+  }, [
+    brandFilter,
+    hpFilter,
+    categoryFilter,
+    transmissionFilter,
+    driveTypeFilter,
+    stateFilter,
+    cityFilter,
+  ]);
 
   // Current tractors = real fetched data (no more hardcoded dummy arrays)
   const currentTractors = type === "new" ? newTractors : usedTractors;
@@ -120,19 +159,35 @@ const TractorList = () => {
   // Filter tractors
   const filteredTractors = currentTractors.filter((tractor) => {
     if (
-      selectedBrand &&
-      tractor.brand.toLowerCase() !== selectedBrand.toLowerCase()
-    )
-      return false;
-    if (selectedHp && tractor.hp !== selectedHp) return false;
-    if (
       searchQuery &&
       !tractor.name.toLowerCase().includes(searchQuery.toLowerCase()) &&
       !tractor.brand.toLowerCase().includes(searchQuery.toLowerCase())
     )
       return false;
+
+    if (selectedBrand && tractor.brand !== selectedBrand) return false;
+
+    if (selectedHp && tractor.hp !== selectedHp) return false;
+
+   if (
+  selectedCategory &&
+  tractor.category?.toLowerCase() !== selectedCategory.toLowerCase()
+)
+  return false;
+
+ if (selectedTransmission && tractor.transmission !== selectedTransmission)
+  return false;
+
+if (selectedDriveType && tractor.driveType !== selectedDriveType)
+  return false;
+
+    if (selectedState && tractor.state !== selectedState) return false;
+
+    if (selectedCity && tractor.city !== selectedCity) return false;
+
     if (tractor.price < priceRange[0] || tractor.price > priceRange[1])
       return false;
+
     return true;
   });
 
@@ -157,20 +212,27 @@ const TractorList = () => {
         .map((tractor) => tractor.hp),
     ),
   ];
-  const maxPrice = type === "new" ? 1000000 : 600000;
 
   const clearFilters = () => {
     setSearchQuery("");
     setSelectedBrand("");
     setSelectedHp("");
+    setSelectedCategory("");
+    setSelectedTransmission("");
+    setSelectedDriveType("");
+    setSelectedState("");
+    setSelectedCity("");
     setPriceRange([0, maxPrice]);
     setSortBy("popular");
   };
-useEffect(() => { 
-  if (currentTractors.length > 0) { 
-    const highest = Math.max(...currentTractors.map((t) => t.price)); 
-    setPriceRange([0, highest]); 
-  } 
+useEffect(() => {
+  if (
+    currentTractors.length > 0 &&
+    !searchParams.get("maxPrice")
+  ) {
+    const highest = Math.max(...currentTractors.map((t) => t.price));
+    setPriceRange([0, highest]);
+  }
 }, [currentTractors]);
   const TractorCard = ({ tractor }) => (
     <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden">
@@ -267,7 +329,8 @@ useEffect(() => {
     <div className=" bg-gray-50 pt-2 xl:mt-4">
       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-6 pb-6 lg:pb-20">
         {/* Header */}
-        <div className="mb-8">
+         <div className="flex items-center justify-between gap-4">
+        <div className=" mb-8">
           <h1 className="text-3xl font-bold text-gray-900">{getTitle()}</h1>
           <p className="text-gray-500 mt-1">
             Showing {sortedTractors.length} tractors
@@ -284,7 +347,18 @@ useEffect(() => {
             </div>
           )}
         </div>
-
+    {/* Back Button - Right */}
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group flex-shrink-0"
+            aria-label="Go back"
+          >
+            <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" />
+            <span className="text-sm font-medium text-gray-600 group-hover:text-green-600 transition-colors">
+              Back
+            </span>
+          </button>
+          </div>
         {/* Filter Bar - Headless UI */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-4 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
