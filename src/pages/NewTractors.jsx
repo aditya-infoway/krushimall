@@ -108,17 +108,19 @@ const NewTractors = () => {
   }, []);
 
   // Add this function after clearFilters:
-  const applyFilters = () => {
-    setAppliedFilters({
-      searchQuery,
-      selectedBrand,
-      selectedHp,
-      selectedTransmission,
-      selectedCategory,
-      priceRange,
-      sortBy,
-    });
-  };
+const applyFilters = () => {
+  navigate(
+      `/tractors?type=new` +
+      `&search=${encodeURIComponent(searchQuery)}` +
+      `&brand=${encodeURIComponent(selectedBrand)}` +
+      `&hp=${encodeURIComponent(selectedHp)}` +
+      `&category=${encodeURIComponent(selectedCategory)}` +
+      `&transmission=${encodeURIComponent(selectedTransmission)}` +
+      `&minPrice=${priceRange[0]}` +
+      `&maxPrice=${priceRange[1]}` +
+      `&sort=${sortBy}`
+  );
+};
 
   // Add this useEffect after your other useEffects
   useEffect(() => {
@@ -671,6 +673,7 @@ const [transmissionOptions, setTransmissionOptions] = useState([
       </div>
     );
   };
+  
   const SliderSection = ({
     title,
     subtitle,
@@ -841,9 +844,9 @@ const [transmissionOptions, setTransmissionOptions] = useState([
             </span>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start ">
             {/* Left side - Text content */}
-            <div>
+            <div className="mt-0 md:mt-0 lg:mt-20 xl:mt-20">
               <div className="inline-flex items-center gap-2 bg-green-700 text-white px-4 py-2 rounded-full mb-6 shadow-lg">
                 <Sparkles className="h-4 w-4" />
                 <span className="text-sm font-semibold">
@@ -953,7 +956,7 @@ const [transmissionOptions, setTransmissionOptions] = useState([
                   </RadioGroup>
                 </div>{" "}
                 {/* Search Box - existing code continues */}
-                <div className="mb-4">
+                {/* <div className="mb-4">
                   {" "}
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Search
@@ -968,7 +971,7 @@ const [transmissionOptions, setTransmissionOptions] = useState([
                       className="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all bg-gray-50 hover:bg-white"
                     />
                   </div>
-                </div>
+                </div> */}
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   {/* Brand Select */}
                   {/* Brand Select - Headless UI Listbox */}
@@ -1379,7 +1382,7 @@ const [transmissionOptions, setTransmissionOptions] = useState([
               </p>
             </div>
             {/* Results Bar Sort - Headless UI Listbox */}
-            <div className="flex items-center gap-3">
+            {/* <div className="flex items-center gap-3">
               <span className="text-sm font-semibold text-gray-600">
                 Sort by:
               </span>
@@ -1431,7 +1434,7 @@ const [transmissionOptions, setTransmissionOptions] = useState([
                   </Listbox.Options>
                 </div>
               </Listbox>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>

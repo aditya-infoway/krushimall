@@ -59,9 +59,10 @@ const UsedTractors = () => {
   const [selectedHp, setSelectedHp] = useState("");
   const [selectedState, setSelectedState] = useState("");
   const [selectedCity, setSelectedCity] = useState("");
-  const [selectedTransmission, setSelectedTransmission] = useState("");
+  const [selectedDriveType, setSelectedDriveType] = useState("");
+  const [driveTypeOptions, setDriveTypeOptions] = useState(["All Drive Types"]);
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [priceRange, setPriceRange] = useState([0, 600000]);
+  const [priceRange, setPriceRange] = useState([0, 1000000]);
   const [sortBy, setSortBy] = useState("popular");
   const [openIndex, setOpenIndex] = useState(null);
   const navigate = useNavigate();
@@ -72,9 +73,7 @@ const UsedTractors = () => {
   const [categoryOptions, setCategoryOptions] = useState(["All Categories"]);
   const [stateOptions, setStateOptions] = useState(["All States"]);
   const [cityOptions, setCityOptions] = useState(["All Cities"]);
-  const [transmissionOptions, setTransmissionOptions] = useState([
-    "All Transmissions",
-  ]);
+
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
@@ -96,7 +95,7 @@ const UsedTractors = () => {
 
         // Used tractors
         const tractorRes = await apiHelper.get(
-          "/vendor-web/used-website-variant",
+           "/vendor-web/used-website-variant/public"
         );
 
         const tractors = tractorRes.data || [];
@@ -131,11 +130,11 @@ const UsedTractors = () => {
         ];
 
         setCityOptions(["All Cities", ...cities]);
-        const transmissions = [
-          ...new Set(tractors.map((t) => t.transmission).filter(Boolean)),
+        const driveTypes = [
+          ...new Set(tractors.map((t) => t.driveType).filter(Boolean)),
         ];
 
-        setTransmissionOptions(["All Transmissions", ...transmissions]);
+        setDriveTypeOptions(["All Drive Types", ...driveTypes]);
       } catch (err) {
         console.log(err);
       }
@@ -149,9 +148,9 @@ const UsedTractors = () => {
     selectedHp: "",
     selectedState: "",
     selectedCity: "",
-    selectedTransmission: "",
+    selectedDriveType: "",
     selectedCategory: "",
-    priceRange: [0, 600000],
+    priceRange: [0, 1000000],
     sortBy: "popular",
   });
 
@@ -287,18 +286,18 @@ const UsedTractors = () => {
   const [latestUsedTractors, setLatestUsedTractors] = useState([]);
   const [bestValueUsedTractors, setBestValueUsedTractors] = useState([]);
   const loadBestValue = async () => {
-  try {
-    const res = await apiHelper.get(
-      "/vendor-web/used-website-variant/best-value",
-    );
+    try {
+      const res = await apiHelper.get(
+        "/vendor-web/used-website-variant/best-value",
+      );
 
-    if (res.success) {
-      setBestValueUsedTractors(res.data);
+      if (res.success) {
+        setBestValueUsedTractors(res.data);
+      }
+    } catch (err) {
+      console.log(err);
     }
-  } catch (err) {
-    console.log(err);
-  }
-};
+  };
   const loadLatest = async () => {
     try {
       const res = await apiHelper.get(
@@ -328,7 +327,7 @@ const UsedTractors = () => {
   useEffect(() => {
     loadLatest();
     loadPopular();
-      loadBestValue();
+    loadBestValue();
   }, []);
   const upcomingUsedTractors = [
     {
@@ -432,13 +431,13 @@ const UsedTractors = () => {
       state: state.trim(),
     };
   };
-const allTractors = [
-  ...popularUsedTractors,
-  ...latestUsedTractors,
-  ...bestValueUsedTractors,
-];
+  const allTractors = [
+    ...popularUsedTractors,
+    ...latestUsedTractors,
+    ...bestValueUsedTractors,
+  ];
 
-  const maxPrice = 600000;
+  const maxPrice = 1000000;
 
   const clearFilters = () => {
     setSearchQuery("");
@@ -446,7 +445,7 @@ const allTractors = [
     setSelectedHp("");
     setSelectedState("");
     setSelectedCity("");
-    setSelectedTransmission("");
+    setSelectedDriveType("");
     setSelectedCategory("");
     setPriceRange([0, maxPrice]);
     setSortBy("popular");
@@ -456,26 +455,28 @@ const allTractors = [
       selectedHp: "",
       selectedState: "",
       selectedCity: "",
-      selectedTransmission: "",
+      selectedDriveType: "",
       selectedCategory: "",
       priceRange: [0, maxPrice],
       sortBy: "popular",
     });
   };
 
-  const applyFilters = () => {
-    setAppliedFilters({
-      searchQuery,
-      selectedBrand,
-      selectedHp,
-      selectedState,
-      selectedCity,
-      selectedTransmission,
-      selectedCategory,
-      priceRange,
-      sortBy,
-    });
-  };
+const applyFilters = () => {
+  navigate(
+    `/tractors?type=used` +
+      `&search=${encodeURIComponent(searchQuery)}` +
+      `&brand=${encodeURIComponent(selectedBrand)}` +
+      `&hp=${encodeURIComponent(selectedHp)}` +
+      `&category=${encodeURIComponent(selectedCategory)}` +
+      `&driveType=${encodeURIComponent(selectedDriveType)}` +
+      `&state=${encodeURIComponent(selectedState)}` +
+      `&city=${encodeURIComponent(selectedCity)}` +
+      `&minPrice=${priceRange[0]}` +
+      `&maxPrice=${priceRange[1]}` +
+      `&sort=${sortBy}`
+  );
+};
 
   useEffect(() => {
     if (selectedState) {
@@ -511,9 +512,9 @@ const allTractors = [
         if (latestUsedTractors.length > 0) {
           setLatestIndex((prev) => (prev + 1) % latestUsedTractors.length);
         }
-if (bestValueUsedTractors.length > 0) {
-  setUpcomingIndex((prev) => (prev + 1) % bestValueUsedTractors.length);
-}
+        if (bestValueUsedTractors.length > 0) {
+          setUpcomingIndex((prev) => (prev + 1) % bestValueUsedTractors.length);
+        }
       }
     }, 3000);
 
@@ -547,7 +548,6 @@ if (bestValueUsedTractors.length > 0) {
   };
 
   const TractorCard = ({ tractor }) => (
-    
     <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col flex-shrink-0 w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]">
       {/* Clickable Image */}
       <Link
@@ -792,7 +792,7 @@ if (bestValueUsedTractors.length > 0) {
             </span>
           </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-start">
-            <div>
+            <div className="mt-0 md:mt-0 lg:mt-30 xl:mt-30">
               <div className="inline-flex items-center gap-2 bg-green-700 text-white px-4 py-2 rounded-full mb-6 shadow-lg">
                 <Sparkles className="h-4 w-4" />
                 <span className="text-sm font-semibold">
@@ -899,7 +899,7 @@ if (bestValueUsedTractors.length > 0) {
                     </div>
                   </RadioGroup>
                 </div>
-                <div className="mb-4">
+                {/* <div className="mb-4">
                   <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                     Search
                   </label>
@@ -913,7 +913,7 @@ if (bestValueUsedTractors.length > 0) {
                       className="w-full pl-9 pr-3 py-2.5 border border-gray-200 rounded-xl text-sm text-gray-900 focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none transition-all bg-gray-50 hover:bg-white"
                     />
                   </div>
-                </div>
+                </div> */}
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
@@ -1017,47 +1017,53 @@ if (bestValueUsedTractors.length > 0) {
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
-                      Transmission
+                      Drive Type
                     </label>
+
                     <Listbox
-                      value={selectedTransmission}
-                      onChange={setSelectedTransmission}
+                      value={selectedDriveType}
+                      onChange={setSelectedDriveType}
                     >
                       <div className="relative">
-                        <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
+                        <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left bg-gray-50 hover:bg-white">
                           <span
                             className={
-                              selectedTransmission
+                              selectedDriveType
                                 ? "text-gray-900"
                                 : "text-gray-400"
                             }
                           >
-                            {selectedTransmission || "All Transmissions"}
+                            {selectedDriveType || "All Drive Types"}
                           </span>
+
                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         </Listbox.Button>
-                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+
+                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 text-black rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
                           <Listbox.Option
                             value=""
                             className={({ active }) =>
                               `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`
                             }
                           >
-                            All Transmissions
+                            All Drive Types
                           </Listbox.Option>
-                          {transmissionOptions
-                            .filter((t) => t !== "All Transmissions")
-                            .map((t) => (
+
+                          {driveTypeOptions
+                            .filter((d) => d !== "All Drive Types")
+                            .map((d) => (
                               <Listbox.Option
-                                key={t}
-                                value={t}
+                                key={d}
+                                value={d}
                                 className={({ active, selected }) =>
-                                  `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`
+                                  `cursor-pointer px-4 py-2.5 flex justify-between ${
+                                    active ? "bg-green-50 text-green-500" : ""
+                                  } ${selected ? "bg-green-100 text-black" : ""}`
                                 }
                               >
                                 {({ selected }) => (
                                   <>
-                                    <span>{t}</span>
+                                    <span>{d.toUpperCase()}</span>
                                     {selected && (
                                       <Check className="h-4 w-4 text-green-600" />
                                     )}
@@ -1277,7 +1283,7 @@ if (bestValueUsedTractors.length > 0) {
                   appliedFilters.selectedHp ||
                   appliedFilters.selectedState ||
                   appliedFilters.selectedCity ||
-                  appliedFilters.selectedTransmission ||
+                  appliedFilters.selectedDriveType ||
                   appliedFilters.selectedCategory ||
                   appliedFilters.priceRange[1] < maxPrice) && (
                   <div className="pt-3 mt-3 border-t border-gray-100">
@@ -1375,16 +1381,16 @@ if (bestValueUsedTractors.length > 0) {
                           </button>
                         </span>
                       )}
-                      {appliedFilters.selectedTransmission && (
+                      {appliedFilters.selectedDriveType && (
                         <span className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-[11px] font-medium px-2 py-1 rounded-lg border border-gray-200">
                           <Check className="h-3 w-3" />
-                          {appliedFilters.selectedTransmission}
+                          {appliedFilters.selectedDriveType}
                           <button
                             onClick={() => {
-                              setSelectedTransmission("");
+                              setSelectedDriveType("");
                               setAppliedFilters((prev) => ({
                                 ...prev,
-                                selectedTransmission: "",
+                                selectedDriveType: "",
                               }));
                             }}
                             className="ml-1 hover:text-red-500 cursor-pointer"
@@ -1455,7 +1461,7 @@ if (bestValueUsedTractors.length > 0) {
               </p>
             </div>
             {/* Results Bar Sort - Headless UI Listbox */}
-            <div className="flex items-center gap-3">
+            {/* <div className="flex items-center gap-3">
               <span className="text-sm font-semibold text-gray-600">
                 Sort by:
               </span>
@@ -1507,7 +1513,7 @@ if (bestValueUsedTractors.length > 0) {
                   </Listbox.Options>
                 </div>
               </Listbox>
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
@@ -1537,16 +1543,16 @@ if (bestValueUsedTractors.length > 0) {
             badgeColor="bg-green-700"
           />
         </div>
-  <div className="mb-8 md:mb-14 lg:mb-20">
-        <SliderSection
-          title="Best Value Opportunities"
-          subtitle="Highly competitive price points"
-          tractors={bestValueUsedTractors} 
-          index={upcomingIndex}
-          setIndex={setUpcomingIndex}
-          linkTo="/tractors?type=used&section=deals"
-          badgeColor="bg-green-700"
-        />
+        <div className="mb-8 md:mb-14 lg:mb-20">
+          <SliderSection
+            title="Best Value Opportunities"
+            subtitle="Highly competitive price points"
+            tractors={bestValueUsedTractors}
+            index={upcomingIndex}
+            setIndex={setUpcomingIndex}
+            linkTo="/tractors?type=used&section=deals"
+            badgeColor="bg-green-700"
+          />
         </div>
       </div>
 

@@ -870,42 +870,27 @@ const TractorDetails = () => {
     availableDealers: d.availableDealers || [],
 
     // Similar & Related Products
-    similar: d.similarProducts || [
-      { name: "Mahindra 265 DI", price: "₹ 4,60,000", image: "/mah.png" },
-      { name: "Mahindra 575 DI", price: "₹ 1,65,000", image: "/mah.png" },
-      { name: "HMT 5911 Tractor", price: "₹ 3,95,000", image: "/mah.png" },
-      { name: "Eicher 241", price: "₹ 1,55,000", image: "/mah.png" },
-    ],
-    relatedProducts: d.relatedProducts || [
-      {
-        id: 5,
-        name: "Mahindra Arjun 605",
-        location: "Mettur",
-        price: "₹8,50,000",
-        image: "/mah.png",
-      },
-      {
-        id: 6,
-        name: "Best Swaraj Tractor",
-        location: "Bengaluru",
-        price: "₹4,45,000",
-        image: "/mah.png",
-      },
-      {
-        id: 7,
-        name: "Eicher 380 Tractor",
-        location: "Karimnagar",
-        price: "₹3,50,000",
-        image: "/mah.png",
-      },
-      {
-        id: 8,
-        name: "Swaraj 744 FE",
-        location: "Sandila",
-        price: "₹3,70,000",
-        image: "/mah.png",
-      },
-    ],
+    similar: (d.similarProducts ?? [])
+      .filter((item) => item && item.id)
+      .map((item) => ({
+        id: item.id,
+        name: item.productName,
+        image: apiHelper.image(item.frontView),
+        price: `₹ ${Number(item.exShowroomPrice || 0).toLocaleString("en-IN")}`,
+        location: `${item.city || ""}${item.state ? ", " + item.state : ""}`,
+      })),
+
+    relatedProducts: (d.relatedProducts ?? [])
+      .filter((item) => item && item.id)
+      .map((item) => ({
+        id: item.id,
+        name: item.productName,
+        image: apiHelper.image(item.frontView),
+        price: `₹ ${Number(item.exShowroomPrice || 0).toLocaleString("en-IN")}`,
+        location: `${item.city || ""}${item.state ? ", " + item.state : ""}`,
+        brand: item.brand?.brandName,
+        model: item.model?.modelName,
+      })),
   };
 
   const wishlistProduct = {
@@ -926,24 +911,35 @@ const TractorDetails = () => {
 
   // ─── Auto Slider ──────────────────────────────────────────────────────────
   useEffect(() => {
+    if (!tractor.relatedProducts.length) return;
+
     intervalRef.current = setInterval(() => {
-      if (window.innerWidth >= 640) {
-        setRelatedIndex((prev) => (prev + 1) % tractor.relatedProducts.length);
-      }
+      setRelatedIndex((prev) => (prev + 1) % tractor.relatedProducts.length);
     }, 3000);
+
     return () => clearInterval(intervalRef.current);
   }, [tractor.relatedProducts.length]);
 
   const cardsToShow = 4;
   const getVisibleRelated = () => {
+    if (!tractor.relatedProducts?.length) {
+      return [];
+    }
+
     const visible = [];
-    for (let i = 0; i < cardsToShow; i++) {
+
+    for (
+      let i = 0;
+      i < Math.min(cardsToShow, tractor.relatedProducts.length);
+      i++
+    ) {
       visible.push(
         tractor.relatedProducts[
           (relatedIndex + i) % tractor.relatedProducts.length
         ],
       );
     }
+
     return visible;
   };
 
@@ -1343,6 +1339,11 @@ const TractorDetails = () => {
               </h3>
               <div className="space-y-4">
                 {tractor.similar.map((item, index) => (
+                   <Link
+    key={item.id}
+    to={`/tractor/${item.id}`}
+    className="block"
+  >
                   <div
                     key={index}
                     className="bg-white rounded-2xl border border-green-400 shadow-sm p-3 flex gap-3 hover:shadow-lg transition-all"
@@ -1366,6 +1367,7 @@ const TractorDetails = () => {
                       <p className="font-bold text-gray-900">{item.price}</p>
                     </div>
                   </div>
+                  </Link>
                 ))}
               </div>
             </div>
@@ -1519,82 +1521,84 @@ const TractorDetails = () => {
             </button>
             <div className="overflow-hidden">
               <div className="flex gap-4 sm:gap-5 transition-transform duration-500 ease-in-out">
-                {getVisibleRelated().map((product, idx) => (
-                  <Link
-                    key={`${product.id}-${relatedIndex}-${idx}`}
-                    to={`/tractor/${product.id}`}
-                    className="flex-shrink-0 group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-green-300 transition-all duration-300 w-full sm:w-[calc(50%-6px)] lg:w-[calc(25%-12px)]"
-                  >
-                    <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 h-48 overflow-hidden">
-                      <img
-                        src={product.image || "/mah.png"}
-                        alt={product.name}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-                      <span className="absolute top-3 left-3 bg-gradient-to-r from-green-600 to-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
-                        <Award className="w-3 h-3" />
-                        Featured
-                      </span>
-                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/20">
-                        <span className="bg-white/90 backdrop-blur-sm text-gray-900 font-semibold px-4 py-2 rounded-lg shadow-lg hover:bg-white transition-all transform group-hover:scale-105 flex items-center gap-2 text-sm">
-                          <Eye className="w-4 h-4" />
-                          Quick View
+                {getVisibleRelated()
+                  .filter(Boolean)
+               .map((product, idx) => (
+                    <Link
+                      key={`${product.id}-${relatedIndex}-${idx}`}
+                      to={`/tractor/${product.id}`}
+                      className="flex-shrink-0 group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-green-300 transition-all duration-300 w-full sm:w-[calc(50%-6px)] lg:w-[calc(25%-12px)]"
+                    >
+                      <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 h-48 overflow-hidden">
+                        <img
+                          src={product.image || "/mah.png"}
+                          alt={product.name}
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                        <span className="absolute top-3 left-3 bg-gradient-to-r from-green-600 to-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
+                          <Award className="w-3 h-3" />
+                          Featured
                         </span>
-                      </div>
-                    </div>
-                    <div className="p-4">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs bg-green-50 text-green-700 font-semibold px-3 py-1 rounded-full border border-green-200">
-                          Tractor
-                        </span>
-                        <div className="flex items-center gap-1">
-                          <div className="flex gap-0.5">
-                            {[...Array(5)].map((_, i) => (
-                              <Star
-                                key={i}
-                                className={`w-3.5 h-3.5 ${i < 4 ? "fill-yellow-400 text-yellow-400" : "text-gray-300 fill-gray-300"}`}
-                              />
-                            ))}
-                          </div>
-                          <span className="text-xs text-gray-400 ml-1">
-                            (24)
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/20">
+                          <span className="bg-white/90 backdrop-blur-sm text-gray-900 font-semibold px-4 py-2 rounded-lg shadow-lg hover:bg-white transition-all transform group-hover:scale-105 flex items-center gap-2 text-sm">
+                            <Eye className="w-4 h-4" />
+                            Quick View
                           </span>
                         </div>
                       </div>
-                      <h4 className="text-sm font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-200 line-clamp-2 mb-1.5">
-                        {product.name}
-                      </h4>
-                      <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-                        <MapPin className="h-3 w-3 flex-shrink-0" />
-                        <span>
-                          {product.location || "Location not specified"}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between pt-2 border-t border-gray-100">
-                        <div>
-                          <p className="text-base font-bold text-gray-900">
-                            {product.price}
-                          </p>
-                          <p className="text-xs text-gray-400 line-through">
-                            ₹9,50,000
-                          </p>
+                      <div className="p-4">
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-xs bg-green-50 text-green-700 font-semibold px-3 py-1 rounded-full border border-green-200">
+                            Tractor
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <div className="flex gap-0.5">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={`w-3.5 h-3.5 ${i < 4 ? "fill-yellow-400 text-yellow-400" : "text-gray-300 fill-gray-300"}`}
+                                />
+                              ))}
+                            </div>
+                            <span className="text-xs text-gray-400 ml-1">
+                              (24)
+                            </span>
+                          </div>
                         </div>
-                        <button
-                          className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg transform hover:scale-105"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            // Add to cart logic
-                          }}
-                        >
-                          <ShoppingCart className="w-3.5 h-3.5" />
-                          Add
-                        </button>
+                        <h4 className="text-sm font-semibold text-gray-900 group-hover:text-green-600 transition-colors duration-200 line-clamp-2 mb-1.5">
+                          {product.name}
+                        </h4>
+                        <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                          <MapPin className="h-3 w-3 flex-shrink-0" />
+                          <span>
+                            {product.location || "Location not specified"}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                          <div>
+                            <p className="text-base font-bold text-gray-900">
+                              {product.price}
+                            </p>
+                            <p className="text-xs text-gray-400 line-through">
+                              ₹9,50,000
+                            </p>
+                          </div>
+                          <button
+                            className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg transform hover:scale-105"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              // Add to cart logic
+                            }}
+                          >
+                            <ShoppingCart className="w-3.5 h-3.5" />
+                            Add
+                          </button>
+                        </div>
                       </div>
-                    </div>
-                  </Link>
-                ))}
+                    </Link>
+                  ))}
               </div>
             </div>
             <button
@@ -1619,12 +1623,12 @@ const TractorDetails = () => {
       </div>
 
       {/* Enquiry Modal */}
-    <EnquiryModal
-  isOpen={showEnquiryModal}
-  enquiryMode="new"
-  websiteVariantId={id}
-  onClose={() => setShowEnquiryModal(false)}
-/>
+      <EnquiryModal
+        isOpen={showEnquiryModal}
+        enquiryMode="new"
+        websiteVariantId={id}
+        onClose={() => setShowEnquiryModal(false)}
+      />
     </div>
   );
 };
@@ -1675,7 +1679,11 @@ const ProductDetailsTab = ({ tractor }) => (
       <div>
         <DetailRow label="Horse Power" value={tractor.hp} />
         <DetailRow label="Cubic Capacity" value={tractor.cc} />
-        <DetailRow label="Engine Condition" value={tractor.engineCondition} last/>
+        <DetailRow
+          label="Engine Condition"
+          value={tractor.engineCondition}
+          last
+        />
       </div>
       <div>
         <DetailRow label="RC Available" value={tractor.rc} />
