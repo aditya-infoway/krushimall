@@ -43,7 +43,7 @@ const TractorShowcase = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await apiHelper.get("/website-variants?status=ACTIVE");
+        const response = await apiHelper.get(  "/website-variants?status=ACTIVE&isUpcoming=false");
 
         const tractorList = response.data || [];
 
@@ -614,7 +614,7 @@ const TractorShowcase = () => {
             index={usedIndex}
             setIndex={setUsedIndex}
             isUsed={true}
-            linkTo="/old-tractors"
+            linkTo="/tractors"
           />
         </div>
       </div>
