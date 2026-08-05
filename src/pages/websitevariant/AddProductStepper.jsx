@@ -1,8 +1,10 @@
 // AddProductStepper.jsx
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   CheckCircle, 
   ChevronRight,
+  ArrowLeft,
   Package,
   Settings,
   Truck,
@@ -23,9 +25,13 @@ const STEPS = [
   { id: 6, title: 'Preview', icon: Shield },
 ];
 
+// Route to navigate back to when the back button is clicked
+const VENDOR_PRODUCTS_ROUTE = '/vendor-profile';
+
 const AddProductStepper = ({ children, currentStep, setCurrentStep, completedSteps }) => {
   const [isSticky, setIsSticky] = useState(false);
   const stepperRef = useRef(null);
+  const navigate = useNavigate();
 
   // Handle sticky behavior
   useEffect(() => {
@@ -61,6 +67,28 @@ const AddProductStepper = ({ children, currentStep, setCurrentStep, completedSte
     return false;
   };
 
+  // Header row: page title on left, "Back to List" button on right, same on every step
+  const renderHeader = () => (
+    <div className=" px-4 sm:px-6 lg:px-8 pt-8">
+      <div className="w-full max-w-6xl mx-auto flex items-start justify-between gap-4">
+        <div>
+          {/* <h1 className="text-2xl font-bold text-gray-900">Add New Product</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Fill in the details below to list your product
+          </p> */}
+        </div>
+        <button
+          type="button"
+          onClick={() => navigate(VENDOR_PRODUCTS_ROUTE)}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50 hover:border-gray-400 transition-colors flex-shrink-0 cursor-pointer"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Back to List
+        </button>
+      </div>
+    </div>
+  );
+
   // Mobile: Show compact progress
   const renderMobileProgress = () => (
     <div className="lg:hidden bg-white border-b border-gray-200 px-4 py-3 ">
@@ -93,7 +121,7 @@ const AddProductStepper = ({ children, currentStep, setCurrentStep, completedSte
 
   // Desktop: Full stepper
   const renderDesktopStepper = () => (
-    <div className={`hidden lg:block mt-10 bg-white border-b border-gray-200 transition-all duration-300 ${
+    <div className={`hidden lg:block mt-4 bg-white border-b border-gray-200 transition-all duration-300 ${
       isSticky ? 'shadow-md' : ''
     }`}>
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
@@ -175,6 +203,7 @@ const AddProductStepper = ({ children, currentStep, setCurrentStep, completedSte
     <div className="min-h-screen bg-gray-50">
       {/* Sticky Stepper Container */}
       <div ref={stepperRef} className="sticky top-0 z-40">
+        {renderHeader()}
         {renderDesktopStepper()}
         {renderMobileProgress()}
       </div>
