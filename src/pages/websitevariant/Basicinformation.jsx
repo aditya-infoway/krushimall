@@ -565,6 +565,7 @@ export default function BasicInformation({
       availableDealers: productData.availableDealers || [],
 
       stockStatus: productData.stockStatus,
+         isUpcoming: productData.isUpcoming,
     });
 
     setValue("showCustomColor", productData.customColor);
@@ -635,6 +636,7 @@ export default function BasicInformation({
         seoUrl: data.seoUrl,
         metaDescription: data.metaDescription,
         keywords: data.keywords,
+           isUpcoming: Boolean(data.isUpcoming),
         currentStep: 0,
       };
 
@@ -686,7 +688,22 @@ export default function BasicInformation({
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">
                   Product Classification
                 </h2>
-                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-4">
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+                  <div className="flex items-center gap-3 mt-2">
+                    <input
+                      type="checkbox"
+                      id="isUpcoming"
+                      {...register("isUpcoming")}
+                      className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-600"
+                    />
+
+                    <label
+                      htmlFor="isUpcoming"
+                      className="text-sm font-medium text-gray-700 cursor-pointer"
+                    >
+                      Upcoming Tractors
+                    </label>
+                  </div>
                   <Controller
                     name="categoryId"
                     control={control}

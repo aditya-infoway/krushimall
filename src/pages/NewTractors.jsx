@@ -108,19 +108,19 @@ const NewTractors = () => {
   }, []);
 
   // Add this function after clearFilters:
-const applyFilters = () => {
-  navigate(
+  const applyFilters = () => {
+    navigate(
       `/tractors?type=new` +
-      `&search=${encodeURIComponent(searchQuery)}` +
-      `&brand=${encodeURIComponent(selectedBrand)}` +
-      `&hp=${encodeURIComponent(selectedHp)}` +
-      `&category=${encodeURIComponent(selectedCategory)}` +
-      `&transmission=${encodeURIComponent(selectedTransmission)}` +
-      `&minPrice=${priceRange[0]}` +
-      `&maxPrice=${priceRange[1]}` +
-      `&sort=${sortBy}`
-  );
-};
+        `&search=${encodeURIComponent(searchQuery)}` +
+        `&brand=${encodeURIComponent(selectedBrand)}` +
+        `&hp=${encodeURIComponent(selectedHp)}` +
+        `&category=${encodeURIComponent(selectedCategory)}` +
+        `&transmission=${encodeURIComponent(selectedTransmission)}` +
+        `&minPrice=${priceRange[0]}` +
+        `&maxPrice=${priceRange[1]}` +
+        `&sort=${sortBy}`,
+    );
+  };
 
   // Add this useEffect after your other useEffects
   useEffect(() => {
@@ -190,23 +190,15 @@ const applyFilters = () => {
           })
           .filter((hp) => !isNaN(hp))
           .sort((a, b) => a - b);
-const transmissions = [
-  ...new Set(
-    tractorsData
-      .map(
-        (t) =>
-          t.transmissionType ||
-          t.transmission ||
-          t.gearType
-      )
-      .filter(Boolean)
-  ),
-].sort();
+        const transmissions = [
+          ...new Set(
+            tractorsData
+              .map((t) => t.transmissionType || t.transmission || t.gearType)
+              .filter(Boolean),
+          ),
+        ].sort();
 
-setTransmissionOptions([
-  "All Transmissions",
-  ...transmissions,
-]);
+        setTransmissionOptions(["All Transmissions", ...transmissions]);
         // Create unique HP options with "HP" suffix
         const uniqueHpOptions = [...new Set(hpValues)].map((hp) => `${hp} HP`);
 
@@ -356,7 +348,42 @@ setTransmissionOptions([
 
   const [latestTractors, setLatestTractors] = useState([]);
   const [latestLoading, setLatestLoading] = useState(true);
+  const [upcomingTractors, setUpcomingTractors] = useState([]);
+  const [upcomingLoading, setUpcomingLoading] = useState(true);
+  useEffect(() => {
+    const fetchUpcomingTractors = async () => {
+      try {
+        setUpcomingLoading(true);
 
+        const response = await apiHelper.get("/website-variants/upcoming");
+
+        const variants = response?.data || response || [];
+
+        const mapped = variants.map((v) => ({
+          id: v.id,
+          name: v.productName,
+          brand: v.brand?.brandName || "Unknown",
+          price: v.exShowroomPrice || 0,
+          hp: v.horsePower ? `${v.horsePower} HP` : "-",
+          fuel: v.fuelType || "-",
+          year: new Date(v.createdAt).getFullYear(),
+          location: [v.city, v.state].filter(Boolean).join(", "),
+          image: apiHelper.image(v.frontView),
+          rating: 4.5,
+          isUpcoming: true,
+        }));
+
+        setUpcomingTractors(mapped);
+      } catch (error) {
+        console.error("Failed to fetch upcoming tractors:", error);
+        setUpcomingTractors([]);
+      } finally {
+        setUpcomingLoading(false);
+      }
+    };
+
+    fetchUpcomingTractors();
+  }, []);
   useEffect(() => {
     const fetchPopularTractors = async () => {
       try {
@@ -423,80 +450,80 @@ setTransmissionOptions([
     fetchLatestTractors();
   }, []);
 
-  const upcomingTractors = [
-    {
-      id: 5,
-      name: "New Holland 3630 TX",
-      brand: "New Holland",
-      price: 775000,
-      hp: "50 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Lucknow, UP",
-      image: "/mah.png",
-      rating: 4.8,
-    },
-    {
-      id: 6,
-      name: "Sonalika DI 750 III",
-      brand: "Sonalika",
-      price: 635000,
-      hp: "50 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Bhopal, MP",
-      image: "/mah.png",
-      rating: 4.5,
-    },
-    {
-      id: 9,
-      name: "Kubota NeoStar A211N",
-      brand: "Kubota",
-      price: 495000,
-      hp: "21 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Bangalore, KA",
-      image: "/mah.png",
-      rating: 4.3,
-    },
-    {
-      id: 3,
-      name: "John Deere 5310",
-      brand: "John Deere",
-      price: 895000,
-      hp: "55 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Jaipur, RJ",
-      image: "/mah.png",
-      rating: 4.9,
-    },
-    {
-      id: 7,
-      name: "Mahindra Arjun 605",
-      brand: "Mahindra",
-      price: 925000,
-      hp: "60 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Nagpur, MH",
-      image: "/mah.png",
-      rating: 4.9,
-    },
-    {
-      id: 1,
-      name: "Swaraj 744 FE",
-      brand: "Swaraj",
-      price: 725000,
-      hp: "48 HP",
-      fuel: "Diesel",
-      year: "2024",
-      location: "Pune, MH",
-      image: "/mah.png",
-      rating: 4.7,
-    },
-  ];
+  // const upcomingTractors = [
+  //   {
+  //     id: 5,
+  //     name: "New Holland 3630 TX",
+  //     brand: "New Holland",
+  //     price: 775000,
+  //     hp: "50 HP",
+  //     fuel: "Diesel",
+  //     year: "2024",
+  //     location: "Lucknow, UP",
+  //     image: "/mah.png",
+  //     rating: 4.8,
+  //   },
+  //   {
+  //     id: 6,
+  //     name: "Sonalika DI 750 III",
+  //     brand: "Sonalika",
+  //     price: 635000,
+  //     hp: "50 HP",
+  //     fuel: "Diesel",
+  //     year: "2024",
+  //     location: "Bhopal, MP",
+  //     image: "/mah.png",
+  //     rating: 4.5,
+  //   },
+  //   {
+  //     id: 9,
+  //     name: "Kubota NeoStar A211N",
+  //     brand: "Kubota",
+  //     price: 495000,
+  //     hp: "21 HP",
+  //     fuel: "Diesel",
+  //     year: "2024",
+  //     location: "Bangalore, KA",
+  //     image: "/mah.png",
+  //     rating: 4.3,
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "John Deere 5310",
+  //     brand: "John Deere",
+  //     price: 895000,
+  //     hp: "55 HP",
+  //     fuel: "Diesel",
+  //     year: "2024",
+  //     location: "Jaipur, RJ",
+  //     image: "/mah.png",
+  //     rating: 4.9,
+  //   },
+  //   {
+  //     id: 7,
+  //     name: "Mahindra Arjun 605",
+  //     brand: "Mahindra",
+  //     price: 925000,
+  //     hp: "60 HP",
+  //     fuel: "Diesel",
+  //     year: "2024",
+  //     location: "Nagpur, MH",
+  //     image: "/mah.png",
+  //     rating: 4.9,
+  //   },
+  //   {
+  //     id: 1,
+  //     name: "Swaraj 744 FE",
+  //     brand: "Swaraj",
+  //     price: 725000,
+  //     hp: "48 HP",
+  //     fuel: "Diesel",
+  //     year: "2024",
+  //     location: "Pune, MH",
+  //     image: "/mah.png",
+  //     rating: 4.7,
+  //   },
+  // ];
 
   const allTractors = [
     ...popularTractors,
@@ -504,9 +531,9 @@ setTransmissionOptions([
     ...upcomingTractors,
   ];
 
-const [transmissionOptions, setTransmissionOptions] = useState([
-  "All Transmissions",
-]);
+  const [transmissionOptions, setTransmissionOptions] = useState([
+    "All Transmissions",
+  ]);
 
   const maxPrice = 1000000;
 
@@ -602,8 +629,12 @@ const [transmissionOptions, setTransmissionOptions] = useState([
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           />
           <div className="absolute top-2 left-2">
-            <span className="bg-green-700 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-              New
+            <span
+              className={`text-white text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                tractor.isUpcoming ? "bg-orange-500" : "bg-green-700"
+              }`}
+            >
+              {tractor.isUpcoming ? "Upcoming" : "New"}
             </span>
           </div>
           <button
@@ -673,7 +704,7 @@ const [transmissionOptions, setTransmissionOptions] = useState([
       </div>
     );
   };
-  
+
   const SliderSection = ({
     title,
     subtitle,
