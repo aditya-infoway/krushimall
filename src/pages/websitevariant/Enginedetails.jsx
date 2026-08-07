@@ -620,14 +620,14 @@ const {
                 <Button
                   type="button"
                   variant="outlined"
-                  className="min-w-[7rem] cursor-pointer"
+                  className="min-w-28 cursor-pointer"
                   onClick={() => navigate(-1)}
                 >
                   Cancel
                 </Button>
-                <Button type="submit" className="min-w-[7rem] cursor-pointer">
-                  Save &amp; Next
-                </Button>
+               <Button type="submit" className="min-w-36cursor-pointer">
+  {isEdit ? "Update & Next" : "Save & Next"}
+</Button>
               </div>
             </div>
           </form>

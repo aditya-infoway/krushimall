@@ -41,7 +41,10 @@ const dealerOptions = [
   { label: "Dealer 2", value: "dealer2" },
   { label: "Dealer 3", value: "dealer3" },
 ];
-
+const driveTypeOptions = [
+  { label: "2WD", value: "2wd" },
+  { label: "4WD", value: "4wd" },
+];
 // Light styling for react-select - matches vendor profile theme
 const selectStyles = {
   control: (base, state) => ({
@@ -532,6 +535,7 @@ export default function BasicInformation({
 
       country: productData.country,
       tractorStatus: productData.tractorStatus,
+      driveType: productData.driveType,
       shortDescription: productData.shortDescription,
 
       seoTitle: productData.seoTitle,
@@ -565,7 +569,7 @@ export default function BasicInformation({
       availableDealers: productData.availableDealers || [],
 
       stockStatus: productData.stockStatus,
-         isUpcoming: productData.isUpcoming,
+      isUpcoming: productData.isUpcoming,
     });
 
     setValue("showCustomColor", productData.customColor);
@@ -613,6 +617,7 @@ export default function BasicInformation({
           : null,
         country: data.country,
         tractorStatus: data.tractorStatus,
+        driveType: data.driveType,
         shortDescription: data.shortDescription,
         highlight1: data.highlights?.highlight1,
         highlight2: data.highlights?.highlight2,
@@ -636,7 +641,7 @@ export default function BasicInformation({
         seoUrl: data.seoUrl,
         metaDescription: data.metaDescription,
         keywords: data.keywords,
-           isUpcoming: Boolean(data.isUpcoming),
+        isUpcoming: Boolean(data.isUpcoming),
         currentStep: 0,
       };
 
@@ -897,6 +902,25 @@ export default function BasicInformation({
                       placeholder="Select Status"
                       label="Tractor Status"
                       error={errors?.tractorStatus?.message}
+                    />
+                  )}
+                />
+                <Controller
+                  name="driveType"
+                  control={control}
+                  render={({ field }) => (
+                    <CustomListbox
+                      data={driveTypeOptions}
+                      value={
+                        driveTypeOptions.find(
+                          (item) => item.value === field.value,
+                        ) || null
+                      }
+                      onChange={(option) => field.onChange(option?.value)}
+                      displayField="label"
+                      placeholder="Select Drive Type"
+                      label="Drive Type"
+                      error={errors?.driveType?.message}
                     />
                   )}
                 />
@@ -1228,9 +1252,9 @@ export default function BasicInformation({
                 >
                   Previous
                 </Button> */}
-                <Button type="submit" className="min-w-[7rem] cursor-pointer">
-                  Save &amp; Next
-                </Button>
+              <Button type="submit" className="min-w-[9rem] cursor-pointer">
+  {isEdit ? "Update & Next" : "Save & Next"}
+</Button>
               </div>
             </div>
           </form>

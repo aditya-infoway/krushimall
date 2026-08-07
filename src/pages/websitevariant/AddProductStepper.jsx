@@ -28,7 +28,7 @@ const STEPS = [
 // Route to navigate back to when the back button is clicked
 const VENDOR_PRODUCTS_ROUTE = '/vendor-profile';
 
-const AddProductStepper = ({ children, currentStep, setCurrentStep, completedSteps }) => {
+const AddProductStepper = ({ children, currentStep, setCurrentStep, completedSteps, isEdit }) => {
   const [isSticky, setIsSticky] = useState(false);
   const stepperRef = useRef(null);
   const navigate = useNavigate();
@@ -49,19 +49,25 @@ const AddProductStepper = ({ children, currentStep, setCurrentStep, completedSte
   const handleStepClick = (stepId) => {
     // Allow navigation only to completed steps or current step
     if (stepId === currentStep) return;
-    if (completedSteps.includes(stepId) || stepId < currentStep) {
+    // ✅ Edit mode: har step directly clickable (completedSteps me sabhi already hain)
+    if (isEdit || completedSteps.includes(stepId) || stepId < currentStep) {
       setCurrentStep(stepId);
     }
   };
 
   const getStepStatus = (stepId) => {
-    if (completedSteps.includes(stepId)) return 'completed';
+    // ✅ Current step ko hamesha priority do — warna edit mode me jab
+    // completedSteps me current step bhi included hota hai to wo
+    // "completed" (checkmark) dikhne lagta hai aur highlight kho jata hai
     if (stepId === currentStep) return 'current';
+    if (completedSteps.includes(stepId)) return 'completed';
     return 'upcoming';
   };
 
   const isStepAccessible = (stepId) => {
     if (stepId === currentStep) return true;
+    // ✅ Edit mode: sabhi steps accessible
+    if (isEdit) return true;
     if (completedSteps.includes(stepId)) return true;
     if (stepId < currentStep) return true;
     return false;
@@ -132,7 +138,11 @@ const AddProductStepper = ({ children, currentStep, setCurrentStep, completedSte
             <div 
               className="h-full bg-green-600 transition-all duration-700 ease-in-out"
               style={{ 
-                width: `${(currentStep / (STEPS.length - 1)) * 100}%` 
+                width: `${
+                  isEdit
+                    ? 100
+                    : (currentStep / (STEPS.length - 1)) * 100
+                }%` 
               }}
             />
           </div>

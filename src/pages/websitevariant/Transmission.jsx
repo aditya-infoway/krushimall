@@ -592,7 +592,7 @@ const {
               <Button
                 type="button"
                 variant="outlined"
-                className="min-w-[7rem] order-2 sm:order-1"
+                className="min-w-28 order-2 sm:order-1"
                 onClick={handlePrevious}
               >
                 Previous
@@ -601,14 +601,14 @@ const {
                 <Button
                   type="button"
                   variant="outlined"
-                  className="min-w-[7rem]"
+                  className="min-w-28"
                   onClick={() => navigate(-1)}
                 >
                   Cancel
                 </Button>
-                <Button type="submit" className="min-w-[7rem]">
-                  Save &amp; Next
-                </Button>
+              <Button type="submit" className="min-w-36 cursor-pointer">
+  {isEdit ? "Update & Next" : "Save & Next"}
+</Button>
               </div>
             </div>
           </form>
