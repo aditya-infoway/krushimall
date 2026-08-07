@@ -16,7 +16,7 @@ export const BasicInformationSchema = Yup.object().shape({
   modelYearId: Yup.string().required("Model Year is required"),
   country: Yup.string().trim(),
   tractorStatus: Yup.string().trim().required("Tractor Status Required"),
-
+driveType: Yup.string().trim().required("Drive Type Required"),
   shortDescription: Yup.string()
     .trim()
     .max(200, "Maximum 200 characters allowed"),

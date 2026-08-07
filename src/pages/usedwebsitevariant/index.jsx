@@ -10,12 +10,23 @@ import AddProductStepper from "./AddProductStepper"; // Import the stepper
 import { useParams } from "react-router-dom";
 import apiHelper from "../../utils/apiHelper";
 
+// Total number of steps in the flow (Basic Info, Tractor Condition,
+// Tyres & Hydraulics, Service & History, Price & Location,
+// Photos & Documents, Review & Submit)
+const TOTAL_STEPS = 7;
+
 const WebsiteVariant = () => {
   const { id } = useParams();
 
   const isEdit = !!id;
   const [step, setStep] = useState(0);
-  const [completedSteps, setCompletedSteps] = useState([]);
+
+  // ✅ Edit mode: saare steps ko shuru se hi "completed" maan lo,
+  // taaki stepper me sabhi steps checked + directly clickable ho
+  const [completedSteps, setCompletedSteps] = useState(
+    isEdit ? Array.from({ length: TOTAL_STEPS }, (_, i) => i) : [],
+  );
+
   const [productData, setProductData] = useState(null);
 
   useEffect(() => {
@@ -53,6 +64,8 @@ const WebsiteVariant = () => {
     }
 
     // Allow clicking any completed step
+    // (in edit mode this array already has every step, so any step
+    // is directly reachable)
     if (completedSteps.includes(newStep)) {
       setStep(newStep);
     }
@@ -79,6 +92,7 @@ const WebsiteVariant = () => {
       currentStep={step}
       setCurrentStep={handleStepChange}
       completedSteps={completedSteps}
+      isEdit={isEdit}
     >
       {step === 0 && <BasicInformation {...commonProps} />}
       {step === 1 && <EngineDetails {...commonProps} />}
