@@ -81,6 +81,14 @@ const loadData = async () => {
 
     const res = await apiHelper.get(`/vendor-web/website-variant/${id}`);
     setTractorData(res.data);
+
+    // ✅ Edit mode: agar record pehle se agreed/submitted tha,
+    // to checkbox ko automatically checked kar do — dobara manually
+    // check karwane ki zaroorat nahi
+    const variant = res.data?.data ?? res.data;
+    if (isEdit && variant?.agreed) {
+      setAgreed(true);
+    }
   } catch (error) {
     console.error(error);
   }
@@ -491,7 +499,7 @@ const loadData = async () => {
                 onClick={handleSubmit}
               >
                 <Send className="h-4 w-4" />
-                {loading ? "Submitting..." : "Submit"}
+                {loading ? "Submitting..." : isEdit ? "Update" : "Submit"}
               </Button>
             </div>
           </div>
