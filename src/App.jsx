@@ -1,4 +1,7 @@
+import { useEffect, useState } from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Capacitor } from "@capacitor/core";
+import { SplashScreen } from "@capacitor/splash-screen";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Home from "./pages/Home";
@@ -38,16 +41,65 @@ import VendorProfile from "./pages/VendorProfile";
 import VendorLogin from "./pages/VendorLogin";
 import WebsiteVariant from "./pages/websitevariant/index.jsx";
 import VendorFollowup from "./pages/Vendorfollowup.jsx";
-import { useEffect } from "react";
 import { requestNotificationPermission } from "./firebase-messaging";
 import UsedWebsiteVariant from "./pages/usedwebsitevariant/index.jsx";
 import BottomNavigation from "./components/BottomNavigation.jsx";
+import splashImage from "./assets/app-assets/splash.png";
 function App() {
+const [showSplash, setShowSplash] = useState(false);
+
+  // Effect 1: hide native splash immediately, nothing else runs before this
   useEffect(() => {
-    requestNotificationPermission();
+    if (Capacitor.isNativePlatform()) {
+      SplashScreen.hide().catch(() => {});
+    }
   }, []);
 
+  // Effect 2: show your own full-screen splash overlay + notifications
+  useEffect(() => {
+    requestNotificationPermission();
+
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
+
+    setShowSplash(true);
+
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+
   return (
+     <>
+      {showSplash && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            zIndex: 999999,
+            backgroundColor: "#ffffff",
+          }}
+        >
+          <img
+            src={splashImage}
+            alt="KrushiMall"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectFit: "cover",
+              display: "block",
+            }}
+          />
+        </div>
+      )}
+
     <Router>
       <AuthProvider>
         <CartProvider>
@@ -256,6 +308,7 @@ function App() {
         </CartProvider>
       </AuthProvider>
     </Router>
+      </>
   );
 }
 
