@@ -387,21 +387,18 @@ const Navbar = () => {
             </button>
 
             {/* User Menu with Dropdown - Desktop only */}
-            <div
-              className="relative hidden sm:block"
-              onMouseEnter={() => setUserMenuOpen(true)}
-              onMouseLeave={() => setUserMenuOpen(false)}
-            >
+            <div className="relative hidden sm:block" ref={userMenuRef}>
               {isAuthenticated ? (
                 <>
-                  <button className="text-gray-500 hover:text-green-600 cursor-pointer transition-colors flex items-center gap-1 py-2">
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="text-gray-500 hover:text-green-600 cursor-pointer transition-colors flex items-center gap-1 py-2"
+                  >
                     <User className="h-5 w-5" />
                     <ChevronDown
                       className={`h-3 w-3 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
                     />
                   </button>
-
-                  <div className="absolute left-0 right-0 h-2 top-full"></div>
 
                   {userMenuOpen && (
                     <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 py-2 animate-fadeIn">
@@ -475,14 +472,15 @@ const Navbar = () => {
                 </>
               ) : (
                 <>
-                  <button className="text-gray-500 hover:text-green-600 transition-colors  flex items-center gap-1 py-2">
-                    <User className="h-5 w-5 " />
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="text-gray-500 hover:text-green-600 transition-colors flex items-center gap-1 py-2"
+                  >
+                    <User className="h-5 w-5" />
                     <ChevronDown
                       className={`h-3 w-3 transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
                     />
                   </button>
-
-                  <div className="absolute left-0 right-0 h-2 top-full"></div>
 
                   {userMenuOpen && (
                     <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 py-2 animate-fadeIn">
@@ -499,7 +497,6 @@ const Navbar = () => {
                 </>
               )}
             </div>
-
             {/* Cart - Desktop Hover Preview */}
             <div
               className="relative hidden md:block"
