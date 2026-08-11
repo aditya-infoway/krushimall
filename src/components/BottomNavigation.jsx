@@ -1,5 +1,5 @@
 import { NavLink } from "react-router-dom";
-import { Home, Search, Package, ShoppingCart, User, Cog } from "lucide-react";
+import { Home, Package, User, Cog } from "lucide-react";
 import { GiFarmTractor } from "react-icons/gi";
 
 const menus = [
@@ -32,8 +32,8 @@ const menus = [
 
 export default function BottomNavigation() {
   return (
-    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white border-t shadow-lg md:hidden">
-      <div className="grid grid-cols-5 h-16">
+    <nav className="fixed bottom-3 left-3 right-3 z-50 md:hidden bg-green-600 rounded-4xl shadow-2xl overflow-hidden">
+      <div className="grid grid-cols-5 h-16 p-1">
         {menus.map((item) => {
           const Icon = item.icon;
 
@@ -42,13 +42,18 @@ export default function BottomNavigation() {
               key={item.path}
               to={item.path}
               className={({ isActive }) =>
-                `flex flex-col items-center justify-center transition-colors ${
-                  isActive ? "text-green-600" : "text-gray-500"
+                `flex flex-col items-center justify-center rounded-3xl transition-all duration-200 ${
+                  isActive
+                    ? "bg-white text-green-600"
+                    : "text-white hover:bg-green-500/50"
                 }`
               }
             >
-              <Icon size={22} />
-              <span className="text-[11px] mt-1">{item.name}</span>
+              <Icon size={20} strokeWidth={2} />
+
+              <span className="text-[10px] mt-1 whitespace-nowrap">
+                {item.name}
+              </span>
             </NavLink>
           );
         })}
