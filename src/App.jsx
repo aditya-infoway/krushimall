@@ -46,7 +46,7 @@ import UsedWebsiteVariant from "./pages/usedwebsitevariant/index.jsx";
 import BottomNavigation from "./components/BottomNavigation.jsx";
 import splashImage from "./assets/app-assets/splash.png";
 function App() {
-const [showSplash, setShowSplash] = useState(false);
+  const [showSplash, setShowSplash] = useState(false);
 
   // Effect 1: hide native splash immediately, nothing else runs before this
   useEffect(() => {
@@ -72,9 +72,8 @@ const [showSplash, setShowSplash] = useState(false);
     return () => clearTimeout(timer);
   }, []);
 
-
   return (
-     <>
+    <>
       {showSplash && (
         <div
           style={{
@@ -100,215 +99,224 @@ const [showSplash, setShowSplash] = useState(false);
         </div>
       )}
 
-    <Router>
-      <AuthProvider>
-        <CartProvider>
-          <ScrollToTop />
-          <WishlistProvider>
-            <Toaster
-              position="top-right"
-              containerStyle={{
-                top: 120, // Adjust according to your navbar height
-              }}
-              toastOptions={{
-                duration: 3000,
-              }}
-            />
-            <div className="min-h-screen flex flex-col ">
-              <Navbar />
+      <Router>
+        <AuthProvider>
+          <CartProvider>
+            <ScrollToTop />
+            <WishlistProvider>
+              <Toaster
+                position="top-right"
+                containerStyle={{
+                  top: 120, // Adjust according to your navbar height
+                }}
+                toastOptions={{
+                  duration: 3000,
+                }}
+              />
+              <div className="min-h-screen flex flex-col ">
+                <Navbar />
 
-              <div className="h-16 md:h-20 "></div>
-              <main className="flex-1">
-                <Routes>
-                  {/* Main Pages */}
-                  <Route path="/" element={<Home />} />
-                  <Route path="/products" element={<Products />} />
-                  <Route path="/product/:id" element={<ProductDetail />} />
-                  <Route path="/tractor/:id" element={<TractorDetail />} />
-                  <Route
-                    path="/used-tractor/:id"
-                    element={<UsedTractorDetails />}
-                  />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="service" element={<Service />} />
-                  <Route path="booking" element={<BookingService />} />
-                  <Route path="/login" element={<Login />} />
-                  <Route path="/become-vendor" element={<BecomeVendor />} />
-                  <Route path="/vendor-profile" element={<VendorProfile />} />
-                  <Route path="/vendor-login" element={<VendorLogin />} />
-                  <Route
-                    path="/vendor/followup/:id"
-                    element={<VendorFollowup />}
-                  />
-                  <Route path="/register" element={<Register />} />
-                  <Route path="/profile" element={<Profile />} />
-                  <Route
-                    path="/vendor/add-product"
-                    element={<WebsiteVariant />}
-                  />
-                  <Route
-                    path="/vendor/edit-product/:id"
-                    element={<WebsiteVariant />}
-                  />
-                  <Route
-                    path="/vendor/add-used-product"
-                    element={<UsedWebsiteVariant />}
-                  />
+                <div className="h-16 md:h-20 "></div>
+                <main className="flex-1">
+                  <Routes>
+                    {/* Main Pages */}
+                    <Route path="/" element={<Home />} />
+                    <Route path="/products" element={<Products />} />
+                    <Route path="/product/:id" element={<ProductDetail />} />
+                    <Route path="/tractor/:id" element={<TractorDetail />} />
+                    <Route
+                      path="/used-tractor/:id"
+                      element={<UsedTractorDetails />}
+                    />
+                    <Route path="/contact" element={<Contact />} />
+                    <Route path="service" element={<Service />} />
+                    <Route path="booking" element={<BookingService />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/become-vendor" element={<BecomeVendor />} />
+                    <Route path="/vendor-profile" element={<VendorProfile />} />
+                    <Route path="/vendor-login" element={<VendorLogin />} />
+                    <Route
+                      path="/vendor/followup/:id"
+                      element={<VendorFollowup />}
+                    />
+                    <Route path="/register" element={<Register />} />
+                    <Route path="/profile" element={<Profile />} />
+                    <Route
+                      path="/vendor/add-product"
+                      element={<WebsiteVariant />}
+                    />
+                    <Route
+                      path="/vendor/edit-product/:id"
+                      element={<WebsiteVariant />}
+                    />
+                    <Route
+                      path="/vendor/add-used-product"
+                      element={<UsedWebsiteVariant />}
+                    />
 
-                  <Route
-                    path="/vendor/edit-used-product/:id"
-                    element={<UsedWebsiteVariant />}
-                  />
-                  <Route path="/help" element={<Help />} />
-                  <Route path="/booking-history" element={<BookingHistory />} />
-                  <Route path="/tractorcompare" element={<TractorCompare />} />
-                  <Route path="/orders" element={<Orders />} />
-                  <Route
-                    path="/track-product/:orderId/:productId"
-                    element={<ProductTracking />}
-                  />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/checkout" element={<Checkout />} />
-                  <Route path="/wishlist" element={<Wishlist />} />
-                  <Route path="/spare-parts" element={<SpareParts />} />
-                  <Route path="/categories" element={<AllCategories />} />
-                  <Route path="/tractors" element={<TractorList />} />
-                  <Route path="/new-tractors" element={<NewTractors />} />
-                  <Route path="/old-tractors" element={<OldTractors />} />
+                    <Route
+                      path="/vendor/edit-used-product/:id"
+                      element={<UsedWebsiteVariant />}
+                    />
+                    <Route path="/help" element={<Help />} />
+                    <Route
+                      path="/booking-history"
+                      element={<BookingHistory />}
+                    />
+                    <Route
+                      path="/tractorcompare"
+                      element={<TractorCompare />}
+                    />
+                    <Route path="/orders" element={<Orders />} />
+                    <Route
+                      path="/track-product/:orderId/:productId"
+                      element={<ProductTracking />}
+                    />
+                    <Route path="/cart" element={<Cart />} />
+                    <Route path="/checkout" element={<Checkout />} />
+                    <Route path="/wishlist" element={<Wishlist />} />
+                    <Route path="/spare-parts" element={<SpareParts />} />
+                    <Route path="/categories" element={<AllCategories />} />
+                    <Route path="/tractors" element={<TractorList />} />
+                    <Route path="/new-tractors" element={<NewTractors />} />
+                    <Route path="/old-tractors" element={<OldTractors />} />
 
-                  <Route
-                    path="/category/:categoryName"
-                    element={<CategoryPage />}
-                  />
-                  <Route
-                    path="/category/:categoryName/:subCategoryName"
-                    element={<SubCategoryPage />}
-                  />
+                    <Route
+                      path="/category/:categoryName"
+                      element={<CategoryPage />}
+                    />
+                    <Route
+                      path="/category/:categoryName/:subCategoryName"
+                      element={<SubCategoryPage />}
+                    />
 
-                  {/* Categories */}
-                  <Route
-                    path="/categories/engine"
-                    element={
-                      <div className="p-10 text-3xl font-bold text-white">
-                        Engine Parts
-                      </div>
-                    }
-                  />
-                  <Route
-                    path="/categories/brakes"
-                    element={
-                      <div className="p-10 text-3xl font-bold text-white">
-                        Brakes & Suspension
-                      </div>
-                    }
-                  />
-                  <Route
-                    path="/categories/transmission"
-                    element={
-                      <div className="p-10 text-3xl font-bold text-white">
-                        Transmission
-                      </div>
-                    }
-                  />
-                  <Route
-                    path="/categories/electricals"
-                    element={
-                      <div className="p-10 text-3xl font-bold text-white">
-                        Electricals
-                      </div>
-                    }
-                  />
-                  <Route
-                    path="/categories/body"
-                    element={
-                      <div className="p-10 text-3xl font-bold text-white">
-                        Body Parts
-                      </div>
-                    }
-                  />
-                  <Route
-                    path="/categories/oils"
-                    element={
-                      <div className="p-10 text-3xl font-bold text-white">
-                        Oils & Fluids
-                      </div>
-                    }
-                  />
-                  <Route
-                    path="/categories/exhaust"
-                    element={
-                      <div className="p-10 text-3xl font-bold text-white">
-                        Exhaust System
-                      </div>
-                    }
-                  />
-                  <Route
-                    path="/categories/cooling"
-                    element={
-                      <div className="p-10 text-3xl font-bold text-white">
-                        Cooling System
-                      </div>
-                    }
-                  />
+                    {/* Categories */}
+                    <Route
+                      path="/categories/engine"
+                      element={
+                        <div className="p-10 text-3xl font-bold text-white">
+                          Engine Parts
+                        </div>
+                      }
+                    />
+                    <Route
+                      path="/categories/brakes"
+                      element={
+                        <div className="p-10 text-3xl font-bold text-white">
+                          Brakes & Suspension
+                        </div>
+                      }
+                    />
+                    <Route
+                      path="/categories/transmission"
+                      element={
+                        <div className="p-10 text-3xl font-bold text-white">
+                          Transmission
+                        </div>
+                      }
+                    />
+                    <Route
+                      path="/categories/electricals"
+                      element={
+                        <div className="p-10 text-3xl font-bold text-white">
+                          Electricals
+                        </div>
+                      }
+                    />
+                    <Route
+                      path="/categories/body"
+                      element={
+                        <div className="p-10 text-3xl font-bold text-white">
+                          Body Parts
+                        </div>
+                      }
+                    />
+                    <Route
+                      path="/categories/oils"
+                      element={
+                        <div className="p-10 text-3xl font-bold text-white">
+                          Oils & Fluids
+                        </div>
+                      }
+                    />
+                    <Route
+                      path="/categories/exhaust"
+                      element={
+                        <div className="p-10 text-3xl font-bold text-white">
+                          Exhaust System
+                        </div>
+                      }
+                    />
+                    <Route
+                      path="/categories/cooling"
+                      element={
+                        <div className="p-10 text-3xl font-bold text-white">
+                          Cooling System
+                        </div>
+                      }
+                    />
 
-                  {/* Car Makers */}
-                  <Route
-                    path="/makers/maruti-suzuki"
-                    element={
-                      <div className="p-10 text-3xl font-bold">
-                        Maruti Suzuki
-                      </div>
-                    }
-                  />
-                  <Route
-                    path="/makers/hyundai"
-                    element={
-                      <div className="p-10 text-3xl font-bold">Hyundai</div>
-                    }
-                  />
-                  <Route
-                    path="/makers/tata"
-                    element={
-                      <div className="p-10 text-3xl font-bold">Tata Motors</div>
-                    }
-                  />
-                  <Route
-                    path="/makers/mahindra"
-                    element={
-                      <div className="p-10 text-3xl font-bold">Mahindra</div>
-                    }
-                  />
-                  <Route
-                    path="/makers/toyota"
-                    element={
-                      <div className="p-10 text-3xl font-bold">Toyota</div>
-                    }
-                  />
-                  <Route
-                    path="/makers/honda"
-                    element={
-                      <div className="p-10 text-3xl font-bold">Honda</div>
-                    }
-                  />
-                  <Route
-                    path="/makers"
-                    element={
-                      <div className="p-10 text-3xl font-bold">All Makers</div>
-                    }
-                  />
-                </Routes>
-              </main>
+                    {/* Car Makers */}
+                    <Route
+                      path="/makers/maruti-suzuki"
+                      element={
+                        <div className="p-10 text-3xl font-bold">
+                          Maruti Suzuki
+                        </div>
+                      }
+                    />
+                    <Route
+                      path="/makers/hyundai"
+                      element={
+                        <div className="p-10 text-3xl font-bold">Hyundai</div>
+                      }
+                    />
+                    <Route
+                      path="/makers/tata"
+                      element={
+                        <div className="p-10 text-3xl font-bold">
+                          Tata Motors
+                        </div>
+                      }
+                    />
+                    <Route
+                      path="/makers/mahindra"
+                      element={
+                        <div className="p-10 text-3xl font-bold">Mahindra</div>
+                      }
+                    />
+                    <Route
+                      path="/makers/toyota"
+                      element={
+                        <div className="p-10 text-3xl font-bold">Toyota</div>
+                      }
+                    />
+                    <Route
+                      path="/makers/honda"
+                      element={
+                        <div className="p-10 text-3xl font-bold">Honda</div>
+                      }
+                    />
+                    <Route
+                      path="/makers"
+                      element={
+                        <div className="p-10 text-3xl font-bold">
+                          All Makers
+                        </div>
+                      }
+                    />
+                  </Routes>
+                </main>
 
-              <div className="pb-15 md:pb-0">
                 <Footer />
+
+                <BottomNavigation />
               </div>
-              <BottomNavigation />
-            </div>
-          </WishlistProvider>
-        </CartProvider>
-      </AuthProvider>
-    </Router>
-      </>
+            </WishlistProvider>
+          </CartProvider>
+        </AuthProvider>
+      </Router>
+    </>
   );
 }
 
