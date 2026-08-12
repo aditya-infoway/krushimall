@@ -1,8 +1,20 @@
 import { getToken } from "firebase/messaging";
-import { messaging } from "./firebase";
+import { getFirebaseMessaging } from "./firebase";
 
 export const requestNotificationPermission = async () => {
   try {
+    const messaging = await getFirebaseMessaging();
+
+    if (!messaging) {
+      console.warn("Firebase Messaging is unavailable.");
+      return null;
+    }
+
+    if (!("Notification" in window)) {
+      console.warn("Notifications are not supported.");
+      return null;
+    }
+
     const permission = await Notification.requestPermission();
 
     if (permission !== "granted") {
@@ -16,8 +28,10 @@ export const requestNotificationPermission = async () => {
     });
 
     console.log("FCM Token:", token);
+
     return token;
   } catch (error) {
-    console.error(error);
+    console.warn("Firebase notification setup failed:", error);
+    return null;
   }
 };

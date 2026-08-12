@@ -99,7 +99,7 @@ function App() {
         </div>
       )}
 
-      <Router>
+      <Router basename="/krushimall">
         <AuthProvider>
           <CartProvider>
             <ScrollToTop />
