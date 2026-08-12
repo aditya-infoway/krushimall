@@ -56,21 +56,19 @@ function App() {
   }, []);
 
   // Effect 2: show your own full-screen splash overlay + notifications
-  useEffect(() => {
-    requestNotificationPermission();
+useEffect(() => {
+  if (!Capacitor.isNativePlatform()) {
+    return;
+  }
 
-    if (!Capacitor.isNativePlatform()) {
-      return;
-    }
+  setShowSplash(true);
 
-    setShowSplash(true);
+  const timer = setTimeout(() => {
+    setShowSplash(false);
+  }, 3000);
 
-    const timer = setTimeout(() => {
-      setShowSplash(false);
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, []);
+  return () => clearTimeout(timer);
+}, []);
 
   return (
     <>
@@ -99,7 +97,7 @@ function App() {
         </div>
       )}
 
-      <Router basename="/krushimall">
+      <Router basename={Capacitor.isNativePlatform() ? "/" : "/krushimall"}>
         <AuthProvider>
           <CartProvider>
             <ScrollToTop />
