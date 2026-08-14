@@ -179,31 +179,25 @@ const Register = () => {
   };
 
   // Step 3 Validation
-  const validateStep3 = () => {
-    const newErrors = {};
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
-    } else if (
-      !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(formData.password)
-    ) {
-      newErrors.password =
-        "Password must contain uppercase, lowercase, number & special character";
-    }
+ const validateStep3 = () => {
+  const newErrors = {};
 
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
+  if (!formData.password.trim()) {
+    newErrors.password = "Password is required";
+  }
 
-    if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = "You must agree to the terms";
-    }
-    return newErrors;
-  };
+  if (!formData.confirmPassword.trim()) {
+    newErrors.confirmPassword = "Please confirm your password";
+  } else if (formData.password !== formData.confirmPassword) {
+    newErrors.confirmPassword = "Passwords do not match";
+  }
 
+  if (!formData.agreeToTerms) {
+    newErrors.agreeToTerms = "You must agree to the terms";
+  }
+
+  return newErrors;
+};
   // Steps 1 & 2 just move forward — nothing is sent to the backend yet
   const handleNextStep = (e) => {
     e.preventDefault();
@@ -358,7 +352,7 @@ const Register = () => {
         <Combobox value={value} onChange={onChange} onClose={() => setQuery("")} disabled={disabled}>
           <div className="relative">
             {Icon && (
-              <Icon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 z-10" />
+              <Icon className="absolute  left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 z-0" />
             )}
             <Combobox.Input
               className={`w-full pl-10 pr-10 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all bg-white disabled:bg-gray-100 disabled:cursor-not-allowed ${
@@ -677,7 +671,7 @@ const Register = () => {
                       </p>
                     )}
 
-                    {formData.password && (
+                    {/* {formData.password && (
                       <div className="mt-2">
                         <div className="flex gap-1 mb-1">
                           <div className={`flex-1 h-1 rounded-full ${formData.password.length >= 8 ? "bg-green-500" : "bg-gray-300"}`} />
@@ -689,7 +683,7 @@ const Register = () => {
                           Password must contain: 8+ chars, uppercase, lowercase, number & special character
                         </p>
                       </div>
-                    )}
+                    )} */}
                   </div>
 
                   <div>

@@ -345,18 +345,23 @@ const BecomeVendor = () => {
     if (errors[name]) setErrors((prev) => ({ ...prev, [name]: "" }));
   };
 
-  const validateStep3 = () => {
-    const newErrors = {};
-    if (!passwordData.password || passwordData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
-    }
-    if (!passwordData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
-    } else if (passwordData.password !== passwordData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
-    return newErrors;
-  };
+const validateStep3 = () => {
+  const newErrors = {};
+
+  // Password: only required
+  if (!passwordData.password.trim()) {
+    newErrors.password = "Password is required";
+  }
+
+  // Confirm password: required + must match
+  if (!passwordData.confirmPassword.trim()) {
+    newErrors.confirmPassword = "Confirm password is required";
+  } else if (passwordData.password !== passwordData.confirmPassword) {
+    newErrors.confirmPassword = "Passwords do not match";
+  }
+
+  return newErrors;
+};
 
   // Step 4: OTP Handlers
   const handleOtpChange = (e) => {
@@ -850,7 +855,7 @@ const BecomeVendor = () => {
                           ? "border-red-300 bg-red-50"
                           : "border-gray-300"
                       } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
-                      placeholder="Min 8 characters"
+                      placeholder="Enter Password"
                     />
                     <button
                       type="button"

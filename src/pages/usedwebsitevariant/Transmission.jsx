@@ -276,7 +276,7 @@ const DatePicker = ({
       </button>
 
       {open && (
-        <div className="absolute z-20 mt-1 w-72 rounded-xl border border-gray-200 bg-white p-4 shadow-lg">
+        <div className="absolute z-50 mt-1 w-72 rounded-xl border border-gray-200 bg-white p-4 shadow-lg">
           <div className="flex items-center justify-between mb-3">
             <button
               type="button"
@@ -510,7 +510,7 @@ setValue(
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-visible">
           <form onSubmit={handleSubmit(onSubmit, onInvalid)} autoComplete="off">
             <div className="p-6 md:p-8 lg:p-10 space-y-10">
               {/* Service & Maintenance */}

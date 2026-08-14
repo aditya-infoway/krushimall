@@ -1,22 +1,32 @@
-import { useState } from 'react';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Shield, Truck, RotateCcw } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import apiHelper from '../utils/apiHelper';
-import { showSuccessToast, showErrorToast } from '../utils/toast';
+import { useState } from "react";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import {
+  Eye,
+  EyeOff,
+  Mail,
+  Lock,
+  ArrowRight,
+  Shield,
+  Truck,
+  RotateCcw,
+} from "lucide-react";
+import { useAuth } from "../context/AuthContext";
+import apiHelper from "../utils/apiHelper";
+import { showSuccessToast, showErrorToast } from "../utils/toast";
 
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { login } = useAuth();
 
-  const from = new URLSearchParams(location.search).get('redirect') || '/profile';
+  const from =
+    new URLSearchParams(location.search).get("redirect") || "/profile";
 
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
-    email: '',
-    password: '',
+    email: "",
+    password: "",
     rememberMe: false,
   });
   const [errors, setErrors] = useState({});
@@ -29,94 +39,106 @@ const Login = () => {
       return;
     }
 
-    setIsLoading(true);
     setErrors({});
 
     try {
-    const response = await apiHelper.post("/webauth/login", {
-  email: formData.email,
-  password: formData.password,
-  rememberMe: formData.rememberMe,
-});
+      const response = await apiHelper.post("/webauth/login", {
+        email: formData.email,
+        password: formData.password,
+        rememberMe: formData.rememberMe,
+      });
 
-localStorage.setItem("webToken", response.token);
+      localStorage.setItem("webToken", response.token);
 
-login({
-  id: response.user.id,
-  name: response.user.name,
-  email: response.user.email,
-  phone: response.user.phone,
-  isVerified: response.user.isVerified,
-  isVendor: response.user.isVendor,
-  vendor: response.user.vendor,
-});
+      login({
+        id: response.user.id,
+        name: response.user.name,
+        email: response.user.email,
+        phone: response.user.phone,
+        isVerified: response.user.isVerified,
+        isVendor: response.user.isVendor,
+        vendor: response.user.vendor,
+      });
 
-showSuccessToast("Login successful!");
+      showSuccessToast("Login successful!");
 
-if (response.user.isVendor) {
-  navigate("/profile");
-} else {
-  navigate(from, { replace: true });
-}
+      if (response.user.isVendor) {
+        navigate("/profile");
+      } else {
+        navigate(from, { replace: true });
+      }
     } catch (error) {
-  // Remove this line if you don't want your own log
-  // console.error("Login error:", error);
+      // Remove this line if you don't want your own log
+      // console.error("Login error:", error);
 
-  const status = error.response?.status;
-  const code = error.response?.data?.code;
+      const status = error.response?.status;
+      const code = error.response?.data?.code;
 
-  if (error.response?.data?.requiresVerification) {
-    showErrorToast("Please verify your email first. Check your OTP.");
-    navigate(`/verify-otp?email=${formData.email}`);
-    return;
-  }
+      if (error.response?.data?.requiresVerification) {
+        showErrorToast("Please verify your email first. Check your OTP.");
+        navigate(`/verify-otp?email=${formData.email}`);
+        return;
+      }
 
-  if (code === "USER_NOT_FOUND" || status === 404) {
-    showErrorToast("Account not found. Please create an account first.");
-    return;
-  }
+      if (code === "USER_NOT_FOUND" || status === 404) {
+        setErrors((prev) => ({
+          ...prev,
+          email: "Account not found. Please create an account first.",
+        }));
 
-  if (code === "INVALID_PASSWORD" || status === 401) {
-    showErrorToast("Incorrect password. Please try again.");
-    return;
-  }
+        showErrorToast("Account not found. Please create an account first.");
 
-  showErrorToast(
-    error.response?.data?.message || "Something went wrong. Please try again."
-  );
-}
+        return;
+      }
+
+      if (code === "INVALID_PASSWORD" || status === 401) {
+        setErrors((prev) => ({
+          ...prev,
+          password: "Incorrect password. Please try again.",
+        }));
+
+        showErrorToast("Incorrect password. Please try again.");
+
+        return;
+      }
+
+      showErrorToast(
+        error.response?.data?.message ||
+          "Something went wrong. Please try again.",
+      );
+    }
   };
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setFormData((prev) => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === "checkbox" ? checked : value,
     }));
     if (errors[name]) {
-      setErrors((prev) => ({ ...prev, [name]: '' }));
+      setErrors((prev) => ({ ...prev, [name]: "" }));
     }
   };
 
   const validateForm = () => {
     const newErrors = {};
     if (!formData.email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = "Email is required";
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Please enter a valid email';
+      newErrors.email = "Please enter a valid email";
     }
     if (!formData.password) {
-      newErrors.password = 'Password is required';
+      newErrors.password = "Password is required";
     } else if (formData.password.length < 6) {
-      newErrors.password = 'Password must be at least 6 characters';
+      newErrors.password = "Password must be at least 6 characters";
     }
     return newErrors;
   };
 
   const benefits = [
-    { icon: Truck, text: 'Track your orders in real-time' },
-    { icon: RotateCcw, text: 'Easy returns and exchanges' },
-    { icon: Shield, text: 'Secure payment processing' },
+    { icon: Truck, text: "Track your orders in real-time" },
+    { icon: RotateCcw, text: "Easy returns and exchanges" },
+    { icon: Shield, text: "Secure payment processing" },
   ];
 
   return (
@@ -127,7 +149,10 @@ if (response.user.isVendor) {
           <div className="max-w-md mx-auto lg:mx-0 w-full">
             <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 sm:p-8">
               <div className="text-center mb-8">
-                <Link to="/" className="inline-block text-2xl font-bold text-green-600 tracking-tight mb-6">
+                <Link
+                  to="/"
+                  className="inline-block text-2xl font-bold text-green-600 tracking-tight mb-6"
+                >
                   Krushi<span className="text-gray-900">Mall</span>
                 </Link>
                 <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">
@@ -151,10 +176,11 @@ if (response.user.isVendor) {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      disabled={isLoading}
                       className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                        errors.email ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                      } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        errors.email
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                       placeholder="your@email.com"
                     />
                   </div>
@@ -169,34 +195,43 @@ if (response.user.isVendor) {
                     <label className="block text-sm font-medium text-gray-700">
                       Password
                     </label>
-                    <Link to="/forgot-password" className="text-xs text-green-600 hover:text-green-700 font-medium">
+                    <Link
+                      to="/forgot-password"
+                      className="text-xs text-green-600 hover:text-green-700 font-medium"
+                    >
                       Forgot Password?
                     </Link>
                   </div>
                   <div className="relative">
                     <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
                     <input
-                      type={showPassword ? 'text' : 'password'}
+                      type={showPassword ? "text" : "password"}
                       name="password"
                       value={formData.password}
                       onChange={handleChange}
-                      disabled={isLoading}
                       className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                        errors.password ? 'border-red-300 bg-red-50' : 'border-gray-300'
-                      } ${isLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                        errors.password
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
+                      } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                       placeholder="Enter your password"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      disabled={isLoading}
                       className="absolute cursor-pointer right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                     >
-                      {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                      {showPassword ? (
+                        <EyeOff className="h-5 w-5" />
+                      ) : (
+                        <Eye className="h-5 w-5" />
+                      )}
                     </button>
                   </div>
                   {errors.password && (
-                    <p className="mt-1 text-xs text-red-600">{errors.password}</p>
+                    <p className="mt-1 text-xs text-red-600">
+                      {errors.password}
+                    </p>
                   )}
                 </div>
 
@@ -207,7 +242,6 @@ if (response.user.isVendor) {
                     name="rememberMe"
                     checked={formData.rememberMe}
                     onChange={handleChange}
-                    disabled={isLoading}
                     className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
                   />
                   <label className="ml-2 text-sm text-gray-600">
@@ -218,14 +252,29 @@ if (response.user.isVendor) {
                 {/* Submit */}
                 <button
                   type="submit"
-                  disabled={isLoading}
                   className="w-full cursor-pointer bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-colors flex items-center justify-center gap-2 group disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   {isLoading ? (
                     <>
-                      <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      <svg
+                        className="animate-spin h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
                       </svg>
                       Logging in...
                     </>
@@ -239,8 +288,11 @@ if (response.user.isVendor) {
 
                 {/* Register Link */}
                 <p className="text-center text-sm text-gray-600">
-                  Don't have an account?{' '}
-                  <Link to="/register" className="text-green-600 hover:text-green-700 font-semibold">
+                  Don't have an account?{" "}
+                  <Link
+                    to="/register"
+                    className="text-green-600 hover:text-green-700 font-semibold"
+                  >
                     Sign Up Now
                   </Link>
                 </p>
@@ -255,7 +307,8 @@ if (response.user.isVendor) {
                 Why Create an Account?
               </h2>
               <p className="text-gray-300 mb-8">
-                Join thousands of satisfied customers who trust KrushiMall for their auto parts needs.
+                Join thousands of satisfied customers who trust KrushiMall for
+                their auto parts needs.
               </p>
 
               <div className="space-y-6 mb-8">
@@ -275,7 +328,10 @@ if (response.user.isVendor) {
                 <div className="flex items-center gap-4">
                   <div className="flex -space-x-2">
                     {[...Array(4)].map((_, i) => (
-                      <div key={i} className="w-10 h-10 rounded-full bg-gray-600 border-2 border-gray-800 flex items-center justify-center text-xs font-bold">
+                      <div
+                        key={i}
+                        className="w-10 h-10 rounded-full bg-gray-600 border-2 border-gray-800 flex items-center justify-center text-xs font-bold"
+                      >
                         {String.fromCharCode(65 + i)}
                       </div>
                     ))}
@@ -283,7 +339,11 @@ if (response.user.isVendor) {
                   <div>
                     <div className="flex items-center gap-1 mb-1">
                       {[...Array(5)].map((_, i) => (
-                        <svg key={i} className="h-4 w-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
+                        <svg
+                          key={i}
+                          className="h-4 w-4 text-yellow-400 fill-current"
+                          viewBox="0 0 20 20"
+                        >
                           <path d="M10 15l-5.878 3.09 1.123-6.545L.489 6.91l6.572-.955L10 0l2.939 5.955 6.572.955-4.756 4.635 1.123 6.545z" />
                         </svg>
                       ))}

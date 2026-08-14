@@ -544,23 +544,23 @@ const Profile = () => {
     <div className="min-h-screen bg-white lg:mt-4">
       {/* Success Toast */}
       {showSaveSuccess && (
-        <div className="fixed top-4 right-4 z-50 animate-slideDown bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2">
-          <CheckCircle className="h-5 w-5" />
-          <span className="font-medium">Profile updated successfully!</span>
+        <div className="fixed top-4 right-4 left-4 sm:left-auto z-50 animate-slideDown bg-green-600 text-white px-4 sm:px-6 py-3 rounded-xl shadow-lg flex items-center gap-2">
+          <CheckCircle className="h-5 w-5 shrink-0" />
+          <span className="font-medium text-sm sm:text-base">Profile updated successfully!</span>
         </div>
       )}
 
       {/* Breadcrumb */}
       <div className="bg-white">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
-          <nav className="flex items-center gap-2 text-sm">
+        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-6 sm:pt-12 md:pt-16 lg:pt-20">
+          <nav className="flex items-center gap-2 text-xs sm:text-sm overflow-x-auto whitespace-nowrap">
             <Link
               to="/"
               className="text-gray-500 hover:text-green-600 transition-colors"
             >
               Home
             </Link>
-            <ChevronRight className="h-3 w-3 text-gray-400" />
+            <ChevronRight className="h-3 w-3 text-gray-400 shrink-0" />
             <span className="text-gray-900 font-medium">
               {userType === "vendor" ? "Vendor Dashboard" : "My Account"}
             </span>
@@ -568,16 +568,16 @@ const Profile = () => {
         </div>
       </div>
 
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-6">
-        <div className="grid lg:grid-cols-4 gap-8">
+      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-4 sm:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-8">
           {/* Left Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 space-y-4 sm:space-y-6">
             {/* Profile Card */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 text-center relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-r from-green-600 to-green-700"></div>
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 text-center relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-16 sm:h-20 bg-gradient-to-r from-green-600 to-green-700"></div>
               <div className="relative z-10">
-                <div className="relative w-24 h-24 mx-auto mb-3">
-                  <div className="w-24 h-24 rounded-full border-4 border-white bg-green-100 flex items-center justify-center overflow-hidden shadow-md">
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-3">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white bg-green-100 flex items-center justify-center overflow-hidden shadow-md">
                     {userData.avatar ? (
                       <img
                         src={userData.avatar}
@@ -585,7 +585,7 @@ const Profile = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <User className="h-12 w-12 text-green-600" />
+                      <User className="h-10 w-10 sm:h-12 sm:w-12 text-green-600" />
                     )}
                   </div>
                  <input
@@ -626,10 +626,10 @@ const Profile = () => {
   <Camera className="h-3.5 w-3.5" />
 </button>
                 </div>
-                <h3 className="font-bold text-gray-900 text-lg">
+                <h3 className="font-bold text-gray-900 text-base sm:text-lg truncate px-2">
                   {userData.name}
                 </h3>
-                <p className="text-sm text-gray-500 mb-4">{userData.email}</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4 truncate px-2">{userData.email}</p>
                 <div className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-semibold px-3 py-1 rounded-full border border-green-200">
                   <Shield className="h-3 w-3" />
                   {userType === "vendor" ? "Vendor" : "Verified Buyer"}
@@ -641,7 +641,7 @@ const Profile = () => {
                 Once they complete /become-vendor, userType flips to
                 "vendor" and this card is replaced by vendor tabs/stats. */}
             {userType !== "vendor" && (
-              <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-2xl p-5 text-center">
+              <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-2xl p-4 sm:p-5 text-center">
                 <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center mx-auto mb-3">
                   <Store className="h-6 w-6 text-white" />
                 </div>
@@ -662,35 +662,40 @@ const Profile = () => {
             )}
 
             {/* Navigation Tabs */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-              {tabs.map((tab) => (
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-2 lg:p-0">
+              <div className="grid grid-cols-2 gap-2 lg:block lg:gap-0">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex flex-col lg:flex-row items-center justify-center lg:justify-start text-center lg:text-left gap-1.5 lg:gap-3 px-2 lg:px-5 py-3 lg:py-3.5 rounded-xl lg:rounded-none text-xs lg:text-sm font-medium transition-all border lg:border-0 lg:border-l-2 lg:w-full ${
+                      activeTab === tab.id
+                        ? "bg-green-50 text-green-700 border-green-200 lg:border-green-600"
+                        : "text-gray-600 hover:bg-gray-50 border-gray-200 lg:border-transparent"
+                    }`}
+                  >
+                    <tab.icon className="h-4 w-4 shrink-0" />
+                    <span className="leading-tight">{tab.label}</span>
+                  </button>
+                ))}
                 <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center justify-between px-5 py-3.5 text-sm font-medium transition-all ${
-                    activeTab === tab.id
-                      ? "bg-green-50 text-green-700 border-l-2 border-green-600"
-                      : "text-gray-600 hover:bg-gray-50 border-l-2 border-transparent"
-                  }`}
+                  onClick={() => {
+                    if (typeof logout === "function") logout();
+                  }}
+                  className="flex flex-col lg:flex-row items-center justify-center lg:justify-start text-center lg:text-left gap-1.5 lg:gap-3 col-span-2 lg:col-auto cursor-pointer px-2 lg:px-5 py-3 lg:py-3.5 rounded-xl lg:rounded-none text-xs lg:text-sm font-medium text-red-600 hover:bg-red-50 transition-colors border border-red-100 lg:border-0 lg:border-t lg:border-gray-100 lg:w-full"
                 >
-                  <div className="flex items-center gap-3">
-                    <tab.icon className="h-4 w-4" />
-                    {tab.label}
-                  </div>
+                  <LogOut className="h-4 w-4" />
+                  <span>Sign Out</span>
                 </button>
-              ))}
-              <button className="w-full flex items-center gap-3 px-5 py-3.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100">
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </button>
+              </div>
             </div>
           </div>
 
           {/* Right Content Area */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 min-w-0">
             {/* Profile Tab */}
             {activeTab === "profile" && (
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Quick Stats - Vendor or User */}
                 {/* <div className="grid grid-cols-2 gap-3">
                   {(userType === "vendor" ? vendorStats : userStats).map(
@@ -712,13 +717,13 @@ const Profile = () => {
                     ),
                   )}
                 </div> */}
-                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:p-8">
-                  <div className="flex items-center justify-between mb-6">
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                     <div>
-                      <h2 className="text-xl font-bold text-gray-900">
+                      <h2 className="text-lg sm:text-xl font-bold text-gray-900">
                         Personal Information
                       </h2>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-xs sm:text-sm text-gray-500 mt-1">
                         Update your personal details here
                       </p>
                     </div>
@@ -727,7 +732,7 @@ const Profile = () => {
                         if (isEditing) handleSave();
                         else setIsEditing(true);
                       }}
-                      className={`flex items-center whitespace-nowrap gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                      className={`flex items-center justify-center whitespace-nowrap gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold transition-all w-full sm:w-auto ${
                         isEditing
                           ? "bg-green-600 text-white hover:bg-green-700 shadow-md"
                           : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -745,7 +750,7 @@ const Profile = () => {
                     </button>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     {/* Name */}
                     <div>
                       <label className="block text-xs font-semibold text-gray-700 mb-1.5">
@@ -905,17 +910,17 @@ const Profile = () => {
                   </div>
 
                   {isEditing && (
-                    <div className="mt-6 pt-6 border-t border-gray-100 flex gap-3">
+                    <div className="mt-6 pt-6 border-t border-gray-100 flex flex-col sm:flex-row gap-3">
                       <button
                         onClick={handleSave}
-                        className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-sm shadow-md"
+                        className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-md w-full sm:w-auto"
                       >
                         <Save className="h-4 w-4" />
                         Save Changes
                       </button>
                       <button
                         onClick={() => setIsEditing(false)}
-                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-sm"
+                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-6 py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
                       >
                         <X className="h-4 w-4" />
                         Cancel
@@ -925,15 +930,15 @@ const Profile = () => {
                 </div>
 
                 {/* Account Security */}
-                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:p-8">
-                  <h3 className="text-lg font-bold text-gray-900 mb-4">
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">
+                  <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-4">
                     Account Security
                   </h3>
                   <div className="space-y-3">
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <Shield className="h-5 w-5 text-green-600" />
-                        <div>
+                    <div className="flex items-center justify-between gap-3 p-4 bg-gray-50 rounded-xl">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Shield className="h-5 w-5 text-green-600 shrink-0" />
+                        <div className="min-w-0">
                           <p className="text-sm font-semibold text-gray-900">
                             Password
                           </p>
@@ -942,14 +947,14 @@ const Profile = () => {
                           </p>
                         </div>
                       </div>
-                      <button className="text-sm font-semibold text-green-600 hover:text-green-700">
+                      <button className="text-sm font-semibold text-green-600 hover:text-green-700 shrink-0">
                         Change
                       </button>
                     </div>
-                    <div className="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
-                      <div className="flex items-center gap-3">
-                        <Phone className="h-5 w-5 text-green-600" />
-                        <div>
+                    <div className="flex items-center justify-between gap-3 p-4 bg-gray-50 rounded-xl">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <Phone className="h-5 w-5 text-green-600 shrink-0" />
+                        <div className="min-w-0">
                           <p className="text-sm font-semibold text-gray-900">
                             Two-Factor Auth
                           </p>
@@ -958,7 +963,7 @@ const Profile = () => {
                           </p>
                         </div>
                       </div>
-                      <button className="text-sm font-semibold text-green-600 hover:text-green-700">
+                      <button className="text-sm font-semibold text-green-600 hover:text-green-700 shrink-0">
                         Enable
                       </button>
                     </div>
@@ -969,13 +974,13 @@ const Profile = () => {
 
             {/* Business Info Tab - Vendor Only */}
             {activeTab === "business" && userType === "vendor" && (
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:p-8">
-                <div className="flex items-center justify-between mb-6">
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">
                       Business Information
                     </h2>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
                       Manage your business details
                     </p>
                   </div>
@@ -984,7 +989,7 @@ const Profile = () => {
                       if (isEditing) handleSave();
                       else setIsEditing(true);
                     }}
-                    className={`flex items-center whitespace-nowrap gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                    className={`flex items-center justify-center whitespace-nowrap gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold transition-all w-full sm:w-auto ${
                       isEditing
                         ? "bg-green-600 text-white hover:bg-green-700 shadow-md"
                         : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -1002,7 +1007,7 @@ const Profile = () => {
                   </button>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* Business Name */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
@@ -1158,17 +1163,17 @@ const Profile = () => {
                 </div>
 
                 {isEditing && (
-                  <div className="mt-6 pt-6 border-t border-gray-100 flex gap-3">
+                  <div className="mt-6 pt-6 border-t border-gray-100 flex flex-col sm:flex-row gap-3">
                     <button
                       onClick={handleSave}
-                      className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-sm shadow-md"
+                      className="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-md w-full sm:w-auto"
                     >
                       <Save className="h-4 w-4" />
                       Save Changes
                     </button>
                     <button
                       onClick={() => setIsEditing(false)}
-                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-sm"
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-6 py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
                     >
                       <X className="h-4 w-4" />
                       Cancel
@@ -1186,41 +1191,41 @@ const Profile = () => {
                   return (
                     <div
                       key={order.id}
-                      className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 lg:p-6 hover:shadow-md transition-all group"
+                      className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-5 lg:p-6 hover:shadow-md transition-all group"
                     >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-4">
-                          <div className="w-20 h-20 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
+                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
+                        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
                             <img
                               src={order.image}
                               alt={order.items}
                               className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                             />
                           </div>
-                          <div>
+                          <div className="min-w-0">
                             <p className="text-xs text-gray-500 font-medium mb-1">
                               {order.id}
                             </p>
-                            <h4 className="font-semibold text-gray-900 text-sm mb-1">
+                            <h4 className="font-semibold text-gray-900 text-sm mb-1 truncate">
                               {order.items}
                             </h4>
                             <p className="text-xs text-gray-400">
                               Qty: {order.quantity}
                             </p>
                             <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                              <Calendar className="h-3 w-3" />
+                              <Calendar className="h-3 w-3 shrink-0" />
                               {order.date}
                             </div>
                           </div>
                         </div>
                         <span
-                          className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border ${getStatusColor(order.status)}`}
+                          className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border shrink-0 self-start ${getStatusColor(order.status)}`}
                         >
                           <StatusIcon className="h-3 w-3" />
                           {order.status}
                         </span>
                       </div>
-                      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-gray-100">
                         <div>
                           <p className="text-xs text-gray-500">Total Amount</p>
                           <p className="text-lg font-bold text-gray-900">
@@ -1228,12 +1233,12 @@ const Profile = () => {
                           </p>
                         </div>
                         <div className="flex gap-2">
-                          <button className="text-sm font-semibold text-gray-500 hover:text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                          <button className="flex-1 sm:flex-none text-sm font-semibold text-gray-500 hover:text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
                             Track Order
                           </button>
                           <Link
                             to={`/orders/${order.id}`}
-                            className="text-sm font-semibold text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 px-4 py-2 rounded-lg transition-colors flex items-center gap-1"
+                            className="flex-1 sm:flex-none justify-center text-sm font-semibold text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 px-4 py-2 rounded-lg transition-colors flex items-center gap-1"
                           >
                             View Details <ChevronRight className="h-4 w-4" />
                           </Link>
@@ -1248,48 +1253,48 @@ const Profile = () => {
             {/* Wishlist Tab - User Only */}
             {activeTab === "wishlist" && userType !== "vendor" && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between mb-2">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                   <p className="text-sm text-gray-500">
                     {wishlistItems.length} items in your wishlist
                   </p>
-                  <button className="text-sm font-semibold text-green-600 hover:text-green-700">
+                  <button className="text-sm font-semibold text-green-600 hover:text-green-700 text-left sm:text-right">
                     Add All to Cart
                   </button>
                 </div>
                 {wishlistItems.map((item) => (
                   <div
                     key={item.id}
-                    className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 hover:shadow-md transition-all group"
+                    className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-5 hover:shadow-md transition-all group"
                   >
-                    <div className="flex gap-5">
-                      <div className="w-24 h-24 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
+                    <div className="flex gap-4 sm:gap-5">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
                         <img
                           src={item.image}
                           alt={item.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         />
                       </div>
-                      <div className="flex-1">
-                        <div className="flex items-start justify-between">
-                          <div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
                             <p className="text-xs text-green-600 font-semibold uppercase tracking-wider mb-1">
                               {item.brand}
                             </p>
-                            <h4 className="font-bold text-gray-900 text-sm mb-1">
+                            <h4 className="font-bold text-gray-900 text-sm mb-1 truncate">
                               {item.name}
                             </h4>
-                            <p className="text-lg font-black text-green-700 mb-3">
+                            <p className="text-base sm:text-lg font-black text-green-700 mb-3">
                               {item.price}
                             </p>
                           </div>
                           <button
                             onClick={() => removeFromWishlist(item.id)}
-                            className="text-gray-400 hover:text-red-500 transition-colors p-1"
+                            className="text-gray-400 hover:text-red-500 transition-colors p-1 shrink-0"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                           {item.inStock ? (
                             <span className="text-xs text-green-600 font-medium flex items-center gap-1">
                               <CheckCircle className="h-3.5 w-3.5" /> In Stock
@@ -1299,7 +1304,7 @@ const Profile = () => {
                               Out of Stock
                             </span>
                           )}
-                          <button className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-5 py-2.5 rounded-lg transition-all shadow-sm hover:shadow-md flex items-center gap-1.5">
+                          <button className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 sm:px-5 py-2.5 rounded-lg transition-all shadow-sm hover:shadow-md flex items-center gap-1.5">
                             <ShoppingBag className="h-3.5 w-3.5" />
                             Add to Cart
                           </button>
@@ -1319,95 +1324,95 @@ const Profile = () => {
             {activeTab === "settings" && (
               <div className="space-y-6">
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm divide-y divide-gray-100">
-                  <div className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <div className="p-4 sm:p-5 flex items-center justify-between gap-3 hover:bg-gray-50 transition-colors cursor-pointer group">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
                         <Bell className="h-5 w-5 text-green-600" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <h4 className="font-semibold text-gray-900 text-sm">
                           Notifications
                         </h4>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 truncate">
                           Manage email, SMS, and push notification preferences
                         </p>
                       </div>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight className="h-5 w-5 text-gray-400 shrink-0 group-hover:translate-x-1 transition-transform" />
                   </div>
 
-                  <div className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <div className="p-4 sm:p-5 flex items-center justify-between gap-3 hover:bg-gray-50 transition-colors cursor-pointer group">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
                         <Shield className="h-5 w-5 text-green-600" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <h4 className="font-semibold text-gray-900 text-sm">
                           Privacy & Security
                         </h4>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 truncate">
                           Manage password, 2FA, and security settings
                         </p>
                       </div>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight className="h-5 w-5 text-gray-400 shrink-0 group-hover:translate-x-1 transition-transform" />
                   </div>
 
-                  <div className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <div className="p-4 sm:p-5 flex items-center justify-between gap-3 hover:bg-gray-50 transition-colors cursor-pointer group">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
                         <CreditCard className="h-5 w-5 text-green-600" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <h4 className="font-semibold text-gray-900 text-sm">
                           Payment Methods
                         </h4>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 truncate">
                           Add, remove, or update your payment methods
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400">2 cards</span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs text-gray-400 hidden sm:inline">2 cards</span>
                       <ChevronRight className="h-5 w-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
 
-                  <div className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <div className="p-4 sm:p-5 flex items-center justify-between gap-3 hover:bg-gray-50 transition-colors cursor-pointer group">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
                         <MapPin className="h-5 w-5 text-green-600" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <h4 className="font-semibold text-gray-900 text-sm">
                           Addresses
                         </h4>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 truncate">
                           Manage your shipping and billing addresses
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs text-gray-400">2 addresses</span>
+                    <div className="flex items-center gap-2 shrink-0">
+                      <span className="text-xs text-gray-400 hidden sm:inline">2 addresses</span>
                       <ChevronRight className="h-5 w-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
 
-                  <div className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <div className="p-4 sm:p-5 flex items-center justify-between gap-3 hover:bg-gray-50 transition-colors cursor-pointer group">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
                         <HelpCircle className="h-5 w-5 text-green-600" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <h4 className="font-semibold text-gray-900 text-sm">
                           Help & Support
                         </h4>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 truncate">
                           FAQs, contact support, and documentation
                         </p>
                       </div>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight className="h-5 w-5 text-gray-400 shrink-0 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
               </div>

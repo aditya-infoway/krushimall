@@ -20,7 +20,7 @@ import {
   Trash2,
   ArrowRight,
   LogIn,
-  UserPlus,
+  // UserPlus,
   Cog,
   Gauge,
   Battery,
@@ -31,9 +31,9 @@ import {
   Droplets,
   Wrench,
   Filter,
-  HandCoins,
+  // HandCoins,
   Tractor,
-  GitCompare,
+  // GitCompare,
   Scale,
   CalendarCheck,
   Store,
@@ -42,7 +42,7 @@ import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useWishlist } from "../context/WishlistContext";
 import { useNavigate, useLocation } from "react-router-dom";
-
+import { showSuccessToast, showErrorToast } from "../utils/toast";
 const Navbar = () => {
   const { cart, cartCount, cartTotal, removeFromCart } = useCart();
   const { user, isAuthenticated, logout } = useAuth();
@@ -70,6 +70,7 @@ const Navbar = () => {
 
     setUserMenuOpen(false);
     setMobileMenuOpen(false);
+     showSuccessToast("Logout successful!");
     navigate("/", { replace: true });
   };
 
