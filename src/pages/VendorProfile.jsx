@@ -653,38 +653,38 @@ const VendorProfile = () => {
     <div className="min-h-screen bg-white lg:mt-4">
       {/* Success Toast */}
       {showSaveSuccess && (
-        <div className="fixed top-4 right-4 z-50 animate-slideDown bg-green-600 text-white px-6 py-3 rounded-xl shadow-lg flex items-center gap-2">
-          <CheckCircle className="h-5 w-5" />
-          <span className="font-medium">Profile updated successfully!</span>
+        <div className="fixed top-4 right-4 left-4 sm:left-auto z-50 animate-slideDown bg-green-600 text-white px-4 sm:px-6 py-3 rounded-xl shadow-lg flex items-center gap-2">
+          <CheckCircle className="h-5 w-5 shrink-0" />
+          <span className="font-medium text-sm sm:text-base">Profile updated successfully!</span>
         </div>
       )}
 
       {/* Breadcrumb */}
       <div className="bg-white">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
-          <nav className="flex items-center gap-2 text-sm">
+        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-6 sm:pt-12 md:pt-16 lg:pt-20">
+          <nav className="flex items-center gap-2 text-xs sm:text-sm overflow-x-auto whitespace-nowrap">
             <Link
               to="/"
               className="text-gray-500 hover:text-green-600 transition-colors"
             >
               Home
             </Link>
-            <ChevronRight className="h-3 w-3 text-gray-400" />
+            <ChevronRight className="h-3 w-3 text-gray-400 shrink-0" />
             <span className="text-gray-900 font-medium">Vendor Dashboard</span>
           </nav>
         </div>
       </div>
 
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-6">
-        <div className="grid lg:grid-cols-4 gap-8">
+      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-4 sm:py-6">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-8">
           {/* Left Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
+          <div className="lg:col-span-1 space-y-4 sm:space-y-6">
             {/* Profile Card */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 text-center relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-20 bg-gradient-to-r from-green-600 to-green-700"></div>
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 text-center relative overflow-hidden">
+              <div className="absolute top-0 left-0 right-0 h-16 sm:h-20 bg-gradient-to-r from-green-600 to-green-700"></div>
               <div className="relative z-10">
-                <div className="relative w-24 h-24 mx-auto mb-3">
-                  <div className="w-24 h-24 rounded-full border-4 border-white bg-green-100 overflow-hidden shadow-md">
+                <div className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-3">
+                  <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white bg-green-100 overflow-hidden shadow-md">
                     {vendorData.avatar ? (
                       <img
                         src={vendorData.avatar}
@@ -692,7 +692,7 @@ const VendorProfile = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <Store className="h-12 w-12 text-green-600 mx-auto mt-6" />
+                      <Store className="h-10 w-10 sm:h-12 sm:w-12 text-green-600 mx-auto mt-5 sm:mt-6" />
                     )}
                   </div>
                   <input
@@ -730,83 +730,85 @@ const VendorProfile = () => {
                     <Camera className="h-3.5 w-3.5" />
                   </button>
                 </div>
-                <h3 className="font-bold text-gray-900 text-lg">
+                <h3 className="font-bold text-gray-900 text-base sm:text-lg truncate px-2">
                   {vendorData.businessName || vendorData.name}
                 </h3>
-                <p className="text-sm text-gray-500 mb-2">{vendorData.email}</p>
-                <div className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-semibold px-3 py-1 rounded-full border border-green-200">
-                  <Store className="h-3 w-3" />
-                  Vendor
-                </div>
-                <div className="mt-2 inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full border border-blue-200">
-                  {getVendorTypeLabel(vendorData.vendorType)}
-                  {vendorData.vendorType === "vehicle" &&
-                    ` • ${getVehicleTypeLabel(vendorData.vehicleType)}`}
+                <p className="text-xs sm:text-sm text-gray-500 mb-2 truncate px-2">{vendorData.email}</p>
+                <div className="flex flex-wrap items-center justify-center gap-1.5">
+                  <div className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-semibold px-3 py-1 rounded-full border border-green-200">
+                    <Store className="h-3 w-3" />
+                    Vendor
+                  </div>
+                  <div className="inline-flex items-center gap-1 bg-blue-50 text-blue-700 text-xs font-semibold px-3 py-1 rounded-full border border-blue-200">
+                    {getVendorTypeLabel(vendorData.vendorType)}
+                    {vendorData.vendorType === "vehicle" &&
+                      ` • ${getVehicleTypeLabel(vendorData.vehicleType)}`}
+                  </div>
                 </div>
               </div>
             </div>
 
             {/* Navigation Tabs */}
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-              {tabs.map((tab) => (
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-2 lg:p-0">
+              <div className="grid grid-cols-2 gap-2 lg:block lg:gap-0">
+                {tabs.map((tab) => (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`flex flex-col lg:flex-row items-center justify-center lg:justify-start text-center lg:text-left gap-1.5 lg:gap-3 px-2 lg:px-5 py-3 lg:py-3.5 rounded-xl lg:rounded-none text-xs lg:text-sm font-medium transition-all border lg:border-0 lg:border-l-2 lg:w-full ${
+                      activeTab === tab.id
+                        ? "bg-green-50 text-green-700 border-green-200 lg:border-green-600"
+                        : "text-gray-600 hover:bg-gray-50 border-gray-200 lg:border-transparent"
+                    }`}
+                  >
+                    <tab.icon className="h-4 w-4 shrink-0" />
+                    <span className="leading-tight">{tab.label}</span>
+                  </button>
+                ))}
                 <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`w-full flex items-center justify-between px-5 py-3.5 text-sm font-medium transition-all ${
-                    activeTab === tab.id
-                      ? "bg-green-50 text-green-700 border-l-2 border-green-600"
-                      : "text-gray-600 hover:bg-gray-50 border-l-2 border-transparent"
-                  }`}
+                  onClick={handleVendorLogout}
+                  className="flex flex-col lg:flex-row items-center justify-center lg:justify-start text-center lg:text-left gap-1.5 lg:gap-3 col-span-2 lg:col-auto cursor-pointer px-2 lg:px-5 py-3 lg:py-3.5 rounded-xl lg:rounded-none text-xs lg:text-sm font-medium text-red-600 hover:bg-red-50 transition-colors border border-red-100 lg:border-0 lg:border-t lg:border-gray-100 lg:w-full"
                 >
-                  <div className="flex items-center gap-3">
-                    <tab.icon className="h-4 w-4" />
-                    {tab.label}
-                  </div>
+                  <LogOut className="h-4 w-4" />
+                  <span>Sign Out</span>
                 </button>
-              ))}
-              <button
-                onClick={handleVendorLogout}
-                className="w-full flex items-center cursor-pointer gap-3 px-5 py-3.5 text-sm font-medium text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100"
-              >
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </button>
+              </div>
             </div>
           </div>
 
           {/* Right Content Area */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 min-w-0">
             {/* Profile Tab */}
             {activeTab === "profile" && (
-              <div className="space-y-6">
+              <div className="space-y-4 sm:space-y-6">
                 {/* Vendor Stats */}
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3">
                   {vendorStats.map((stat, idx) => (
                     <div
                       key={idx}
-                      className="bg-white rounded-xl border border-gray-200 p-3 text-center shadow-sm hover:shadow-md transition-all"
+                      className="bg-white rounded-xl border border-gray-200 p-2.5 sm:p-3 text-center shadow-sm hover:shadow-md transition-all"
                     >
                       <div
-                        className={`w-9 h-9 ${stat.color} rounded-lg flex items-center justify-center mx-auto mb-2`}
+                        className={`w-8 h-8 sm:w-9 sm:h-9 ${stat.color} rounded-lg flex items-center justify-center mx-auto mb-2`}
                       >
                         <stat.icon className="h-4 w-4" />
                       </div>
-                      <p className="text-lg font-bold text-gray-900">
+                      <p className="text-base sm:text-lg font-bold text-gray-900 truncate">
                         {stat.value}
                       </p>
-                      <p className="text-xs text-gray-500">{stat.label}</p>
+                      <p className="text-[11px] sm:text-xs text-gray-500 truncate">{stat.label}</p>
                     </div>
                   ))}
                 </div>
 
                 {/* Personal Information */}
-                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:p-8">
-                  <div className="flex items-center justify-between mb-6">
+                <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                     <div>
-                      <h2 className="text-xl font-bold text-gray-900">
+                      <h2 className="text-lg sm:text-xl font-bold text-gray-900">
                         Personal Information
                       </h2>
-                      <p className="text-sm text-gray-500 mt-1">
+                      <p className="text-xs sm:text-sm text-gray-500 mt-1">
                         Update your personal details here
                       </p>
                     </div>
@@ -815,7 +817,7 @@ const VendorProfile = () => {
                         if (isEditing) handleSave();
                         else setIsEditing(true);
                       }}
-                      className={`flex items-center cursor-pointer whitespace-nowrap gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold transition-all ${
+                      className={`flex items-center justify-center cursor-pointer whitespace-nowrap gap-2 px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold transition-all w-full sm:w-auto ${
                         isEditing
                           ? "bg-green-600 text-white hover:bg-green-700 shadow-md"
                           : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -833,7 +835,7 @@ const VendorProfile = () => {
                     </button>
                   </div>
 
-                  <div className="grid md:grid-cols-2 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                     {/* Business Name */}
                     <div>
                       <label className="block text-xs font-semibold text-gray-700 mb-1.5">
@@ -1029,17 +1031,17 @@ const VendorProfile = () => {
                   </div>
 
                   {isEditing && (
-                    <div className="mt-6 pt-6 border-t border-gray-100 flex gap-3">
+                    <div className="mt-6 pt-6 border-t border-gray-100 flex flex-col sm:flex-row gap-3">
                       <button
                         onClick={handleSave}
-                        className="bg-green-600 hover:bg-green-700 text-white cursor-pointer font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-sm shadow-md"
+                        className="bg-green-600 hover:bg-green-700 text-white cursor-pointer font-semibold px-6 py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-md w-full sm:w-auto"
                       >
                         <Save className="h-4 w-4" />
                         Save Changes
                       </button>
                       <button
                         onClick={handleCancel}
-                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 cursor-pointer font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-sm"
+                        className="bg-gray-100 hover:bg-gray-200 text-gray-700 cursor-pointer font-semibold px-6 py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
                       >
                         <X className="h-4 w-4" />
                         Cancel
@@ -1052,13 +1054,13 @@ const VendorProfile = () => {
 
             {/* Business Info Tab */}
             {activeTab === "business" && (
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:p-8">
-                <div className="flex items-center justify-between mb-6">
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">
                       Business Information
                     </h2>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
                       Manage your business details
                     </p>
                   </div>
@@ -1067,7 +1069,7 @@ const VendorProfile = () => {
                       if (isEditing) handleSave();
                       else setIsEditing(true);
                     }}
-                    className={`flex items-center whitespace-nowrap gap-2 px-5 py-2.5 cursor-pointer rounded-xl text-sm font-semibold transition-all ${
+                    className={`flex items-center justify-center whitespace-nowrap gap-2 px-4 sm:px-5 py-2.5 cursor-pointer rounded-xl text-sm font-semibold transition-all w-full sm:w-auto ${
                       isEditing
                         ? "bg-green-600 text-white hover:bg-green-700 shadow-md"
                         : "bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
@@ -1085,7 +1087,7 @@ const VendorProfile = () => {
                   </button>
                 </div>
 
-                <div className="grid md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                   {/* Business Name */}
                   <div>
                     <label className="block text-xs font-semibold text-gray-700 mb-1.5">
@@ -1203,17 +1205,17 @@ const VendorProfile = () => {
                 </div>
 
                 {isEditing && (
-                  <div className="mt-6 pt-6 border-t border-gray-100 flex gap-3">
+                  <div className="mt-6 pt-6 border-t border-gray-100 flex flex-col sm:flex-row gap-3">
                     <button
                       onClick={handleSave}
-                      className="bg-green-600 hover:bg-green-700 text-white cursor-pointer font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-sm shadow-md"
+                      className="bg-green-600 hover:bg-green-700 text-white cursor-pointer font-semibold px-6 py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm shadow-md w-full sm:w-auto"
                     >
                       <Save className="h-4 w-4" />
                       Save Changes
                     </button>
                     <button
                       onClick={handleCancel}
-                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 cursor-pointer font-semibold px-6 py-3 rounded-xl transition-all flex items-center gap-2 text-sm"
+                      className="bg-gray-100 hover:bg-gray-200 text-gray-700 cursor-pointer font-semibold px-6 py-3 rounded-xl transition-all flex items-center justify-center gap-2 text-sm w-full sm:w-auto"
                     >
                       <X className="h-4 w-4" />
                       Cancel
@@ -1225,21 +1227,21 @@ const VendorProfile = () => {
 
             {/* Products Tab */}
             {activeTab === "products" && (
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:p-8">
-                <div className="flex items-center justify-between mb-6">
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">
                       Your Products{" "}
                       {products.length > 0 && `(${products.length})`}
                     </h2>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
                       Manage your product listings
                     </p>
                   </div>
 
                   <button
                     onClick={() => navigate("/vendor/add-product")}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white cursor-pointer px-5 py-2.5 rounded-xl text-sm font-semibold"
+                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white cursor-pointer px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold w-full sm:w-auto"
                   >
                     <Plus className="h-4 w-4" />
                     Add Product
@@ -1261,62 +1263,64 @@ const VendorProfile = () => {
                     </p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full border border-gray-200 rounded-xl">
-                      <thead className="bg-gray-50 whitespace-nowrap">
-                        <tr>
-                          <th className="px-4 py-3 text-left">Sr. No.</th>
-                          <th className="px-4 py-3 text-left">Product</th>
-                          <th className="px-4 py-3 text-left">Brand</th>
-                          <th className="px-4 py-3 text-left">Price</th>
-                          <th className="px-4 py-3 text-left">Status</th>
-                          <th className="px-4 py-3 text-center">Action</th>
-                        </tr>
-                      </thead>
-
-                      <tbody>
-                        {paginatedProducts.map((item, index) => (
-                          <tr
-                            key={item.id}
-                            className="border-t whitespace-nowrap "
-                          >
-                            <td className="px-4 py-3 text-gray-500">
-                              {(currentPage - 1) * itemsPerPage + index + 1}
-                            </td>
-                            <td className="px-4 py-3">{item.productName}</td>
-                            <td className="px-4 py-3">
-                              {item.brand?.brandName}
-                            </td>
-                            <td className="px-4 py-3">
-                              ₹ {item.exShowroomPrice}
-                            </td>
-                            <td className="px-4 py-3">{item.status}</td>
-                            <td className="px-4 py-3">
-                              <div className="flex justify-center gap-2">
-                                <button
-                                  onClick={() =>
-                                    navigate(`/vendor/edit-product/${item.id}`)
-                                  }
-                                  className="px-3 py-1 bg-blue-500 text-white rounded-lg cursor-pointer"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(item.id)}
-                                  className="px-3 py-1 bg-red-500 text-white rounded-lg cursor-pointer"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </td>
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full border border-gray-200 rounded-xl">
+                        <thead className="bg-gray-50 whitespace-nowrap">
+                          <tr>
+                            <th className="px-4 py-3 text-left">Sr. No.</th>
+                            <th className="px-4 py-3 text-left">Product</th>
+                            <th className="px-4 py-3 text-left">Brand</th>
+                            <th className="px-4 py-3 text-left">Price</th>
+                            <th className="px-4 py-3 text-left">Status</th>
+                            <th className="px-4 py-3 text-center">Action</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+
+                        <tbody>
+                          {paginatedProducts.map((item, index) => (
+                            <tr
+                              key={item.id}
+                              className="border-t whitespace-nowrap "
+                            >
+                              <td className="px-4 py-3 text-gray-500">
+                                {(currentPage - 1) * itemsPerPage + index + 1}
+                              </td>
+                              <td className="px-4 py-3">{item.productName}</td>
+                              <td className="px-4 py-3">
+                                {item.brand?.brandName}
+                              </td>
+                              <td className="px-4 py-3">
+                                ₹ {item.exShowroomPrice}
+                              </td>
+                              <td className="px-4 py-3">{item.status}</td>
+                              <td className="px-4 py-3">
+                                <div className="flex justify-center gap-2">
+                                  <button
+                                    onClick={() =>
+                                      navigate(`/vendor/edit-product/${item.id}`)
+                                    }
+                                    className="px-3 py-1 bg-blue-500 text-white rounded-lg cursor-pointer"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDelete(item.id)}
+                                    className="px-3 py-1 bg-red-500 text-white rounded-lg cursor-pointer"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
 
                     {/* Pagination controls */}
                     {totalPages > 1 && (
-                      <div className="flex items-center justify-between mt-4 px-1">
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 px-1">
                         <p className="text-xs text-gray-500">
                           Showing {(currentPage - 1) * itemsPerPage + 1}–
                           {Math.min(
@@ -1326,7 +1330,7 @@ const VendorProfile = () => {
                           of {products.length} products
                         </p>
 
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 flex-wrap justify-center">
                           <button
                             onClick={() =>
                               setCurrentPage((p) => Math.max(1, p - 1))
@@ -1366,26 +1370,26 @@ const VendorProfile = () => {
                         </div>
                       </div>
                     )}
-                  </div>
+                  </>
                 )}
               </div>
             )}
             {activeTab === "usedProducts" && (
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:p-8">
-                <div className="flex items-center justify-between mb-6">
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">
                       Your Products{" "}
                       {products.length > 0 && `(${products.length})`}
                     </h2>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
                       Manage your product listings
                     </p>
                   </div>
 
                   <button
                     onClick={() => navigate("/vendor/add-used-product")}
-                    className="flex items-center gap-2 bg-green-600 hover:bg-green-700 text-white cursor-pointer px-5 py-2.5 rounded-xl text-sm font-semibold"
+                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white cursor-pointer px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold w-full sm:w-auto"
                   >
                     <Plus className="h-4 w-4" />
                     Add Product
@@ -1407,62 +1411,64 @@ const VendorProfile = () => {
                     </p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto">
-                    <table className="min-w-full border border-gray-200 rounded-xl">
-                      <thead className="bg-gray-50 whitespace-nowrap">
-                        <tr>
-                          <th className="px-4 py-3 text-left">Sr. No.</th>
-                          <th className="px-4 py-3 text-left">Product</th>
-                          <th className="px-4 py-3 text-left">Brand</th>
-                          <th className="px-4 py-3 text-left">Price</th>
-                          <th className="px-4 py-3 text-left">Status</th>
-                          <th className="px-4 py-3 text-center">Action</th>
-                        </tr>
-                      </thead>
-
-                      <tbody>
-                        {paginatedProducts.map((item, index) => (
-                          <tr
-                            key={item.id}
-                            className="border-t whitespace-nowrap "
-                          >
-                            <td className="px-4 py-3 text-gray-500">
-                              {(currentPage - 1) * itemsPerPage + index + 1}
-                            </td>
-                            <td className="px-4 py-3">{item.productName}</td>
-                            <td className="px-4 py-3">{item.brand}</td>
-                            <td className="px-4 py-3">
-                              ₹ {item.expectedPrice}
-                            </td>
-                            <td className="px-4 py-3">{item.status}</td>
-                            <td className="px-4 py-3">
-                              <div className="flex justify-center gap-2">
-                                <button
-                                  onClick={() =>
-                                    navigate(
-                                      `/vendor/edit-used-product/${item.id}`,
-                                    )
-                                  }
-                                  className="px-3 py-1 bg-blue-500 text-white rounded-lg cursor-pointer"
-                                >
-                                  Edit
-                                </button>
-                                <button
-                                  onClick={() => handleDelete(item.id)}
-                                  className="px-3 py-1 bg-red-500 text-white rounded-lg cursor-pointer"
-                                >
-                                  Delete
-                                </button>
-                              </div>
-                            </td>
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full border border-gray-200 rounded-xl">
+                        <thead className="bg-gray-50 whitespace-nowrap">
+                          <tr>
+                            <th className="px-4 py-3 text-left">Sr. No.</th>
+                            <th className="px-4 py-3 text-left">Product</th>
+                            <th className="px-4 py-3 text-left">Brand</th>
+                            <th className="px-4 py-3 text-left">Price</th>
+                            <th className="px-4 py-3 text-left">Status</th>
+                            <th className="px-4 py-3 text-center">Action</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+
+                        <tbody>
+                          {paginatedProducts.map((item, index) => (
+                            <tr
+                              key={item.id}
+                              className="border-t whitespace-nowrap "
+                            >
+                              <td className="px-4 py-3 text-gray-500">
+                                {(currentPage - 1) * itemsPerPage + index + 1}
+                              </td>
+                              <td className="px-4 py-3">{item.productName}</td>
+                              <td className="px-4 py-3">{item.brand}</td>
+                              <td className="px-4 py-3">
+                                ₹ {item.expectedPrice}
+                              </td>
+                              <td className="px-4 py-3">{item.status}</td>
+                              <td className="px-4 py-3">
+                                <div className="flex justify-center gap-2">
+                                  <button
+                                    onClick={() =>
+                                      navigate(
+                                        `/vendor/edit-used-product/${item.id}`,
+                                      )
+                                    }
+                                    className="px-3 py-1 bg-blue-500 text-white rounded-lg cursor-pointer"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() => handleDelete(item.id)}
+                                    className="px-3 py-1 bg-red-500 text-white rounded-lg cursor-pointer"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
 
                     {/* Pagination controls */}
                     {totalPages > 1 && (
-                      <div className="flex items-center justify-between mt-4 px-1">
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 px-1">
                         <p className="text-xs text-gray-500">
                           Showing {(currentPage - 1) * itemsPerPage + 1}–
                           {Math.min(
@@ -1472,7 +1478,7 @@ const VendorProfile = () => {
                           of {products.length} products
                         </p>
 
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 flex-wrap justify-center">
                           <button
                             onClick={() =>
                               setCurrentPage((p) => Math.max(1, p - 1))
@@ -1512,20 +1518,20 @@ const VendorProfile = () => {
                         </div>
                       </div>
                     )}
-                  </div>
+                  </>
                 )}
               </div>
             )}
             {/* Enquiries Tab */}
             {activeTab === "enquiries" && (
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:p-8">
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">
                       Your Inquiries{" "}
                       {enquiries.length > 0 && `(${enquiries.length})`}
                     </h2>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
                       Manage customer inquiries
                     </p>
                   </div>
@@ -1546,93 +1552,93 @@ const VendorProfile = () => {
                     </p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto rounded-xl border border-gray-200">
-                    <table className="min-w-full">
-                      <thead className="bg-gray-50">
-                        <tr className="whitespace-nowrap">
-                          <th className="px-4 py-3 text-left">Sr. No.</th>
-                          <th className="px-4 py-3 text-left">Customer Name</th>
-                          <th className="px-4 py-3 text-left">Email</th>
-                          <th className="px-4 py-3 text-left">Mobile</th>
-                          <th className="px-4 py-3 text-left">Product</th>
-                          <th className="px-4 py-3 text-left">Message</th>
-                          <th className="px-4 py-3 text-left">Date</th>
-                          <th className="px-4 py-3 text-left">Status</th>
-                          <th className="px-4 py-3 text-center">Action</th>
-                        </tr>
-                      </thead>
+                  <>
+                    <div className="overflow-x-auto rounded-xl border border-gray-200">
+                      <table className="min-w-full">
+                        <thead className="bg-gray-50">
+                          <tr className="whitespace-nowrap">
+                            <th className="px-4 py-3 text-left">Sr. No.</th>
+                            <th className="px-4 py-3 text-left">Customer Name</th>
+                            <th className="px-4 py-3 text-left">Email</th>
+                            <th className="px-4 py-3 text-left">Mobile</th>
+                            <th className="px-4 py-3 text-left">Product</th>
+                            <th className="px-4 py-3 text-left">Message</th>
+                            <th className="px-4 py-3 text-left">Date</th>
+                            <th className="px-4 py-3 text-left">Status</th>
+                            <th className="px-4 py-3 text-center">Action</th>
+                          </tr>
+                        </thead>
 
-                      <tbody className="divide-y divide-gray-200">
-                        {paginatedEnquiries.map((item, index) => (
-                          <tr
-                            key={item.id}
-                            className="border-t whitespace-nowrap"
-                          >
-                            <td className="px-4 py-3 text-gray-500">
-                              {(currentPage - 1) * itemsPerPage + index + 1}
-                            </td>
+                        <tbody className="divide-y divide-gray-200">
+                          {paginatedEnquiries.map((item, index) => (
+                            <tr
+                              key={item.id}
+                              className="border-t whitespace-nowrap"
+                            >
+                              <td className="px-4 py-3 text-gray-500">
+                                {(currentPage - 1) * itemsPerPage + index + 1}
+                              </td>
 
-                            <td className="px-4 py-3 font-medium">
-                              {item.fullName}
-                            </td>
+                              <td className="px-4 py-3 font-medium">
+                                {item.fullName}
+                              </td>
 
-                            <td className="px-4 py-3 text-gray-600">
-                              {item.email}
-                            </td>
+                              <td className="px-4 py-3 text-gray-600">
+                                {item.email}
+                              </td>
 
-                            <td className="px-4 py-3">{item.mobileNumber}</td>
+                              <td className="px-4 py-3">{item.mobileNumber}</td>
 
-                            <td className="px-4 py-3">
                               <td className="px-4 py-3">
                                 {item.websiteVariant?.productName ||
                                   item.usedWebsiteVariant?.productName ||
                                   "-"}
                               </td>
-                            </td>
 
-                            <td
-                              className="px-4 py-3 max-w-xs truncate"
-                              title={item.message}
-                            >
-                              {item.message || "-"}
-                            </td>
-
-                            <td className="px-4 py-3">
-                              {new Date(item.createdAt).toLocaleDateString()}
-                            </td>
-                            <td className="px-4 py-3">
-                              <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  item.followupStage === "DELAY"
-                                    ? "bg-red-100 text-red-700"
-                                    : item.followupStage === "ATTEND"
-                                      ? "bg-blue-100 text-blue-700"
-                                      : "bg-yellow-100 text-yellow-700"
-                                }`}
+                              <td
+                                className="px-4 py-3 max-w-xs truncate"
+                                title={item.message}
                               >
-                                {item.followupStage}
-                              </span>
-                            </td>
+                                {item.message || "-"}
+                              </td>
 
-                            <td className="px-4 py-3">
-                              <div className="flex justify-center">
-                                <button
-                                  onClick={() =>
-                                    navigate(`/vendor/followup/${item.id}`)
-                                  }
-                                  className="px-3 py-1 cursor-pointer bg-green-600 hover:bg-green-700 text-white rounded-lg"
+                              <td className="px-4 py-3">
+                                {new Date(item.createdAt).toLocaleDateString()}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    item.followupStage === "DELAY"
+                                      ? "bg-red-100 text-red-700"
+                                      : item.followupStage === "ATTEND"
+                                        ? "bg-blue-100 text-blue-700"
+                                        : "bg-yellow-100 text-yellow-700"
+                                  }`}
                                 >
-                                  Follow Up
-                                </button>
-                              </div>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                                  {item.followupStage}
+                                </span>
+                              </td>
+
+                              <td className="px-4 py-3">
+                                <div className="flex justify-center">
+                                  <button
+                                    onClick={() =>
+                                      navigate(`/vendor/followup/${item.id}`)
+                                    }
+                                    className="px-3 py-1 cursor-pointer bg-green-600 hover:bg-green-700 text-white rounded-lg"
+                                  >
+                                    Follow Up
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
 
                     {enquiryTotalPages > 1 && (
-                      <div className="flex items-center justify-between mt-4 px-1">
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 px-1">
                         <p className="text-xs text-gray-500">
                           Showing {(currentPage - 1) * itemsPerPage + 1}–
                           {Math.min(
@@ -1642,7 +1648,7 @@ const VendorProfile = () => {
                           of {enquiries.length} enquiries
                         </p>
 
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 flex-wrap justify-center">
                           <button
                             onClick={() =>
                               setCurrentPage((p) => Math.max(1, p - 1))
@@ -1684,22 +1690,22 @@ const VendorProfile = () => {
                         </div>
                       </div>
                     )}
-                  </div>
+                  </>
                 )}
               </div>
             )}
 
             {/* Today Follow-up Tab */}
             {activeTab === "todayFollowup" && (
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:p-8">
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">
                       Today's Follow-ups{" "}
                       {todayFollowups.length > 0 &&
                         `(${todayFollowups.length})`}
                     </h2>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
                       Calls scheduled for today
                     </p>
                   </div>
@@ -1718,89 +1724,91 @@ const VendorProfile = () => {
                     </p>
                   </div>
                 ) : (
-                  <div className="overflow-x-auto rounded-xl border border-gray-200">
-                    <table className="min-w-full">
-                      <thead className="bg-gray-50">
-                        <tr className="whitespace-nowrap">
-                          <th className="px-4 py-3 text-left">Sr. No.</th>
-                          <th className="px-4 py-3 text-left">Name</th>
-                          <th className="px-4 py-3 text-left">Number</th>
-                          <th className="px-4 py-3 text-left">Call Response</th>
-                          <th className="px-4 py-3 text-left">
-                            Follow-up Date
-                          </th>
-                          <th className="px-4 py-3 text-left">Time</th>
-                          <th className="px-4 py-3 text-center">Action</th>
-                        </tr>
-                      </thead>
-
-                      <tbody className="divide-y divide-gray-200">
-                        {paginatedTodayFollowups.map((item, index) => (
-                          <tr key={item.id} className="whitespace-nowrap">
-                            <td className="px-4 py-3 text-gray-500">
-                              {(currentPage - 1) * itemsPerPage + index + 1}
-                            </td>
-
-                            <td className="px-4 py-3 font-medium">
-                              {item.fullName || item.enquiry?.fullName || "-"}
-                            </td>
-
-                            <td className="px-4 py-3 text-gray-600">
-                              {item.mobileNumber ||
-                                item.enquiry?.mobileNumber ||
-                                "-"}
-                            </td>
-
-                            <td className="px-4 py-3">
-                              <span
-                                className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                  item.callResponse === "Connected"
-                                    ? "bg-green-100 text-green-700"
-                                    : item.callResponse === "Not Connected" ||
-                                        item.callResponse === "Rejected"
-                                      ? "bg-red-100 text-red-700"
-                                      : item.callResponse === "Call Back"
-                                        ? "bg-orange-100 text-orange-700"
-                                        : "bg-blue-100 text-blue-700"
-                                }`}
-                              >
-                                {item.callResponse || "New"}
-                              </span>
-                            </td>
-
-                            <td className="px-4 py-3">
-                              {item.nextScheduledDate
-                                ? new Date(
-                                    item.nextScheduledDate,
-                                  ).toLocaleDateString("en-GB")
-                                : "-"}
-                            </td>
-
-                            <td className="px-4 py-3">
-                              {item.callTime || "-"}
-                            </td>
-
-                            <td className="px-4 py-3">
-                              <div className="flex justify-center">
-                                <button
-                                  onClick={() =>
-                                    navigate(
-                                      `/vendor/followup/${item.enquiryId || item.id}`,
-                                    )
-                                  }
-                                  className="px-3 py-1 cursor-pointer bg-green-600 hover:bg-green-700 text-white rounded-lg"
-                                >
-                                  Follow Up
-                                </button>
-                              </div>
-                            </td>
+                  <>
+                    <div className="overflow-x-auto rounded-xl border border-gray-200">
+                      <table className="min-w-full">
+                        <thead className="bg-gray-50">
+                          <tr className="whitespace-nowrap">
+                            <th className="px-4 py-3 text-left">Sr. No.</th>
+                            <th className="px-4 py-3 text-left">Name</th>
+                            <th className="px-4 py-3 text-left">Number</th>
+                            <th className="px-4 py-3 text-left">Call Response</th>
+                            <th className="px-4 py-3 text-left">
+                              Follow-up Date
+                            </th>
+                            <th className="px-4 py-3 text-left">Time</th>
+                            <th className="px-4 py-3 text-center">Action</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                        </thead>
+
+                        <tbody className="divide-y divide-gray-200">
+                          {paginatedTodayFollowups.map((item, index) => (
+                            <tr key={item.id} className="whitespace-nowrap">
+                              <td className="px-4 py-3 text-gray-500">
+                                {(currentPage - 1) * itemsPerPage + index + 1}
+                              </td>
+
+                              <td className="px-4 py-3 font-medium">
+                                {item.fullName || item.enquiry?.fullName || "-"}
+                              </td>
+
+                              <td className="px-4 py-3 text-gray-600">
+                                {item.mobileNumber ||
+                                  item.enquiry?.mobileNumber ||
+                                  "-"}
+                              </td>
+
+                              <td className="px-4 py-3">
+                                <span
+                                  className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                    item.callResponse === "Connected"
+                                      ? "bg-green-100 text-green-700"
+                                      : item.callResponse === "Not Connected" ||
+                                          item.callResponse === "Rejected"
+                                        ? "bg-red-100 text-red-700"
+                                        : item.callResponse === "Call Back"
+                                          ? "bg-orange-100 text-orange-700"
+                                          : "bg-blue-100 text-blue-700"
+                                  }`}
+                                >
+                                  {item.callResponse || "New"}
+                                </span>
+                              </td>
+
+                              <td className="px-4 py-3">
+                                {item.nextScheduledDate
+                                  ? new Date(
+                                      item.nextScheduledDate,
+                                    ).toLocaleDateString("en-GB")
+                                  : "-"}
+                              </td>
+
+                              <td className="px-4 py-3">
+                                {item.callTime || "-"}
+                              </td>
+
+                              <td className="px-4 py-3">
+                                <div className="flex justify-center">
+                                  <button
+                                    onClick={() =>
+                                      navigate(
+                                        `/vendor/followup/${item.enquiryId || item.id}`,
+                                      )
+                                    }
+                                    className="px-3 py-1 cursor-pointer bg-green-600 hover:bg-green-700 text-white rounded-lg"
+                                  >
+                                    Follow Up
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
 
                     {todayFollowupTotalPages > 1 && (
-                      <div className="flex items-center justify-between mt-4 px-1">
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 px-1">
                         <p className="text-xs text-gray-500">
                           Showing {(currentPage - 1) * itemsPerPage + 1}–
                           {Math.min(
@@ -1810,7 +1818,7 @@ const VendorProfile = () => {
                           of {todayFollowups.length} follow-ups
                         </p>
 
-                        <div className="flex items-center gap-1">
+                        <div className="flex items-center gap-1 flex-wrap justify-center">
                           <button
                             onClick={() =>
                               setCurrentPage((p) => Math.max(1, p - 1))
@@ -1852,18 +1860,18 @@ const VendorProfile = () => {
                         </div>
                       </div>
                     )}
-                  </div>
+                  </>
                 )}
               </div>
             )}
 
             {/* Orders Tab */}
             {activeTab === "orders" && (
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 lg:p-8">
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Orders</h2>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">Orders</h2>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
                       View and manage customer orders
                     </p>
                   </div>
@@ -1885,72 +1893,72 @@ const VendorProfile = () => {
             {activeTab === "settings" && (
               <div className="space-y-6">
                 <div className="bg-white rounded-2xl border border-gray-200 shadow-sm divide-y divide-gray-100">
-                  <div className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <div className="p-4 sm:p-5 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer group">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
                         <Bell className="h-5 w-5 text-green-600" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <h4 className="font-semibold text-gray-900 text-sm">
                           Notifications
                         </h4>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 truncate">
                           Manage email, SMS, and push notification preferences
                         </p>
                       </div>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight className="h-5 w-5 text-gray-400 shrink-0 group-hover:translate-x-1 transition-transform" />
                   </div>
 
-                  <div className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <div className="p-4 sm:p-5 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer group">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
                         <Shield className="h-5 w-5 text-green-600" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <h4 className="font-semibold text-gray-900 text-sm">
                           Privacy & Security
                         </h4>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 truncate">
                           Manage password, 2FA, and security settings
                         </p>
                       </div>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight className="h-5 w-5 text-gray-400 shrink-0 group-hover:translate-x-1 transition-transform" />
                   </div>
 
-                  <div className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <div className="p-4 sm:p-5 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer group">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
                         <CreditCard className="h-5 w-5 text-green-600" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <h4 className="font-semibold text-gray-900 text-sm">
                           Payment Methods
                         </h4>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 truncate">
                           Add, remove, or update your payment methods
                         </p>
                       </div>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight className="h-5 w-5 text-gray-400 shrink-0 group-hover:translate-x-1 transition-transform" />
                   </div>
 
-                  <div className="p-5 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer group">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
+                  <div className="p-4 sm:p-5 flex items-center justify-between hover:bg-gray-50 transition-colors cursor-pointer group">
+                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 shrink-0 rounded-xl bg-green-50 flex items-center justify-center group-hover:scale-105 transition-transform">
                         <HelpCircle className="h-5 w-5 text-green-600" />
                       </div>
-                      <div>
+                      <div className="min-w-0">
                         <h4 className="font-semibold text-gray-900 text-sm">
                           Help & Support
                         </h4>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 truncate">
                           FAQs, contact support, and documentation
                         </p>
                       </div>
                     </div>
-                    <ChevronRight className="h-5 w-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight className="h-5 w-5 text-gray-400 shrink-0 group-hover:translate-x-1 transition-transform" />
                   </div>
                 </div>
               </div>
