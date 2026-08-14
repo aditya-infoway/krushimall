@@ -1475,7 +1475,7 @@ const NewTractors = () => {
       </div>
 
       {/* Slider Sections - Spacing classes fixed below to match old layout */}
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-16 md:pt-20 lg:pt-24">
+      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-16 md:pt-20 lg:pt-24 mb-20">
         <div className="mb-8 md:mb-14 lg:mb-20">
           <SliderSection
             title="Popular Tractor"
