@@ -179,31 +179,25 @@ const Register = () => {
   };
 
   // Step 3 Validation
-  const validateStep3 = () => {
-    const newErrors = {};
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
-    } else if (
-      !/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])/.test(formData.password)
-    ) {
-      newErrors.password =
-        "Password must contain uppercase, lowercase, number & special character";
-    }
+ const validateStep3 = () => {
+  const newErrors = {};
 
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = "Please confirm your password";
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
+  if (!formData.password.trim()) {
+    newErrors.password = "Password is required";
+  }
 
-    if (!formData.agreeToTerms) {
-      newErrors.agreeToTerms = "You must agree to the terms";
-    }
-    return newErrors;
-  };
+  if (!formData.confirmPassword.trim()) {
+    newErrors.confirmPassword = "Please confirm your password";
+  } else if (formData.password !== formData.confirmPassword) {
+    newErrors.confirmPassword = "Passwords do not match";
+  }
 
+  if (!formData.agreeToTerms) {
+    newErrors.agreeToTerms = "You must agree to the terms";
+  }
+
+  return newErrors;
+};
   // Steps 1 & 2 just move forward — nothing is sent to the backend yet
   const handleNextStep = (e) => {
     e.preventDefault();
@@ -677,7 +671,7 @@ const Register = () => {
                       </p>
                     )}
 
-                    {formData.password && (
+                    {/* {formData.password && (
                       <div className="mt-2">
                         <div className="flex gap-1 mb-1">
                           <div className={`flex-1 h-1 rounded-full ${formData.password.length >= 8 ? "bg-green-500" : "bg-gray-300"}`} />
@@ -689,7 +683,7 @@ const Register = () => {
                           Password must contain: 8+ chars, uppercase, lowercase, number & special character
                         </p>
                       </div>
-                    )}
+                    )} */}
                   </div>
 
                   <div>
