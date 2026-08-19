@@ -1292,7 +1292,11 @@ const TractorDetails = () => {
               {/* Enquiry card */}
               <div className="mt-6 bg-green-50 rounded-xl p-4 flex items-center gap-4">
                 <div className="w-14 h-14 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                  <img src="/mah.png" alt="Logo" className="w-8" />
+                 <img
+  src={tractor.images?.[0] || "/mah.png"}
+  alt={tractor.name}
+  className="w-10 h-10 object-contain rounded"
+/>
                 </div>
                 <div className="flex-1">
                   <h3 className="font-bold text-gray-900">{tractor.name}</h3>

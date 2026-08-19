@@ -127,7 +127,7 @@ const NewTractors = () => {
     const fetchFilterOptions = async () => {
       try {
         // Fetch brands
-        const brandResponse = await apiHelper.get("/brand");
+        const brandResponse = await apiHelper.get("/web/brands");
         let brandsData = [];
         if (
           brandResponse &&
@@ -146,7 +146,7 @@ const NewTractors = () => {
         setBrandOptions(["All Brands", ...brands]);
 
         // Fetch categories
-        const categoryResponse = await apiHelper.get("/category");
+        const categoryResponse = await apiHelper.get("/web/categories");
         let categoriesData = [];
         if (
           categoryResponse &&
@@ -215,7 +215,7 @@ const NewTractors = () => {
     const fetchPopularBrands = async () => {
       try {
         setBrandsLoading(true);
-        const response = await apiHelper.get("/brand");
+        const response = await apiHelper.get("/web/brands");
 
         let brandsData = [];
         if (response && response.data && Array.isArray(response.data)) {

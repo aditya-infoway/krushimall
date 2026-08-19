@@ -14,7 +14,7 @@ import {
 } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import apiHelper from "../utils/apiHelper";
-
+import { showSuccessToast, showErrorToast } from "../utils/toast";
 const VendorLogin = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -50,14 +50,47 @@ const handleSubmit = async (e) => {
       localStorage.setItem("isVendorLoggedIn", "true");
       localStorage.setItem("vendorToken", response.token);
       localStorage.setItem("vendorData", JSON.stringify(response.vendor));
+
       window.dispatchEvent(new Event("vendorAuthChanged"));
+
+      // Success toast
+      showSuccessToast("Vendor login successful!");
 
       navigate("/vendor-profile", { replace: true });
     }
   } catch (err) {
     console.log(err);
-    const message = err.response?.data?.message || "Login failed. Please try again.";
-    setErrors({ submit: message });
+
+    const status = err.response?.status;
+    const code = err.response?.data?.code;
+
+    // Wrong password
+    if (code === "INVALID_PASSWORD" || status === 401) {
+      setErrors((prev) => ({
+        ...prev,
+        password: "Incorrect password. Please try again.",
+      }));
+
+      showErrorToast("Incorrect password. Please try again.");
+      return;
+    }
+
+    // Wrong email
+    if (code === "USER_NOT_FOUND" || status === 404) {
+      setErrors((prev) => ({
+        ...prev,
+        email: "Account not found. Please check your email.",
+      }));
+
+      showErrorToast("Account not found. Please check your email.");
+      return;
+    }
+
+    const message =
+      err.response?.data?.message ||
+      "Login failed. Please try again.";
+
+    showErrorToast(message);
   }
 };
 
@@ -73,20 +106,21 @@ const handleSubmit = async (e) => {
     }
   };
 
-  const validateForm = () => {
-    const newErrors = {};
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = "Please enter a valid email";
-    }
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 6) {
-      newErrors.password = "Password must be at least 6 characters";
-    }
-    return newErrors;
-  };
+const validateForm = () => {
+  const newErrors = {};
+
+  if (!formData.email.trim()) {
+    newErrors.email = "Email is required";
+  } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
+    newErrors.email = "Please enter a valid email";
+  }
+
+  if (!formData.password.trim()) {
+    newErrors.password = "Password is required";
+  }
+
+  return newErrors;
+};
 
   const vendorBenefits = [
     { icon: Store, text: "List your products easily" },
