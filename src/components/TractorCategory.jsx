@@ -14,7 +14,7 @@ const TractorCategory = () => {
     const fetchCategories = async () => {
       try {
         setLoading(true);
-        const response = await apiHelper.get("/category");
+        const response = await apiHelper.get("/web/categories");
         
         let categoriesData = [];
         if (response && response.data && Array.isArray(response.data)) {
