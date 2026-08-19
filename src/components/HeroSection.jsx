@@ -140,7 +140,7 @@ const HeroSection = () => {
     const fetchBrands = async () => {
       setLoading((prev) => ({ ...prev, brands: true }));
       try {
-        const response = await apiHelper.get("/brand");
+        const response = await apiHelper.get("/web/brands");
         let brandsData = [];
         if (response && response.data && Array.isArray(response.data)) {
           brandsData = response.data;
@@ -176,7 +176,7 @@ const HeroSection = () => {
       setLoading((prev) => ({ ...prev, models: true }));
       try {
         // Fetch ALL models (no filter)
-        const response = await apiHelper.get("/model");
+        const response = await apiHelper.get("/web/models");
 
         let modelsData = [];
         if (response && response.data && Array.isArray(response.data)) {
@@ -222,63 +222,76 @@ const HeroSection = () => {
   }, [vehicle.make]);
 
   // Fetch years from API
-  useEffect(() => {
-    const fetchYears = async () => {
-      setLoading((prev) => ({ ...prev, years: true }));
-      try {
-        const response = await apiHelper.get("/model-year");
+ // Fetch years when model is selected
+// Fetch years only when model is selected
+useEffect(() => {
+  if (!vehicle.make || !vehicle.model) {
+    setYears([]);
 
-        let yearsData = [];
-        if (response && response.data && Array.isArray(response.data)) {
-          yearsData = response.data;
-        } else if (Array.isArray(response)) {
-          yearsData = response;
-        }
+    setVehicle((prev) => ({
+      ...prev,
+      year: "",
+    }));
 
-        // Extract year values from objects
-        const yearList = yearsData
-          .map((item) => {
-            // Try different field names
-            return (
-              item.year ||
-              item.modelYear ||
-              item.manufacturingYear ||
-              (typeof item === "string" ? item : null)
-            );
-          })
-          .filter((year) => year && !isNaN(parseInt(year)))
-          .map((year) => parseInt(year).toString())
-          .sort((a, b) => parseInt(b) - parseInt(a));
+    return;
+  }
 
-        // Get unique years
-        const uniqueYears = [...new Set(yearList)];
+  const fetchYears = async () => {
+    setLoading((prev) => ({
+      ...prev,
+      years: true,
+    }));
 
-        if (uniqueYears.length > 0) {
-          setYears(uniqueYears);
-        } else {
-          // Fallback years
-          const currentYear = new Date().getFullYear();
-          const fallbackYears = [];
-          for (let i = 0; i < 10; i++) {
-            fallbackYears.push((currentYear - i).toString());
-          }
-          setYears(fallbackYears);
-        }
-      } catch (error) {
-        console.error("Failed to fetch years:", error);
-        // Fallback years
-        const currentYear = new Date().getFullYear();
-        const fallbackYears = [];
-        for (let i = 0; i < 10; i++) {
-          fallbackYears.push((currentYear - i).toString());
-        }
-        setYears(fallbackYears);
-      } finally {
-        setLoading((prev) => ({ ...prev, years: false }));
+    try {
+      const response = await apiHelper.get(
+        `/web/model-years?brand=${encodeURIComponent(
+          vehicle.make
+        )}&model=${encodeURIComponent(vehicle.model)}`
+      );
+
+      let yearsData = [];
+
+      if (response?.data && Array.isArray(response.data)) {
+        yearsData = response.data;
+      } else if (Array.isArray(response)) {
+        yearsData = response;
       }
-    };
-    fetchYears();
-  }, []);
+
+      const yearList = yearsData
+        .map((item) => {
+          if (typeof item === "string") {
+            return item;
+          }
+
+          return (
+            item.year ||
+            item.modelYear ||
+            item.manufacturingYear
+          );
+        })
+        .filter(
+          (year) =>
+            year !== null &&
+            year !== undefined &&
+            !isNaN(Number(year))
+        )
+        .map((year) => String(year))
+        .sort((a, b) => Number(b) - Number(a));
+
+      setYears([...new Set(yearList)]);
+    } catch (error) {
+      console.error("Failed to fetch years:", error);
+      setYears([]);
+    } finally {
+      setLoading((prev) => ({
+        ...prev,
+        years: false,
+      }));
+    }
+  };
+
+  fetchYears();
+}, [vehicle.make, vehicle.model]);
 
   // Handle search button click
   const handleSearch = () => {
@@ -439,9 +452,13 @@ const HeroSection = () => {
                       </label>
                       <CustomSelect
                         value={vehicle.model}
-                        onChange={(value) =>
-                          setVehicle({ ...vehicle, model: value })
-                        }
+                       onChange={(value) =>
+  setVehicle({
+    ...vehicle,
+    model: value,
+    year: "",
+  })
+}
                         options={models} // Changed from models variable to models state
                         placeholder={
                           vehicle.make ? "Select Model" : "Select brand first"
@@ -455,16 +472,23 @@ const HeroSection = () => {
                       <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">
                         Year
                       </label>
-                      <CustomSelect
-                        value={vehicle.year}
-                        onChange={(value) =>
-                          setVehicle({ ...vehicle, year: value })
-                        }
-                        options={years} // Changed from years variable to years state
-                        placeholder="Select Year"
-                        icon={<Clock className="h-4 w-4" />}
-                        loading={loading.years} // Add loading prop
-                      />
+                     <CustomSelect
+  value={vehicle.year}
+  onChange={(value) =>
+    setVehicle({ ...vehicle, year: value })
+  }
+  options={years}
+  placeholder={
+    !vehicle.make
+      ? "Select brand first"
+      : !vehicle.model
+      ? "Select model first"
+      : "Select Year"
+  }
+  disabled={!vehicle.model}
+  icon={<Clock className="h-4 w-4" />}
+  loading={loading.years}
+/>
                     </div>
                   </div>
 

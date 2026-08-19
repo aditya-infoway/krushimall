@@ -16,7 +16,7 @@ const BrandsMakers = () => {
     const fetchBrands = async () => {
       try {
         setLoading(true);
-        const response = await apiHelper.get("/brand");
+        const response = await apiHelper.get("/web/brands");
         
         let brandsData = [];
         if (response && response.data && Array.isArray(response.data)) {

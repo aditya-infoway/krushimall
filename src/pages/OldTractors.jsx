@@ -78,7 +78,7 @@ const UsedTractors = () => {
     const fetchFilterOptions = async () => {
       try {
         // Brands
-        const brandRes = await apiHelper.get("/brand");
+        const brandRes = await apiHelper.get("/web/brands");
         const brands = (brandRes.data || [])
           .filter((b) => b.status === "ACTIVE")
           .map((b) => b.brandName);
@@ -86,7 +86,7 @@ const UsedTractors = () => {
         setBrandOptions(["All Brands", ...brands]);
 
         // Categories
-        const categoryRes = await apiHelper.get("/category");
+        const categoryRes = await apiHelper.get("/web/categories");
         const categories = (categoryRes.data || [])
           .filter((c) => c.status === "ACTIVE")
           .map((c) => c.categoryName);
