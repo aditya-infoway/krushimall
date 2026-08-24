@@ -129,7 +129,9 @@ const ComboboxWrapper = ({
                   {({ selected }) => (
                     <>
                       <span
-                        className={`block truncate ${selected ? "font-medium" : "font-normal"}`}
+                        className={`block truncate ${
+                          selected ? "font-medium" : "font-normal"
+                        }`}
                       >
                         {getLabel(option)}
                       </span>
@@ -280,32 +282,35 @@ const VendorProfile = () => {
       const response = await apiHelper.get("/vendor/me");
       const userData = response.vendor;
 
-     setVendorData((prev) => ({
-  ...prev,
+      setVendorData((prev) => ({
+        ...prev,
 
-  name: userData.name || prev.name,
-  businessName: userData.businessName || prev.businessName,
+        name: userData.name || prev.name,
+        businessName: userData.businessName || prev.businessName,
 
-  email: userData.email || prev.email,
-  phone: userData.number || userData.phone || prev.phone,
+        email: userData.email || prev.email,
+        phone: userData.number || userData.phone || prev.phone,
 
-  vendorType: userData.vendorType || prev.vendorType,
-  vehicleType: userData.vehicleType || prev.vehicleType,
+        vendorType: String(
+          userData.vendorType || prev.vendorType || "",
+        ).toLowerCase(),
 
-  address: userData.address || prev.address,
-  country: userData.country || prev.country,
-  state: userData.state || prev.state,
-  district: userData.district || prev.district,
-  city: userData.city || prev.city,
-  pincode: userData.pincode || prev.pincode,
+        vehicleType: String(
+          userData.vehicleType || prev.vehicleType || "",
+        ).toLowerCase(),
 
-  gstNumber: userData.gstNumber || prev.gstNumber,
-  panNumber: userData.panNumber || prev.panNumber,
+        address: userData.address || prev.address,
+        country: userData.country || prev.country,
+        state: userData.state || prev.state,
+        district: userData.district || prev.district,
+        city: userData.city || prev.city,
+        pincode: userData.pincode || prev.pincode,
 
-  avatar: userData.avatar
-    ? apiHelper.getImageUrl(userData.avatar)
-    : "",
-}));
+        gstNumber: userData.gstNumber || prev.gstNumber,
+        panNumber: userData.panNumber || prev.panNumber,
+
+        avatar: userData.avatar ? apiHelper.getImageUrl(userData.avatar) : "",
+      }));
 
       const country = Country.getAllCountries().find(
         (c) => c.name === userData.country,
@@ -373,17 +378,17 @@ const VendorProfile = () => {
     }
   };
   useEffect(() => {
-  loadVendorData();
-}, [user]);
- useEffect(() => {
-  if (!vendorData.vehicleType) return;
+    loadVendorData();
+  }, [user]);
+  useEffect(() => {
+    if (!vendorData.vehicleType) return;
 
-  if (vendorData.vehicleType === "used") {
-    loadUsedProducts();
-  } else {
-    loadProducts();
-  }
-}, [vendorData.vehicleType]);
+    if (vendorData.vehicleType === "used") {
+      loadUsedProducts();
+    } else {
+      loadProducts();
+    }
+  }, [vendorData.vehicleType]);
   const handleDelete = async (id) => {
     if (!window.confirm("Delete this product?")) return;
 
@@ -655,7 +660,9 @@ const VendorProfile = () => {
       {showSaveSuccess && (
         <div className="fixed top-4 right-4 left-4 sm:left-auto z-50 animate-slideDown bg-green-600 text-white px-4 sm:px-6 py-3 rounded-xl shadow-lg flex items-center gap-2">
           <CheckCircle className="h-5 w-5 shrink-0" />
-          <span className="font-medium text-sm sm:text-base">Profile updated successfully!</span>
+          <span className="font-medium text-sm sm:text-base">
+            Profile updated successfully!
+          </span>
         </div>
       )}
 
@@ -733,7 +740,9 @@ const VendorProfile = () => {
                 <h3 className="font-bold text-gray-900 text-base sm:text-lg truncate px-2">
                   {vendorData.businessName || vendorData.name}
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-500 mb-2 truncate px-2">{vendorData.email}</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-2 truncate px-2">
+                  {vendorData.email}
+                </p>
                 <div className="flex flex-wrap items-center justify-center gap-1.5">
                   <div className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-semibold px-3 py-1 rounded-full border border-green-200">
                     <Store className="h-3 w-3" />
@@ -796,7 +805,9 @@ const VendorProfile = () => {
                       <p className="text-base sm:text-lg font-bold text-gray-900 truncate">
                         {stat.value}
                       </p>
-                      <p className="text-[11px] sm:text-xs text-gray-500 truncate">{stat.label}</p>
+                      <p className="text-[11px] sm:text-xs text-gray-500 truncate">
+                        {stat.label}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -1298,7 +1309,9 @@ const VendorProfile = () => {
                                 <div className="flex justify-center gap-2">
                                   <button
                                     onClick={() =>
-                                      navigate(`/vendor/edit-product/${item.id}`)
+                                      navigate(
+                                        `/vendor/edit-product/${item.id}`,
+                                      )
                                     }
                                     className="px-3 py-1 bg-blue-500 text-white rounded-lg cursor-pointer"
                                   >
@@ -1558,7 +1571,9 @@ const VendorProfile = () => {
                         <thead className="bg-gray-50">
                           <tr className="whitespace-nowrap">
                             <th className="px-4 py-3 text-left">Sr. No.</th>
-                            <th className="px-4 py-3 text-left">Customer Name</th>
+                            <th className="px-4 py-3 text-left">
+                              Customer Name
+                            </th>
                             <th className="px-4 py-3 text-left">Email</th>
                             <th className="px-4 py-3 text-left">Mobile</th>
                             <th className="px-4 py-3 text-left">Product</th>
@@ -1611,8 +1626,8 @@ const VendorProfile = () => {
                                     item.followupStage === "DELAY"
                                       ? "bg-red-100 text-red-700"
                                       : item.followupStage === "ATTEND"
-                                        ? "bg-blue-100 text-blue-700"
-                                        : "bg-yellow-100 text-yellow-700"
+                                      ? "bg-blue-100 text-blue-700"
+                                      : "bg-yellow-100 text-yellow-700"
                                   }`}
                                 >
                                   {item.followupStage}
@@ -1732,7 +1747,9 @@ const VendorProfile = () => {
                             <th className="px-4 py-3 text-left">Sr. No.</th>
                             <th className="px-4 py-3 text-left">Name</th>
                             <th className="px-4 py-3 text-left">Number</th>
-                            <th className="px-4 py-3 text-left">Call Response</th>
+                            <th className="px-4 py-3 text-left">
+                              Call Response
+                            </th>
                             <th className="px-4 py-3 text-left">
                               Follow-up Date
                             </th>
@@ -1764,11 +1781,11 @@ const VendorProfile = () => {
                                     item.callResponse === "Connected"
                                       ? "bg-green-100 text-green-700"
                                       : item.callResponse === "Not Connected" ||
-                                          item.callResponse === "Rejected"
-                                        ? "bg-red-100 text-red-700"
-                                        : item.callResponse === "Call Back"
-                                          ? "bg-orange-100 text-orange-700"
-                                          : "bg-blue-100 text-blue-700"
+                                        item.callResponse === "Rejected"
+                                      ? "bg-red-100 text-red-700"
+                                      : item.callResponse === "Call Back"
+                                      ? "bg-orange-100 text-orange-700"
+                                      : "bg-blue-100 text-blue-700"
                                   }`}
                                 >
                                   {item.callResponse || "New"}
@@ -1792,7 +1809,9 @@ const VendorProfile = () => {
                                   <button
                                     onClick={() =>
                                       navigate(
-                                        `/vendor/followup/${item.enquiryId || item.id}`,
+                                        `/vendor/followup/${
+                                          item.enquiryId || item.id
+                                        }`,
                                       )
                                     }
                                     className="px-3 py-1 cursor-pointer bg-green-600 hover:bg-green-700 text-white rounded-lg"
@@ -1870,7 +1889,9 @@ const VendorProfile = () => {
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">
                 <div className="flex items-center justify-between mb-6">
                   <div>
-                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">Orders</h2>
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+                      Orders
+                    </h2>
                     <p className="text-xs sm:text-sm text-gray-500 mt-1">
                       View and manage customer orders
                     </p>

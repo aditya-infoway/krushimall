@@ -41,45 +41,67 @@ else if (
   (error) => Promise.reject(error),
 );
 
+// ==============================
+// Response interceptor — handles vendor forced logout
+// (status changed to SUSPENDED/PENDING/REJECTED by admin,
+// or vendor JWT invalid/expired)
+// ==============================
+// ==============================
+// Response interceptor — handles vendor forced logout
+// (status changed to SUSPENDED/PENDING/REJECTED by admin,
+// or vendor JWT invalid/expired)
+// ==============================
+
+const VENDOR_LOGIN_PATH = `${import.meta.env.BASE_URL}vendor-login`.replace(/\/+/g, "/");
+
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    const url = error.config?.url || "";
+    const status = error.response?.status;
+    const shouldLogout = error.response?.data?.logout === true;
+
+    if (url.startsWith("/vendor") && url !== "/vendor/login" && url !== "/vendor/become") {
+      if (status === 401 || shouldLogout) {
+        localStorage.removeItem("vendorToken");
+
+        if (window.location.pathname !== VENDOR_LOGIN_PATH) {
+          window.location.href = VENDOR_LOGIN_PATH;
+        }
+      }
+    }
+
+    return Promise.reject(error);
+  },
+);
 const BASE_URL = import.meta.env.VITE_API_URL.replace(/\/api$/, "");
 
 const apiHelper = {
-  // GET
-  // get: async (url, params = {}) => {
-  //   const response = await api.get(url, { params });
-  //   return response.data;
-  // },
-
   get: async (url, config = {}) => {
     const response = await api.get(url, config);
     return response.data;
   },
 
-  // POST (Create)
   post: async (url, data = {}, config = {}) => {
     const response = await api.post(url, data, config);
     return response.data;
   },
 
-  // PUT (Update Entire Resource)
   put: async (url, data = {}, config = {}) => {
     const response = await api.put(url, data, config);
     return response.data;
   },
 
-  // PATCH (Partial Update)
   patch: async (url, data = {}, config = {}) => {
     const response = await api.patch(url, data, config);
     return response.data;
   },
 
-  // DELETE
   delete: async (url, config = {}) => {
     const response = await api.delete(url, config);
     return response.data;
   },
 
-  // Upload File
   upload: async (url, formData, config = {}) => {
     const response = await api.post(url, formData, {
       headers: {
@@ -90,24 +112,21 @@ const apiHelper = {
     return response.data;
   },
 
-  // Image URL Helper
   image: (path) => {
-  if (!path) return "/mah.png";
+    if (!path) return "/mah.png";
 
-  if (path.startsWith("http")) {
-    return path;
-  }
+    if (path.startsWith("http")) {
+      return path;
+    }
 
-  // Remove leading slash if present
-  path = path.replace(/^\/+/, "");
+    path = path.replace(/^\/+/, "");
 
-  // If path already starts with uploads/, don't add it again
-  if (path.startsWith("uploads/")) {
-    return `${BASE_URL}/${path}`;
-  }
+    if (path.startsWith("uploads/")) {
+      return `${BASE_URL}/${path}`;
+    }
 
-  return `${BASE_URL}/uploads/${path}`;
-},
+    return `${BASE_URL}/uploads/${path}`;
+  },
   getImageUrl(path) {
     return this.image(path);
   },
