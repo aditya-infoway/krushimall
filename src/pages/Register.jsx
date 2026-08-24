@@ -34,6 +34,11 @@ const Register = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+
+  const [vendorType, setVendorType] = useState("Vehicle");
+
+  const [vehicleType, setVehicleType] = useState("New");
+  const [registerType, setRegisterType] = useState("user");
   const [timer, setTimer] = useState(0);
 
   // Dynamic dropdown states
@@ -122,7 +127,12 @@ const Register = () => {
     );
     setSelectedDistrict(null);
     setSelectedCity(null);
-    setFormData((prev) => ({ ...prev, state: value?.name || "", district: "", city: "" }));
+    setFormData((prev) => ({
+      ...prev,
+      state: value?.name || "",
+      district: "",
+      city: "",
+    }));
     if (errors.state) setErrors((prev) => ({ ...prev, state: "" }));
   };
 
@@ -179,25 +189,25 @@ const Register = () => {
   };
 
   // Step 3 Validation
- const validateStep3 = () => {
-  const newErrors = {};
+  const validateStep3 = () => {
+    const newErrors = {};
 
-  if (!formData.password.trim()) {
-    newErrors.password = "Password is required";
-  }
+    if (!formData.password.trim()) {
+      newErrors.password = "Password is required";
+    }
 
-  if (!formData.confirmPassword.trim()) {
-    newErrors.confirmPassword = "Please confirm your password";
-  } else if (formData.password !== formData.confirmPassword) {
-    newErrors.confirmPassword = "Passwords do not match";
-  }
+    if (!formData.confirmPassword.trim()) {
+      newErrors.confirmPassword = "Please confirm your password";
+    } else if (formData.password !== formData.confirmPassword) {
+      newErrors.confirmPassword = "Passwords do not match";
+    }
 
-  if (!formData.agreeToTerms) {
-    newErrors.agreeToTerms = "You must agree to the terms";
-  }
+    if (!formData.agreeToTerms) {
+      newErrors.agreeToTerms = "You must agree to the terms";
+    }
 
-  return newErrors;
-};
+    return newErrors;
+  };
   // Steps 1 & 2 just move forward — nothing is sent to the backend yet
   const handleNextStep = (e) => {
     e.preventDefault();
@@ -235,6 +245,13 @@ const Register = () => {
 
     try {
       const response = await apiHelper.post("/webauth/register", {
+        registerType,
+
+        ...(registerType === "vendor" && {
+          vendorType,
+          vehicleType: vendorType === "Vehicle" ? vehicleType : null,
+        }),
+
         name: formData.fullName,
         email: formData.email,
         phone: formData.phone,
@@ -249,12 +266,17 @@ const Register = () => {
 
       if (response.success) {
         setTimer(60);
-        showSuccessToast("Account created! Check your email/phone for the OTP.");
+        showSuccessToast(
+          "Account created! Check your email/phone for the OTP.",
+        );
         setStep(4);
       }
     } catch (error) {
       console.error("Registration error:", error);
-      showErrorToast(error.response?.data?.message || "Registration failed. Please try again.");
+      showErrorToast(
+        error.response?.data?.message ||
+          "Registration failed. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -284,7 +306,10 @@ const Register = () => {
       }
     } catch (error) {
       console.error("OTP verification error:", error);
-      showErrorToast(error.response?.data?.message || "OTP verification failed. Please try again.");
+      showErrorToast(
+        error.response?.data?.message ||
+          "OTP verification failed. Please try again.",
+      );
     } finally {
       setIsLoading(false);
     }
@@ -316,10 +341,26 @@ const Register = () => {
   };
 
   const userBenefits = [
-    { icon: Truck, title: "Track Orders", description: "Real-time order tracking" },
-    { icon: RotateCcw, title: "Easy Returns", description: "10-day return policy" },
-    { icon: Shield, title: "Secure Shopping", description: "Protected payments" },
-    { icon: CheckCircle, title: "Exclusive Deals", description: "Member-only offers" },
+    {
+      icon: Truck,
+      title: "Track Orders",
+      description: "Real-time order tracking",
+    },
+    {
+      icon: RotateCcw,
+      title: "Easy Returns",
+      description: "10-day return policy",
+    },
+    {
+      icon: Shield,
+      title: "Secure Shopping",
+      description: "Protected payments",
+    },
+    {
+      icon: CheckCircle,
+      title: "Exclusive Deals",
+      description: "Member-only offers",
+    },
   ];
 
   // Searchable dropdown helper
@@ -349,7 +390,12 @@ const Register = () => {
         <label className="block text-sm font-medium text-gray-700 mb-1">
           {label} <span className="text-red-500">*</span>
         </label>
-        <Combobox value={value} onChange={onChange} onClose={() => setQuery("")} disabled={disabled}>
+        <Combobox
+          value={value}
+          onChange={onChange}
+          onClose={() => setQuery("")}
+          disabled={disabled}
+        >
           <div className="relative">
             {Icon && (
               <Icon className="absolute  left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 z-0" />
@@ -363,7 +409,10 @@ const Register = () => {
               onClick={() => buttonRef.current?.click()}
               placeholder={placeholder}
             />
-            <Combobox.Button ref={buttonRef} className="absolute inset-y-0 right-0 flex items-center pr-3">
+            <Combobox.Button
+              ref={buttonRef}
+              className="absolute inset-y-0 right-0 flex items-center pr-3"
+            >
               <ChevronDown className="h-5 w-5 text-gray-400" />
             </Combobox.Button>
 
@@ -375,7 +424,11 @@ const Register = () => {
               ) : (
                 filtered.map((option, idx) => (
                   <Combobox.Option
-                    key={typeof option === "string" ? option : option.isoCode || idx}
+                    key={
+                      typeof option === "string"
+                        ? option
+                        : option.isoCode || idx
+                    }
                     value={option}
                     className={({ active }) =>
                       `relative cursor-default select-none py-2 pl-10 pr-4 ${
@@ -385,7 +438,11 @@ const Register = () => {
                   >
                     {({ selected }) => (
                       <>
-                        <span className={`block truncate ${selected ? "font-medium" : "font-normal"}`}>
+                        <span
+                          className={`block truncate ${
+                            selected ? "font-medium" : "font-normal"
+                          }`}
+                        >
                           {getLabel(option)}
                         </span>
                         {selected && (
@@ -426,28 +483,183 @@ const Register = () => {
 
               {/* Progress Steps */}
               <div className="flex items-center justify-center gap-2 mb-8">
-                {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((s) => (
-                  <div key={s} className="flex items-center">
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ${
-                        step >= s
-                          ? "bg-green-600 text-white shadow-md shadow-green-600/30"
-                          : "bg-gray-200 text-gray-400"
-                      }`}
-                    >
-                      {step > s ? "✓" : s}
-                    </div>
-                    {s < TOTAL_STEPS && (
+                {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map(
+                  (s) => (
+                    <div key={s} className="flex items-center">
                       <div
-                        className={`w-10 h-1 rounded transition-all duration-300 ${
-                          step > s ? "bg-green-600" : "bg-gray-200"
+                        className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all duration-300 ${
+                          step >= s
+                            ? "bg-green-600 text-white shadow-md shadow-green-600/30"
+                            : "bg-gray-200 text-gray-400"
                         }`}
-                      />
-                    )}
-                  </div>
-                ))}
+                      >
+                        {step > s ? "✓" : s}
+                      </div>
+                      {s < TOTAL_STEPS && (
+                        <div
+                          className={`w-10 h-1 rounded transition-all duration-300 ${
+                            step > s ? "bg-green-600" : "bg-gray-200"
+                          }`}
+                        />
+                      )}
+                    </div>
+                  ),
+                )}
               </div>
+              {/* Register Type */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-3">
+                  Register As
+                </label>
 
+                <div className="grid grid-cols-2 gap-3">
+                  {/* USER */}
+                  <label
+                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                      registerType === "user"
+                        ? "border-green-600 bg-green-50 ring-1 ring-green-600"
+                        : "border-gray-300 hover:border-green-400"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="registerType"
+                      value="user"
+                      checked={registerType === "user"}
+                      onChange={() => setRegisterType("user")}
+                      className="h-4 w-4 text-green-600 focus:ring-green-500"
+                    />
+
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800">
+                        User
+                      </p>
+                      <p className="text-xs text-gray-500">Customer Account</p>
+                    </div>
+                  </label>
+
+                  {/* VENDOR */}
+                  <label
+                    className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                      registerType === "vendor"
+                        ? "border-green-600 bg-green-50 ring-1 ring-green-600"
+                        : "border-gray-300 hover:border-green-400"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="registerType"
+                      value="vendor"
+                      checked={registerType === "vendor"}
+                      onChange={() => setRegisterType("vendor")}
+                      className="h-4 w-4 text-green-600 focus:ring-green-500"
+                    />
+
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800">
+                        Vendor
+                      </p>
+                      <p className="text-xs text-gray-500">Vendor Account</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+              {/* Vendor Type */}
+              {registerType === "vendor" && (
+                <div className="mt-5 space-y-5">
+                  {/* Vendor Type */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-3">
+                      Vendor Type <span className="text-red-500">*</span>
+                    </label>
+
+                    <div className="flex flex-wrap gap-6 mb-3">
+                      {/* Vehicle */}
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="vendorType"
+                          value="Vehicle"
+                          checked={vendorType === "Vehicle"}
+                          onChange={() => setVendorType("Vehicle")}
+                          className="h-5 w-5 text-green-600 focus:ring-green-500"
+                        />
+
+                        <span className="text-sm text-gray-700">Vehicle</span>
+                      </label>
+
+                      {/* Spare Parts */}
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="vendorType"
+                          value="Spare Parts"
+                          checked={vendorType === "Spare Parts"}
+                          onChange={() => setVendorType("Spare Parts")}
+                          className="h-5 w-5 text-green-600 focus:ring-green-500"
+                        />
+
+                        <span className="text-sm text-gray-700">
+                          Spare Parts
+                        </span>
+                      </label>
+
+                      {/* Service */}
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="vendorType"
+                          value="Service"
+                          checked={vendorType === "Service"}
+                          onChange={() => setVendorType("Service")}
+                          className="h-5 w-5 text-green-600 focus:ring-green-500"
+                        />
+
+                        <span className="text-sm text-gray-700">Service</span>
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* Vehicle Type */}
+                  {vendorType === "Vehicle" && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-3">
+                        Vehicle Type <span className="text-red-500">*</span>
+                      </label>
+
+                      <div className="flex gap-6 mb-3">
+                        {/* New */}
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="vehicleType"
+                            value="New"
+                            checked={vehicleType === "New"}
+                            onChange={() => setVehicleType("New")}
+                            className="h-5 w-5 text-green-600 focus:ring-green-500"
+                          />
+
+                          <span className="text-sm text-gray-700">New</span>
+                        </label>
+
+                        {/* Used */}
+                        <label className="flex items-center gap-2 cursor-pointer">
+                          <input
+                            type="radio"
+                            name="vehicleType"
+                            value="Used"
+                            checked={vehicleType === "Used"}
+                            onChange={() => setVehicleType("Used")}
+                            className="h-5 w-5 text-green-600 focus:ring-green-500"
+                          />
+
+                          <span className="text-sm text-gray-700">Used</span>
+                        </label>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
               {/* Step 1: Personal Info (local only) */}
               {step === 1 && (
                 <form onSubmit={handleNextStep} className="space-y-4">
@@ -463,7 +675,9 @@ const Register = () => {
                         value={formData.fullName}
                         onChange={handleChange}
                         className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                          errors.fullName ? "border-red-300 bg-red-50" : "border-gray-300"
+                          errors.fullName
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
                         }`}
                         placeholder="John Doe"
                       />
@@ -487,7 +701,9 @@ const Register = () => {
                         value={formData.email}
                         onChange={handleChange}
                         className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                          errors.email ? "border-red-300 bg-red-50" : "border-gray-300"
+                          errors.email
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
                         }`}
                         placeholder="your@email.com"
                       />
@@ -511,7 +727,9 @@ const Register = () => {
                         value={formData.phone}
                         onChange={handleChange}
                         className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                          errors.phone ? "border-red-300 bg-red-50" : "border-gray-300"
+                          errors.phone
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
                         }`}
                         placeholder="+91 98765 43210"
                       />
@@ -550,7 +768,11 @@ const Register = () => {
                     value={selectedState}
                     onChange={handleStateChange}
                     options={states}
-                    placeholder={selectedCountry ? "Type to search states..." : "Select a country first"}
+                    placeholder={
+                      selectedCountry
+                        ? "Type to search states..."
+                        : "Select a country first"
+                    }
                     error={errors.state}
                     icon={MapPin}
                     disabled={!selectedCountry}
@@ -560,7 +782,11 @@ const Register = () => {
                     value={selectedDistrict}
                     onChange={handleDistrictChange}
                     options={cities}
-                    placeholder={selectedState ? "Type to search district..." : "Select a state first"}
+                    placeholder={
+                      selectedState
+                        ? "Type to search district..."
+                        : "Select a state first"
+                    }
                     error={errors.district}
                     icon={MapPin}
                     disabled={!selectedState}
@@ -570,7 +796,11 @@ const Register = () => {
                     value={selectedCity}
                     onChange={handleCityChange}
                     options={cities}
-                    placeholder={selectedState ? "Type to search cities..." : "Select a state first"}
+                    placeholder={
+                      selectedState
+                        ? "Type to search cities..."
+                        : "Select a state first"
+                    }
                     error={errors.city}
                     icon={Home}
                     disabled={!selectedState}
@@ -588,13 +818,17 @@ const Register = () => {
                         onChange={handleChange}
                         rows="3"
                         className={`w-full pl-10 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all resize-none ${
-                          errors.address ? "border-red-300 bg-red-50" : "border-gray-300"
+                          errors.address
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
                         }`}
                         placeholder="123, Main Street, Area Name"
                       />
                     </div>
                     {errors.address && (
-                      <p className="mt-1 text-xs text-red-600">{errors.address}</p>
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.address}
+                      </p>
                     )}
                   </div>
 
@@ -608,12 +842,16 @@ const Register = () => {
                       value={formData.pincode}
                       onChange={handleChange}
                       className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                        errors.pincode ? "border-red-300 bg-red-50" : "border-gray-300"
+                        errors.pincode
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
                       }`}
                       placeholder="400001"
                     />
                     {errors.pincode && (
-                      <p className="mt-1 text-xs text-red-600">{errors.pincode}</p>
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.pincode}
+                      </p>
                     )}
                   </div>
 
@@ -653,7 +891,9 @@ const Register = () => {
                         onChange={handleChange}
                         disabled={isLoading}
                         className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                          errors.password ? "border-red-300 bg-red-50" : "border-gray-300"
+                          errors.password
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
                         } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                         placeholder="Create a strong password"
                       />
@@ -662,7 +902,11 @@ const Register = () => {
                         onClick={() => setShowPassword(!showPassword)}
                         className="absolute cursor-pointer right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
-                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        {showPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
                       </button>
                     </div>
                     {errors.password && (
@@ -699,21 +943,30 @@ const Register = () => {
                         onChange={handleChange}
                         disabled={isLoading}
                         className={`w-full pl-10 pr-12 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                          errors.confirmPassword ? "border-red-300 bg-red-50" : "border-gray-300"
+                          errors.confirmPassword
+                            ? "border-red-300 bg-red-50"
+                            : "border-gray-300"
                         } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                         placeholder="Confirm your password"
                       />
                       <button
                         type="button"
-                        onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
                         className="absolute cursor-pointer right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
                       >
-                        {showConfirmPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                        {showConfirmPassword ? (
+                          <EyeOff className="h-5 w-5" />
+                        ) : (
+                          <Eye className="h-5 w-5" />
+                        )}
                       </button>
                     </div>
                     {errors.confirmPassword && (
                       <p className="mt-1 text-xs text-red-600 flex items-center gap-1">
-                        <AlertCircle className="w-3 h-3" /> {errors.confirmPassword}
+                        <AlertCircle className="w-3 h-3" />{" "}
+                        {errors.confirmPassword}
                       </p>
                     )}
                   </div>
@@ -730,17 +983,25 @@ const Register = () => {
                       />
                       <span className="text-sm text-gray-600">
                         I agree to the{" "}
-                        <Link to="/terms" className="text-green-600 hover:text-green-700 font-medium">
+                        <Link
+                          to="/terms"
+                          className="text-green-600 hover:text-green-700 font-medium"
+                        >
                           Terms of Service
                         </Link>{" "}
                         and{" "}
-                        <Link to="/privacy" className="text-green-600 hover:text-green-700 font-medium">
+                        <Link
+                          to="/privacy"
+                          className="text-green-600 hover:text-green-700 font-medium"
+                        >
                           Privacy Policy
                         </Link>
                       </span>
                     </label>
                     {errors.agreeToTerms && (
-                      <p className="mt-1 text-xs text-red-600">{errors.agreeToTerms}</p>
+                      <p className="mt-1 text-xs text-red-600">
+                        {errors.agreeToTerms}
+                      </p>
                     )}
                   </div>
 
@@ -761,9 +1022,25 @@ const Register = () => {
                     >
                       {isLoading ? (
                         <>
-                          <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          <svg
+                            className="animate-spin h-5 w-5 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
                           </svg>
                           Creating Account...
                         </>
@@ -799,7 +1076,9 @@ const Register = () => {
                       onChange={handleChange}
                       disabled={isLoading}
                       className={`w-full pl-4 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all ${
-                        errors.otp ? "border-red-300 bg-red-50" : "border-gray-300"
+                        errors.otp
+                          ? "border-red-300 bg-red-50"
+                          : "border-gray-300"
                       } ${isLoading ? "opacity-50 cursor-not-allowed" : ""}`}
                       placeholder="Enter 6-digit OTP"
                     />
@@ -828,9 +1107,25 @@ const Register = () => {
                   >
                     {isLoading ? (
                       <>
-                        <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        <svg
+                          className="animate-spin h-5 w-5 text-white"
+                          xmlns="http://www.w3.org/2000/svg"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                        >
+                          <circle
+                            className="opacity-25"
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                          ></circle>
+                          <path
+                            className="opacity-75"
+                            fill="currentColor"
+                            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                          ></path>
                         </svg>
                         Verifying...
                       </>
@@ -843,7 +1138,10 @@ const Register = () => {
 
               <p className="text-center text-sm text-gray-600 mt-6">
                 Already have an account?{" "}
-                <Link to="/login" className="text-green-600 hover:text-green-700 font-semibold">
+                <Link
+                  to="/login"
+                  className="text-green-600 hover:text-green-700 font-semibold"
+                >
                   Sign in
                 </Link>
               </p>
@@ -853,19 +1151,29 @@ const Register = () => {
           {/* Right Side - Benefits */}
           <div className="hidden lg:block order-2 sticky top-24">
             <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 md:p-12 text-white">
-              <h2 className="text-2xl md:text-3xl font-bold mb-6">Join KrushiMall Today</h2>
+              <h2 className="text-2xl md:text-3xl font-bold mb-6">
+                Join KrushiMall Today
+              </h2>
               <p className="text-gray-300 mb-8">
-                Create your account and get access to exclusive features and offers.
+                Create your account and get access to exclusive features and
+                offers.
               </p>
 
               <div className="grid grid-cols-2 gap-4 mb-8">
                 {userBenefits.map((benefit, index) => (
-                  <div key={index} className="bg-white/5 rounded-xl p-4 hover:bg-white/10 transition-colors">
+                  <div
+                    key={index}
+                    className="bg-white/5 rounded-xl p-4 hover:bg-white/10 transition-colors"
+                  >
                     <div className="w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center mb-3">
                       <benefit.icon className="h-5 w-5 text-green-400" />
                     </div>
-                    <h3 className="font-semibold text-white mb-1 text-sm">{benefit.title}</h3>
-                    <p className="text-xs text-gray-400">{benefit.description}</p>
+                    <h3 className="font-semibold text-white mb-1 text-sm">
+                      {benefit.title}
+                    </h3>
+                    <p className="text-xs text-gray-400">
+                      {benefit.description}
+                    </p>
                   </div>
                 ))}
               </div>

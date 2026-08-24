@@ -22,26 +22,59 @@ const Login = () => {
   const from =
     new URLSearchParams(location.search).get("redirect") || "/profile";
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    rememberMe: false,
-  });
-  const [errors, setErrors] = useState({});
+const [showPassword, setShowPassword] = useState(false);
+const [isLoading, setIsLoading] = useState(false);
+const [role, setRole] = useState("user");
+
+const [formData, setFormData] = useState({
+  email: "",
+  password: "",
+  rememberMe: false,
+});
+
+const [errors, setErrors] = useState({});
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     const newErrors = validateForm();
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
 
     setErrors({});
+    setIsLoading(true);
 
     try {
+      // =========================
+      // VENDOR LOGIN
+      // =========================
+      if (role === "vendor") {
+        const response = await apiHelper.post("/vendor/login", {
+          email: formData.email,
+          password: formData.password,
+        });
+
+        if (response.success) {
+          localStorage.setItem("isVendorLoggedIn", "true");
+          localStorage.setItem("vendorToken", response.token);
+          localStorage.setItem("vendorData", JSON.stringify(response.vendor));
+
+          window.dispatchEvent(new Event("vendorAuthChanged"));
+
+          showSuccessToast("Vendor login successful!");
+
+          navigate("/vendor-profile", { replace: true });
+        }
+
+        return;
+      }
+
+      // =========================
+      // USER LOGIN
+      // =========================
       const response = await apiHelper.post("/webauth/login", {
         email: formData.email,
         password: formData.password,
@@ -62,17 +95,22 @@ const Login = () => {
 
       showSuccessToast("Login successful!");
 
-      if (response.user.isVendor) {
-        navigate("/profile");
-      } else {
-        navigate(from, { replace: true });
-      }
+      navigate(from, { replace: true });
     } catch (error) {
-      // Remove this line if you don't want your own log
-      // console.error("Login error:", error);
-
       const status = error.response?.status;
       const code = error.response?.data?.code;
+
+      // Account was registered as Vendor — user-side login is blocked for
+      // it on the backend. Nudge them to the Vendor tab instead of
+      // showing a confusing "wrong password"/"not found" message.
+      if (code === "USE_VENDOR_LOGIN") {
+        setRole("vendor");
+        showErrorToast(
+          error.response?.data?.message ||
+            "This account is registered as a Vendor. Please use Vendor login.",
+        );
+        return;
+      }
 
       if (error.response?.data?.requiresVerification) {
         showErrorToast("Please verify your email first. Check your OTP.");
@@ -83,11 +121,10 @@ const Login = () => {
       if (code === "USER_NOT_FOUND" || status === 404) {
         setErrors((prev) => ({
           ...prev,
-          email: "Account not found. Please create an account first.",
+          email: "Account not found. Please check your email.",
         }));
 
-        showErrorToast("Account not found. Please create an account first.");
-
+        showErrorToast("Account not found. Please check your email.");
         return;
       }
 
@@ -98,7 +135,6 @@ const Login = () => {
         }));
 
         showErrorToast("Incorrect password. Please try again.");
-
         return;
       }
 
@@ -106,6 +142,8 @@ const Login = () => {
         error.response?.data?.message ||
           "Something went wrong. Please try again.",
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -141,7 +179,7 @@ const Login = () => {
 
   return (
     <div className="bg-gray-50 pb-8 min-h-screen">
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Side - Form */}
           <div className="max-w-md mx-auto lg:mx-0 w-full">
@@ -163,6 +201,70 @@ const Login = () => {
 
               <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Email */}
+                {/* Login Type */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-3">
+                    Login As
+                  </label>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* User */}
+                    <label
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                        role === "user"
+                          ? "border-green-600 bg-green-50 ring-1 ring-green-600"
+                          : "border-gray-300 hover:border-green-400"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="loginRole"
+                        value="user"
+                        checked={role === "user"}
+                        onChange={() => {
+                          setRole("user");
+                          setErrors({});
+                        }}
+                        className="h-4 w-4 text-green-600 focus:ring-green-500"
+                      />
+
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800">
+                          User
+                        </p>
+                        <p className="text-xs text-gray-500">User Login</p>
+                      </div>
+                    </label>
+
+                    {/* Vendor */}
+                    <label
+                      className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${
+                        role === "vendor"
+                          ? "border-green-600 bg-green-50 ring-1 ring-green-600"
+                          : "border-gray-300 hover:border-green-400"
+                      }`}
+                    >
+                      <input
+                        type="radio"
+                        name="loginRole"
+                        value="vendor"
+                        checked={role === "vendor"}
+                        onChange={() => {
+                          setRole("vendor");
+                          setErrors({});
+                        }}
+                        className="h-4 w-4 text-green-600 focus:ring-green-500"
+                      />
+
+                      <div>
+                        <p className="text-sm font-semibold text-gray-800">
+                          Vendor
+                        </p>
+                        <p className="text-xs text-gray-500">Vendor Login</p>
+                      </div>
+                    </label>
+                  </div>
+                </div>
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Email Address
@@ -300,7 +402,7 @@ const Login = () => {
 
           {/* Right Side - Benefits */}
           <div className="hidden lg:block">
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 md:p-12 text-white">
+            <div className="bg-linear-to-br from-gray-900 to-gray-800 rounded-2xl p-8 md:p-12 text-white">
               <h2 className="text-2xl md:text-3xl font-bold mb-6">
                 Why Create an Account?
               </h2>
