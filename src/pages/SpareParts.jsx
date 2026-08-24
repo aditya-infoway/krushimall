@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Listbox, Checkbox } from "@headlessui/react";
+import apiHelper from "../utils/apiHelper";
 import {
   Search,
   Car,
@@ -158,73 +159,107 @@ const SpareParts = () => {
   };
 
   // ========== CATEGORIES ==========
-  const categories = [
-    {
-      id: 1,
-      name: "Engine Parts",
-      icon: Cog,
-      image:
-        "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop",
-      slug: "engine-parts",
-    },
-    {
-      id: 2,
-      name: "Brakes & Suspension",
-      icon: Gauge,
-      image:
-        "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
-      slug: "brakes-suspension",
-    },
-    {
-      id: 3,
-      name: "Electrical Parts",
-      icon: Zap,
-      image:
-        "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=300&fit=crop",
-      slug: "electrical-parts",
-    },
-    {
-      id: 4,
-      name: "Filters & Fluids",
-      icon: Filter,
-      image:
-        "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
-      slug: "filters-fluids",
-    },
-    {
-      id: 5,
-      name: "Cooling System",
-      icon: Thermometer,
-      image:
-        "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop",
-      slug: "cooling-system",
-    },
-    {
-      id: 6,
-      name: "Exhaust System",
-      icon: Wind,
-      image:
-        "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
-      slug: "exhaust-system",
-    },
-    {
-      id: 7,
-      name: "Transmission",
-      icon: Cog,
-      image:
-        "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop",
-      slug: "transmission",
-    },
-    {
-      id: 8,
-      name: "Body Parts",
-      icon: Car,
-      image:
-        "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
-      slug: "body-parts",
-    },
-  ];
+  // const categories = [
+  //   {
+  //     id: 1,
+  //     name: "Engine Parts",
+  //     icon: Cog,
+  //     image:
+  //       "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop",
+  //     slug: "engine-parts",
+  //   },
+  //   {
+  //     id: 2,
+  //     name: "Brakes & Suspension",
+  //     icon: Gauge,
+  //     image:
+  //       "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
+  //     slug: "brakes-suspension",
+  //   },
+  //   {
+  //     id: 3,
+  //     name: "Electrical Parts",
+  //     icon: Zap,
+  //     image:
+  //       "https://images.unsplash.com/photo-1558618666-fcd25c85f82e?w=400&h=300&fit=crop",
+  //     slug: "electrical-parts",
+  //   },
+  //   {
+  //     id: 4,
+  //     name: "Filters & Fluids",
+  //     icon: Filter,
+  //     image:
+  //       "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
+  //     slug: "filters-fluids",
+  //   },
+  //   {
+  //     id: 5,
+  //     name: "Cooling System",
+  //     icon: Thermometer,
+  //     image:
+  //       "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop",
+  //     slug: "cooling-system",
+  //   },
+  //   {
+  //     id: 6,
+  //     name: "Exhaust System",
+  //     icon: Wind,
+  //     image:
+  //       "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
+  //     slug: "exhaust-system",
+  //   },
+  //   {
+  //     id: 7,
+  //     name: "Transmission",
+  //     icon: Cog,
+  //     image:
+  //       "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=400&h=300&fit=crop",
+  //     slug: "transmission",
+  //   },
+  //   {
+  //     id: 8,
+  //     name: "Body Parts",
+  //     icon: Car,
+  //     image:
+  //       "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=400&h=300&fit=crop",
+  //     slug: "body-parts",
+  //   },
+  // ];
+const [categories, setCategories] = useState([]);
 
+useEffect(() => {
+  const fetchCategories = async () => {
+    try {
+      const response = await apiHelper.get("/web/VendorCategory", {
+        parentId: "null", // sirf top-level groups
+      });
+
+      let categoriesData = [];
+      if (response && response.data && Array.isArray(response.data)) {
+        categoriesData = response.data;
+      } else if (Array.isArray(response)) {
+        categoriesData = response;
+      }
+
+      const mappedData = categoriesData.map((item) => ({
+        id: item.id,
+        name: item.categoryName,
+        image: apiHelper.getImageUrl(item.image),
+        slug: item.categoryName
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/(^-|-$)/g, ""),
+      }));
+
+      setCategories(mappedData);
+    } catch (error) {
+      console.error("Failed to fetch categories:", error);
+      setCategories([]);
+    }
+  };
+
+  fetchCategories();
+}, []);
   // ========== MOCK DATA ARRAYS FOR NEW SECTIONS ==========
   const featuredProducts = [
     {
@@ -363,7 +398,7 @@ const SpareParts = () => {
   return (
     <div className="bg-gray-50 min-h-screen ">
       {/* ========== HERO SECTION ========== */}
-      <section className="relative bg-gray-900 text-white min-h-[550px] flex items-center">
+      <section className="relative bg-gray-900 text-white min-h-137.5 flex items-center">
         {/* Background Image Container */}
         <div className="absolute inset-0 z-0">
           <img
@@ -371,10 +406,10 @@ const SpareParts = () => {
             alt="Automotive workshop with genuine spare parts and tools"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-950/85 via-gray-900/50 to-black/20" />
+          <div className="absolute inset-0 bg-linear-to-r from-gray-950/85 via-gray-900/50 to-black/20" />
         </div>
 
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-8 relative z-10 ">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-8 relative z-10 ">
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             {/* Left Content */}
             <div>
@@ -775,7 +810,7 @@ const SpareParts = () => {
                 className="snap-start w-[75vw] flex-shrink-0"
               >
                 <Link
-                  to={`/category/${category.slug}`}
+                to={`/category/${category.id}`}
                   className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col h-full"
                 >
                   <div className="relative h-40 overflow-hidden bg-gray-100">
@@ -792,8 +827,8 @@ const SpareParts = () => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                     <div className="absolute bottom-3 left-3 text-white">
-                      <category.icon className="h-6 w-6 mb-1" />
-                      <h3 className="text-sm font-bold">{category.name}</h3>
+                     <Wrench className="h-6 w-6 mb-1" />
+  <h3 className="text-sm font-bold">{category.name}</h3>
                     </div>
                   </div>
                   <div className="p-3 border-t border-gray-100 mt-auto">
@@ -822,7 +857,7 @@ const SpareParts = () => {
           {categories.map((category) => (
             <Link
               key={category.id}
-              to={`/category/${category.slug}`}
+               to={`/category/${category.id}`}
               className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden"
             >
               <div className="relative h-48 overflow-hidden">
@@ -837,8 +872,8 @@ const SpareParts = () => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                 <div className="absolute bottom-4 left-4 text-white">
-                  <category.icon className="h-8 w-8 mb-2" />
-                  <h3 className="text-lg font-bold">{category.name}</h3>
+                   <Wrench className="h-8 w-8 mb-2" />
+  <h3 className="text-lg font-bold">{category.name}</h3>
                 </div>
               </div>
               <div className="p-4 border-t border-gray-100">

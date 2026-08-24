@@ -187,7 +187,20 @@ const Profile = () => {
   useEffect(() => {
     setCountries(Country.getAllCountries());
   }, []);
+  const [isVendorLoggedIn, setIsVendorLoggedIn] = useState(
+    localStorage.getItem("isVendorLoggedIn") === "true",
+  );
 
+  useEffect(() => {
+    const syncVendorStatus = () => {
+      setIsVendorLoggedIn(localStorage.getItem("isVendorLoggedIn") === "true");
+    };
+
+    window.addEventListener("vendorAuthChanged", syncVendorStatus);
+
+    return () =>
+      window.removeEventListener("vendorAuthChanged", syncVendorStatus);
+  }, []);
   // Load countries on mount
   const loadProfile = async () => {
     try {
@@ -514,7 +527,9 @@ const Profile = () => {
                     {({ selected }) => (
                       <>
                         <span
-                          className={`block truncate ${selected ? "font-medium" : "font-normal"}`}
+                          className={`block truncate ${
+                            selected ? "font-medium" : "font-normal"
+                          }`}
                         >
                           {getLabel(option)}
                         </span>
@@ -546,7 +561,9 @@ const Profile = () => {
       {showSaveSuccess && (
         <div className="fixed top-4 right-4 left-4 sm:left-auto z-50 animate-slideDown bg-green-600 text-white px-4 sm:px-6 py-3 rounded-xl shadow-lg flex items-center gap-2">
           <CheckCircle className="h-5 w-5 shrink-0" />
-          <span className="font-medium text-sm sm:text-base">Profile updated successfully!</span>
+          <span className="font-medium text-sm sm:text-base">
+            Profile updated successfully!
+          </span>
         </div>
       )}
 
@@ -568,13 +585,13 @@ const Profile = () => {
         </div>
       </div>
 
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-4 sm:py-6">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-3 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-4 sm:py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-8">
           {/* Left Sidebar */}
           <div className="lg:col-span-1 space-y-4 sm:space-y-6">
             {/* Profile Card */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 text-center relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-16 sm:h-20 bg-gradient-to-r from-green-600 to-green-700"></div>
+              <div className="absolute top-0 left-0 right-0 h-16 sm:h-20 bg-linear-to-r from-green-600 to-green-700"></div>
               <div className="relative z-10">
                 <div className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-3">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white bg-green-100 flex items-center justify-center overflow-hidden shadow-md">
@@ -588,48 +605,50 @@ const Profile = () => {
                       <User className="h-10 w-10 sm:h-12 sm:w-12 text-green-600" />
                     )}
                   </div>
-                 <input
-  ref={fileInputRef}
-  type="file"
-  accept="image/*"
-  hidden
-  disabled={!isEditing}
-  onChange={(e) => {
-    if (!isEditing) return;
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/*"
+                    hidden
+                    disabled={!isEditing}
+                    onChange={(e) => {
+                      if (!isEditing) return;
 
-    const file = e.target.files?.[0];
-    if (!file) return;
+                      const file = e.target.files?.[0];
+                      if (!file) return;
 
-    setSelectedImage(file);
+                      setSelectedImage(file);
 
-    setUserData((prev) => ({
-      ...prev,
-      avatar: URL.createObjectURL(file),
-    }));
-  }}
-/>
-                <button
-  type="button"
-  disabled={!isEditing}
-  onClick={() => {
-    if (isEditing) {
-      fileInputRef.current?.click();
-    }
-  }}
-  className={`absolute bottom-0 right-0 p-1.5 rounded-full shadow-lg transition-all
+                      setUserData((prev) => ({
+                        ...prev,
+                        avatar: URL.createObjectURL(file),
+                      }));
+                    }}
+                  />
+                  <button
+                    type="button"
+                    disabled={!isEditing}
+                    onClick={() => {
+                      if (isEditing) {
+                        fileInputRef.current?.click();
+                      }
+                    }}
+                    className={`absolute bottom-0 right-0 p-1.5 rounded-full shadow-lg transition-all
     ${
       isEditing
         ? "bg-green-600 text-white hover:bg-green-700 hover:scale-110 cursor-pointer"
         : "bg-gray-300 text-gray-500 cursor-not-allowed"
     }`}
->
-  <Camera className="h-3.5 w-3.5" />
-</button>
+                  >
+                    <Camera className="h-3.5 w-3.5" />
+                  </button>
                 </div>
                 <h3 className="font-bold text-gray-900 text-base sm:text-lg truncate px-2">
                   {userData.name}
                 </h3>
-                <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4 truncate px-2">{userData.email}</p>
+                <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4 truncate px-2">
+                  {userData.email}
+                </p>
                 <div className="inline-flex items-center gap-1 bg-green-50 text-green-700 text-xs font-semibold px-3 py-1 rounded-full border border-green-200">
                   <Shield className="h-3 w-3" />
                   {userType === "vendor" ? "Vendor" : "Verified Buyer"}
@@ -640,8 +659,8 @@ const Profile = () => {
             {/* Become a Vendor CTA — only shown to regular users.
                 Once they complete /become-vendor, userType flips to
                 "vendor" and this card is replaced by vendor tabs/stats. */}
-            {userType !== "vendor" && (
-              <div className="bg-gradient-to-br from-green-50 to-green-100 border border-green-200 rounded-2xl p-4 sm:p-5 text-center">
+            {!isVendorLoggedIn && (
+              <div className="bg-linear-to-br from-green-50 to-green-100 border border-green-200 rounded-2xl p-4 sm:p-5 text-center">
                 <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center mx-auto mb-3">
                   <Store className="h-6 w-6 text-white" />
                 </div>
@@ -1136,8 +1155,8 @@ const Profile = () => {
                           userData.vendorType === "vehicle"
                             ? "Vehicle"
                             : userData.vendorType === "spare-parts"
-                              ? "Spare Parts"
-                              : "Service"
+                            ? "Spare Parts"
+                            : "Service"
                         }
                         disabled
                         className="w-full pl-10 pr-4 py-3 text-sm border border-gray-200 rounded-xl bg-gray-50 cursor-not-allowed"
@@ -1195,7 +1214,7 @@ const Profile = () => {
                     >
                       <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
                         <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
+                          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gray-100 overflow-hidden shrink-0">
                             <img
                               src={order.image}
                               alt={order.items}
@@ -1219,7 +1238,9 @@ const Profile = () => {
                           </div>
                         </div>
                         <span
-                          className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border shrink-0 self-start ${getStatusColor(order.status)}`}
+                          className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border shrink-0 self-start ${getStatusColor(
+                            order.status,
+                          )}`}
                         >
                           <StatusIcon className="h-3 w-3" />
                           {order.status}
@@ -1267,7 +1288,7 @@ const Profile = () => {
                     className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-5 hover:shadow-md transition-all group"
                   >
                     <div className="flex gap-4 sm:gap-5">
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-gray-100 overflow-hidden flex-shrink-0">
+                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-gray-100 overflow-hidden shrink-0">
                         <img
                           src={item.image}
                           alt={item.name}
@@ -1373,7 +1394,9 @@ const Profile = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xs text-gray-400 hidden sm:inline">2 cards</span>
+                      <span className="text-xs text-gray-400 hidden sm:inline">
+                        2 cards
+                      </span>
                       <ChevronRight className="h-5 w-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>
@@ -1393,7 +1416,9 @@ const Profile = () => {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 shrink-0">
-                      <span className="text-xs text-gray-400 hidden sm:inline">2 addresses</span>
+                      <span className="text-xs text-gray-400 hidden sm:inline">
+                        2 addresses
+                      </span>
                       <ChevronRight className="h-5 w-5 text-gray-400 group-hover:translate-x-1 transition-transform" />
                     </div>
                   </div>

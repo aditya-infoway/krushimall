@@ -9,7 +9,7 @@ import Products from "./pages/Products";
 import Contact from "./pages/Contact";
 import Service from "./pages/Service";
 import Help from "./pages/Help";
-import TrackOrder from "./pages/ProductTracking";
+// import TrackOrder from "./pages/ProductTracking";
 import Login from "./pages/Login";
 import Register from "./pages/Register";
 import ProductDetail from "./pages/ProductDetail";
@@ -21,7 +21,7 @@ import Checkout from "./pages/Checkout";
 import { WishlistProvider } from "./context/WishlistContext";
 import Wishlist from "./pages/Wishlist";
 import SpareParts from "./pages/SpareParts";
-import CategoryPage from "./pages/CategoryPage";
+import SubSubCategory  from "./pages/SubsubCategory.jsx";
 import SubCategoryPage from "./pages/SubCategoryPage";
 import TractorCompare from "./pages/TractorCompare";
 import TractorDetail from "./pages/TractorDetail";
@@ -41,10 +41,13 @@ import VendorProfile from "./pages/VendorProfile";
 import VendorLogin from "./pages/VendorLogin";
 import WebsiteVariant from "./pages/websitevariant/index.jsx";
 import VendorFollowup from "./pages/Vendorfollowup.jsx";
-import { requestNotificationPermission } from "./firebase-messaging";
+// import { requestNotificationPermission } from "./firebase-messaging";
 import UsedWebsiteVariant from "./pages/usedwebsitevariant/index.jsx";
 import BottomNavigation from "./components/BottomNavigation.jsx";
 import splashImage from "./assets/app-assets/splash.png";
+import CategoryDetail from "./pages/CategoryDetail";
+// ...
+
 function App() {
   const [showSplash, setShowSplash] = useState(false);
 
@@ -56,19 +59,19 @@ function App() {
   }, []);
 
   // Effect 2: show your own full-screen splash overlay + notifications
-useEffect(() => {
-  if (!Capacitor.isNativePlatform()) {
-    return;
-  }
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) {
+      return;
+    }
 
-  setShowSplash(true);
+    setShowSplash(true);
 
-  const timer = setTimeout(() => {
-    setShowSplash(false);
-  }, 3000);
+    const timer = setTimeout(() => {
+      setShowSplash(false);
+    }, 3000);
 
-  return () => clearTimeout(timer);
-}, []);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <>
@@ -137,6 +140,7 @@ useEffect(() => {
                       path="/vendor/followup/:id"
                       element={<VendorFollowup />}
                     />
+                    <Route path="/category/:id" element={<CategoryDetail />} />
                     <Route path="/register" element={<Register />} />
                     <Route path="/profile" element={<Profile />} />
                     <Route
@@ -180,11 +184,11 @@ useEffect(() => {
                     <Route path="/old-tractors" element={<OldTractors />} />
 
                     <Route
-                      path="/category/:categoryName"
-                      element={<CategoryPage />}
+                      path="/subsubcategory/:subCategoryName"
+                      element={<SubSubCategory  />}
                     />
                     <Route
-                      path="/category/:categoryName/:subCategoryName"
+                      path="/category/:subCategoryName"
                       element={<SubCategoryPage />}
                     />
 
