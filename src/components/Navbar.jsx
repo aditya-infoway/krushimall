@@ -676,11 +676,11 @@ const Navbar = () => {
                                         child.subSubCategoryName;
 
                                       return (
-                                        <Link
-                                          key={child.id}
-                                          to={`/products`}
-                                          className="group flex items-center gap-3 border border-gray-200 rounded-lg px-3 py-3 bg-white hover:border-green-500 hover:bg-green-50 transition-all"
-                                        >
+                                      <Link
+  key={child.id}
+  to={`/products?subSubCategoryId=${child.id}`}
+  className="group flex items-center gap-3 border border-gray-200 rounded-lg px-3 py-3 bg-white hover:border-green-500 hover:bg-green-50 transition-all"
+>
                                           {/* Child Image */}
 
                                           {/* <div className="w-9 h-9 rounded-md overflow-hidden bg-gray-100 border border-gray-100 shrink-0 flex items-center justify-center">

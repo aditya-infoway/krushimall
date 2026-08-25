@@ -219,7 +219,7 @@ const backLabel = category?.categoryName || "Categories";
               return (
                 <Link
                   key={child.id || childName}
-                  to={`/products`}
+                 to={`/products?subSubCategoryId=${child.id}`}
                   className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden"
                 >
                   <div className="relative h-38 overflow-hidden bg-gray-100">
