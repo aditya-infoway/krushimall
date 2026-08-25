@@ -24,12 +24,13 @@ import { useAuth } from "../context/AuthContext";
 import { useWishlist } from "../context/WishlistContext";
 import { Listbox } from "@headlessui/react";
 import {
-  showCartAddedToast,
+  // showCartAddedToast,
   showWishlistAddedToast,
   showWishlistRemovedToast,
-  showLoginRequiredToast,
+  showErrorToast
+  // showLoginRequiredToast,
 } from "../utils/toast.jsx";
-
+import apiHelper from "../utils/apiHelper";
 const ProductDetail = () => {
   const { id } = useParams();
   const { addToCart, cart, updateQuantity, removeFromCart } = useCart();
@@ -44,7 +45,9 @@ const ProductDetail = () => {
   const [isCompatible, setIsCompatible] = useState(null);
   const containerRef = useRef(null);
   const [zoomStyle, setZoomStyle] = useState({ display: "none", x: 50, y: 50 });
-
+  const [product, setProduct] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const handleMouseLeave = () => {
     setZoomStyle({ display: "none", x: 50, y: 50 });
   };
@@ -54,41 +57,284 @@ const ProductDetail = () => {
     return cartItem ? cartItem.quantity : 0;
   };
 
-  const handleIncreaseQuantity = () => {
-    addToCart(product, 1);
-  };
+ const getMaxOrderQuantity = () => {
+  const maxQty = Number(product?.maxOrderQuantity);
 
-  const handleDecreaseQuantity = () => {
-    const currentQty = getCartQuantity(product.id);
-    if (currentQty <= 1) {
-      removeFromCart(product.id);
-      setQuantity(1);
-    } else {
-      updateQuantity(product.id, currentQty - 1);
-    }
-  };
+  // If backend doesn't send maxOrderQuantity,
+  // don't unnecessarily restrict the customer.
+  return maxQty > 0 ? maxQty : Infinity;
+};
+
+const handleIncreaseQuantity = () => {
+  if (!product) return;
+
+  const maxQty = getMaxOrderQuantity();
+  const currentQty = getCartQuantity(product.id);
+
+  if (currentQty >= maxQty) {
+    showErrorToast(
+      `Maximum order quantity is ${maxQty}. You cannot order more than ${maxQty} item${maxQty > 1 ? "s" : ""}.`,
+    );
+    return;
+  }
+
+  addToCart(product, 1);
+};
+
+const handleDecreaseQuantity = () => {
+  const currentQty = getCartQuantity(product.id);
+
+  if (currentQty <= 1) {
+    removeFromCart(product.id);
+    setQuantity(1);
+  } else {
+    updateQuantity(product.id, currentQty - 1);
+  }
+};
 
   const scrollRef = useRef(null);
 
-  const handleAddToCart = () => {
-    if (!isAuthenticated) {
-      navigate("/login?redirect=/product/" + product.id);
-      return;
-    }
-    addToCart(product, quantity);
-  };
+ const handleAddToCart = () => {
+  if (!isAuthenticated) {
+    navigate("/login?redirect=/product/" + product.id);
+    return;
+  }
 
-  const handleBuyNow = () => {
-    if (!isAuthenticated) {
-      navigate("/login?redirect=/product/" + product.id);
-      return;
+  const maxQty = Number(product.maxOrderQuantity) || 1;
+
+  const currentCartQty = getCartQuantity(product.id);
+
+  // Total quantity after this addition
+  const totalQty = currentCartQty + quantity;
+
+  if (totalQty > maxQty) {
+    const remainingQty = Math.max(0, maxQty - currentCartQty);
+
+    if (remainingQty === 0) {
+      showErrorToast(
+        `Maximum order quantity is ${maxQty}. You have already reached the maximum quantity.`,
+      );
+    } else {
+      showErrorToast(
+        `You can add only ${remainingQty} more item${remainingQty > 1 ? "s" : ""}. Maximum order quantity is ${maxQty}.`,
+      );
     }
-    addToCart(product, quantity);
-    navigate("/cart");
-  };
+
+    return;
+  }
+
+  addToCart(product, quantity);
+};
+
+const handleBuyNow = () => {
+  if (!isAuthenticated) {
+    navigate("/login?redirect=/product/" + product.id);
+    return;
+  }
+
+  const maxQty = Number(product.maxOrderQuantity) || 1;
+  const currentCartQty = getCartQuantity(product.id);
+  const totalQty = currentCartQty + quantity;
+
+  if (totalQty > maxQty) {
+    const remainingQty = Math.max(0, maxQty - currentCartQty);
+
+    if (remainingQty === 0) {
+      showErrorToast(
+        `Maximum order quantity is ${maxQty}. You have already reached the maximum quantity.`,
+      );
+    } else {
+      showErrorToast(
+        `You can add only ${remainingQty} more item${remainingQty > 1 ? "s" : ""}. Maximum order quantity is ${maxQty}.`,
+      );
+    }
+
+    return;
+  }
+
+  addToCart(product, quantity);
+  navigate("/cart");
+};
 
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    const fetchProduct = async () => {
+      try {
+        setLoading(true);
+        setError("");
+
+        const response = await apiHelper.get(`/web/product/${id}`);
+
+        const data = response?.data?.product || response?.product;
+
+        if (!data) {
+          throw new Error("Product not found");
+        }
+
+        const mrp = Number(data.mrp) || 0;
+        const sellingPrice = Number(data.sellingPrice) || 0;
+
+        const images = [
+          data.mainImage,
+          data.thumbnailImage,
+          ...(Array.isArray(data.additionalImages)
+            ? data.additionalImages
+            : []),
+        ].filter(Boolean);
+
+        const mappedProduct = {
+          id: data.id,
+
+          name: data.productName,
+
+          brand: data.brand?.brandName || data.brand?.name || "-",
+
+          category: data.category?.categoryName || data.category?.name || "-",
+
+          subCategory:
+            data.subCategory?.subCategoryName || data.subCategory?.name || "-",
+
+          subSubCategory:
+            data.subSubCategory?.subSubCategoryName ||
+            data.subSubCategory?.name ||
+            "-",
+
+          price: sellingPrice,
+          oldPrice: mrp,
+
+          discount:
+            mrp > sellingPrice && mrp > 0
+              ? Math.round(((mrp - sellingPrice) / mrp) * 100)
+              : 0,
+
+          rating: 0,
+          reviews: 0,
+
+          stock: Number(data.stockQuantity) || 0,
+          maxOrderQuantity: Number(data.maxOrderQuantity) || 1,
+          partNumber: data.partNumber || "-",
+
+          oemNumber: data.oemNumber || "-",
+
+          countryOfOrigin: data.countryOfOrigin || "-",
+
+          compatibility: [],
+
+          warranty:
+            data.warrantyDetails || data.warrantyPeriod || "No Warranty",
+
+          shipping: data.freeShipping ? "Free Shipping" : "Standard Shipping",
+
+          deliveryTime: data.estimatedDeliveryTime || "Standard Delivery",
+
+          returns:
+            data.returnPolicy === "NONE" ? "No Returns" : data.returnPolicy,
+
+          description: data.shortDescription || "",
+
+          features: (() => {
+            if (!data.keyFeatures) return [];
+
+            if (Array.isArray(data.keyFeatures)) {
+              return data.keyFeatures;
+            }
+
+            if (typeof data.keyFeatures === "string") {
+              try {
+                const parsed = JSON.parse(data.keyFeatures);
+
+                return Array.isArray(parsed) ? parsed : [];
+              } catch {
+                return data.keyFeatures
+                  .split(",")
+                  .map((item) => item.trim())
+                  .filter(Boolean);
+              }
+            }
+
+            return [];
+          })(),
+
+          specifications: (() => {
+            const value = data.specifications;
+
+            if (!value) return [];
+
+            // Already an array
+            if (Array.isArray(value)) {
+              return value
+                .map((spec) => ({
+                  label: spec?.title || spec?.label || spec?.name || "-",
+
+                  value: spec?.value || spec?.description || "-",
+                }))
+                .filter((spec) => spec.label !== "-" || spec.value !== "-");
+            }
+
+            // JSON string
+            if (typeof value === "string") {
+              try {
+                const parsed = JSON.parse(value);
+
+                if (Array.isArray(parsed)) {
+                  return parsed
+                    .map((spec) => ({
+                      label: spec?.title || spec?.label || spec?.name || "-",
+
+                      value: spec?.value || spec?.description || "-",
+                    }))
+                    .filter((spec) => spec.label !== "-" || spec.value !== "-");
+                }
+
+                if (parsed && typeof parsed === "object") {
+                  return Object.entries(parsed).map(([key, value]) => ({
+                    label: key,
+                    value: String(value ?? "-"),
+                  }));
+                }
+              } catch {
+                return [];
+              }
+            }
+
+            // Object
+            if (typeof value === "object" && value !== null) {
+              return Object.entries(value).map(([key, value]) => ({
+                label: key,
+                value: String(value ?? "-"),
+              }));
+            }
+
+            return [];
+          })(),
+
+          images: images.map((image) => apiHelper.getImageUrl(image)),
+            image: data.mainImage
+    ? apiHelper.getImageUrl(data.mainImage)
+    : "",
+          reviews_list: [],
+
+          relatedProducts: [],
+        };
+
+        setProduct(mappedProduct);
+      } catch (error) {
+        console.error("Failed to fetch product:", error);
+
+        setError(
+          error?.response?.data?.message ||
+            error?.message ||
+            "Failed to load product",
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (id) {
+      fetchProduct();
+    }
   }, [id]);
 
   const handleWishlist = () => {
@@ -131,117 +377,6 @@ const ProductDetail = () => {
     });
   };
 
-  // Sample product data
-  const product = {
-    id: 1,
-    name: "Bosch Engine Oil Filter - F002H21088",
-    brand: "Bosch",
-    category: "Filters",
-    price: 1499,
-    oldPrice: 2499,
-    discount: 40,
-    rating: 4.8,
-    reviews: 234,
-    stock: 15,
-    partNumber: "F002H21088",
-    oemNumber: "15400-RTA-003",
-    compatibility: [
-      "Honda City 2014-2020",
-      "Honda Jazz 2015-2022",
-      "Honda Amaze 2013-2021",
-    ],
-    warranty: "6 Months Manufacturer Warranty",
-    shipping: "Free Shipping",
-    deliveryTime: "3-5 Business Days",
-    returns: "10-Day Easy Returns",
-    description:
-      "The Bosch Engine Oil Filter ensures optimal engine performance by effectively removing contaminants from engine oil. Made with high-quality filter media that provides superior filtration efficiency and dirt-holding capacity.",
-    specifications: [
-      { label: "Brand", value: "Bosch" },
-      { label: "Part Number", value: "F002H21088" },
-      { label: "OEM Number", value: "15400-RTA-003" },
-      { label: "Type", value: "Engine Oil Filter" },
-      { label: "Material", value: "Synthetic Fiber" },
-      { label: "Thread Size", value: "M20 x 1.5" },
-      { label: "Height", value: "90 mm" },
-      { label: "Outer Diameter", value: "65 mm" },
-      { label: "Weight", value: "250 g" },
-      { label: "Country of Origin", value: "Germany" },
-    ],
-    features: [
-      "High-efficiency filtration media removes up to 99% of contaminants",
-      "Anti-drain back valve prevents dry starts",
-      "Silicone anti-drain back valve for extreme temperatures",
-      "OE-quality construction ensures perfect fit",
-      "Tested to meet or exceed OEM specifications",
-    ],
-    images: [
-      "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=600&h=600&fit=crop&auto=format",
-      "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&h=600&fit=crop&auto=format",
-      "https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=600&h=600&fit=crop&auto=format",
-      "https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?w=600&h=600&fit=crop&auto=format",
-    ],
-    reviews_list: [
-      {
-        id: 1,
-        user: "Rajesh Kumar",
-        rating: 5,
-        date: "2024-01-15",
-        title: "Perfect fit for my Honda City",
-        comment:
-          "Genuine product. Fits perfectly in my Honda City 2018 model. Engine runs smoother now.",
-      },
-      {
-        id: 2,
-        user: "Amit Sharma",
-        rating: 5,
-        date: "2024-01-10",
-        title: "Original Bosch product",
-        comment:
-          "Verified original Bosch product. Much better quality than local alternatives.",
-      },
-      {
-        id: 3,
-        user: "Priya Patel",
-        rating: 4,
-        date: "2024-01-05",
-        title: "Good quality filter",
-        comment:
-          "Good quality but delivery took 5 days. Product is genuine though.",
-      },
-    ],
-    relatedProducts: [
-      {
-        id: 2,
-        name: "Brembo Brake Pads",
-        price: 3899,
-        image:
-          "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=300&h=300&fit=crop&auto=format",
-      },
-      {
-        id: 3,
-        name: "NGK Spark Plugs",
-        price: 999,
-        image:
-          "https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=300&h=300&fit=crop&auto=format",
-      },
-      {
-        id: 6,
-        name: "Mann Air Filter",
-        price: 749,
-        image:
-          "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=300&h=300&fit=crop&auto=format",
-      },
-      {
-        id: 12,
-        name: "Mann Cabin Filter",
-        price: 649,
-        image:
-          "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=300&h=300&fit=crop&auto=format",
-      },
-    ],
-  };
-
   const formatPrice = (price) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -255,12 +390,39 @@ const ProductDetail = () => {
       setIsCompatible(true);
     }
   };
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Loading product...</p>
+      </div>
+    );
+  }
 
+  if (error || !product) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center">
+        <h2 className="text-xl font-semibold">Product Not Found</h2>
+
+        <p className="mt-2 text-gray-500">
+          {error || "Product details are not available."}
+        </p>
+
+        <button
+          type="button"
+          onClick={() => navigate("/products")}
+          className="mt-4 rounded-lg bg-green-600 px-5 py-2 text-white"
+        >
+          Back to Products
+        </button>
+      </div>
+    );
+  }
   return (
     <div className="min-h-screen bg-gray-50 lg:mt-4">
       {/* Breadcrumb */}
+
       <div className="bg-white border-b border-gray-200">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-3">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-3">
           <nav className="flex items-center gap-2 text-sm text-gray-600">
             <Link to="/" className="hover:text-green-600 cursor-pointer">
               Home
@@ -283,12 +445,25 @@ const ProductDetail = () => {
             <span className="text-gray-900 font-medium truncate">
               {product.name}
             </span>
+            
           </nav>
         </div>
       </div>
 
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-5">
         {/* Product Page Layout */}
+        <div className=" flex items-center justify-end mb-3">
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group shrink-0"
+              aria-label="Go back"
+            >
+              <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" />
+              <span className="text-sm font-medium text-gray-600 group-hover:text-green-600 transition-colors">
+                Back
+              </span>
+            </button>
+            </div>
         <div className="grid lg:grid-cols-3 gap-8 mb-12">
           {/* Column 1: Gallery Design */}
           {/* Column 1: Gallery - Hover Zoom on Image */}
@@ -307,7 +482,9 @@ const ProductDetail = () => {
                   style={{
                     transform:
                       zoomStyle.display === "block" ? "scale(2)" : "scale(1)",
-                    transformOrigin: `${zoomStyle.x || 50}% ${zoomStyle.y || 50}%`,
+                    transformOrigin: `${zoomStyle.x || 50}% ${
+                      zoomStyle.y || 50
+                    }%`,
                   }}
                 />
 
@@ -324,7 +501,11 @@ const ProductDetail = () => {
                       e.stopPropagation();
                       setSelectedImage(index);
                     }}
-                    className={`w-16 h-16 border-2 rounded-lg p-1 bg-gray-50 flex items-center justify-center transition-all cursor-pointer flex-shrink-0 overflow-hidden ${selectedImage === index ? "border-green-600 shadow-sm" : "border-gray-200 hover:border-gray-400"}`}
+                    className={`w-16 h-16 border-2 rounded-lg p-1 bg-gray-50 flex items-center justify-center transition-all cursor-pointer shrink-0 overflow-hidden ${
+                      selectedImage === index
+                        ? "border-green-600 shadow-sm"
+                        : "border-gray-200 hover:border-gray-400"
+                    }`}
                   >
                     <img
                       src={img}
@@ -352,7 +533,11 @@ const ProductDetail = () => {
                   {[...Array(5)].map((_, i) => (
                     <Star
                       key={i}
-                      className={`h-4 w-4 ${i < Math.floor(product.rating) ? "fill-yellow-400 text-yellow-400" : "fill-gray-200 text-gray-200"}`}
+                      className={`h-4 w-4 ${
+                        i < Math.floor(product.rating)
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "fill-gray-200 text-gray-200"
+                      }`}
                     />
                   ))}
                 </div>
@@ -371,7 +556,7 @@ const ProductDetail = () => {
                     key={index}
                     className="flex items-start gap-3 text-sm text-gray-600"
                   >
-                    <Check className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <Check className="h-5 w-5 text-green-600 shrink-0 mt-0.5" />
                     <span>{feature}</span>
                   </div>
                 ))}
@@ -382,15 +567,15 @@ const ProductDetail = () => {
               <div className="mt-auto pt-4 border-t border-gray-100">
                 <div className="flex flex-col gap-2 text-xs text-gray-500">
                   <div className="flex items-center gap-2">
-                    <Truck className="h-4 w-4 text-green-600 flex-shrink-0" />
+                    <Truck className="h-4 w-4 text-green-600 shrink-0" />
                     <span>{product.shipping}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <RotateCcw className="h-4 w-4 text-green-600 flex-shrink-0" />
+                    <RotateCcw className="h-4 w-4 text-green-600 shrink-0" />
                     <span>{product.returns}</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-green-600 flex-shrink-0" />
+                    <Shield className="h-4 w-4 text-green-600 shrink-0" />
                     <span>{product.warranty}</span>
                   </div>
                 </div>
@@ -441,7 +626,7 @@ const ProductDetail = () => {
                     Country of Origin:
                   </span>
                   <span className="text-xs font-semibold text-gray-900">
-                    Germany
+                    {product.countryOfOrigin}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
@@ -497,12 +682,23 @@ const ProductDetail = () => {
                         <span className="w-10 text-center font-semibold text-sm text-gray-900">
                           {quantity}
                         </span>
-                        <button
-                          onClick={() => setQuantity(quantity + 1)}
-                          className="p-2.5 hover:bg-gray-50 text-gray-600 cursor-pointer"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </button>
+                      <button
+  onClick={() => {
+    const maxQty = Number(product.maxOrderQuantity) || 1;
+
+    if (quantity >= maxQty) {
+      showErrorToast(
+        `Maximum order quantity is ${maxQty}. You cannot order more than ${maxQty} item${maxQty > 1 ? "s" : ""}.`,
+      );
+      return;
+    }
+
+    setQuantity((prev) => prev + 1);
+  }}
+  className="p-2.5 hover:bg-gray-50 text-gray-600 cursor-pointer"
+>
+  <Plus className="h-4 w-4" />
+</button>
                       </div>
 
                       {/* Add to Cart button */}
@@ -528,7 +724,11 @@ const ProductDetail = () => {
                     }`}
                   >
                     <Heart
-                      className={`h-5 w-5 ${isInWishlist(product.id) ? "fill-green-600 text-green-600" : ""}`}
+                      className={`h-5 w-5 ${
+                        isInWishlist(product.id)
+                          ? "fill-green-600 text-green-600"
+                          : ""
+                      }`}
                     />
                   </button>
 
@@ -606,7 +806,11 @@ const ProductDetail = () => {
                         key={index}
                         value={vehicle}
                         className={({ active }) =>
-                          `cursor-pointer select-none px-4 py-2 ${active ? "bg-green-50 text-green-600" : "text-gray-700"}`
+                          `cursor-pointer select-none px-4 py-2 ${
+                            active
+                              ? "bg-green-50 text-green-600"
+                              : "text-gray-700"
+                          }`
                         }
                       >
                         {vehicle}
@@ -661,7 +865,7 @@ const ProductDetail = () => {
                           key={i}
                           className="flex gap-2 items-center text-sm bg-gray-50 p-3 rounded-lg"
                         >
-                          <Check className="h-4 w-4 text-green-600 flex-shrink-0" />
+                          <Check className="h-4 w-4 text-green-600 shrink-0" />
                           <span>{f}</span>
                         </div>
                       ))}
@@ -673,11 +877,35 @@ const ProductDetail = () => {
                   <div className="max-w-2xl border border-gray-200 rounded-lg overflow-hidden bg-white">
                     <table className="w-full border-collapse">
                       <tbody>
+                        <tr className="bg-white">
+                          <td className="px-4 py-3 font-medium text-gray-900 border-r border-gray-200 w-1/3">
+                            Part Number
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">
+                            {product.partNumber}
+                          </td>
+                        </tr>
+                        <tr className="bg-gray-50/50">
+                          <td className="px-4 py-3 font-medium text-gray-900 border-r border-gray-200 w-1/3">
+                            OEM Number
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">
+                            {product.oemNumber}
+                          </td>
+                        </tr>
+                        <tr className="bg-white">
+                          <td className="px-4 py-3 font-medium text-gray-900 border-r border-gray-200 w-1/3">
+                            Country of Origin
+                          </td>
+                          <td className="px-4 py-3 text-gray-600">
+                            {product.countryOfOrigin}
+                          </td>
+                        </tr>
                         {product.specifications.map((spec, i) => (
                           <tr
                             key={i}
                             className={
-                              i % 2 === 0 ? "bg-white" : "bg-gray-50/50"
+                              i % 2 === 0 ? "bg-gray-50/50" : "bg-white"
                             }
                           >
                             <td className="px-4 py-3 font-medium text-gray-900 border-r border-gray-200 w-1/3">
