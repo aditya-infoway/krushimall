@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import {
@@ -16,46 +16,37 @@ import {
   ChevronDown,
 } from "lucide-react";
 import { Listbox } from "@headlessui/react";
-import { showOrderPlacedToast, showSuccessToast } from "../utils/toast";
+import apiHelper from "../utils/apiHelper";
+import { showOrderPlacedToast, showSuccessToast, showErrorToast } from "../utils/toast";
 
 const Checkout = () => {
   const indianStates = [
-    "Maharashtra",
-    "Delhi",
-    "Karnataka",
-    "Tamil Nadu",
-    "Gujarat",
-    "Rajasthan",
-    "Uttar Pradesh",
-    "West Bengal",
-    "Andhra Pradesh",
-    "Bihar",
-    "Haryana",
-    "Kerala",
-    "Madhya Pradesh",
-    "Odisha",
-    "Punjab",
-    "Telangana",
+    "Maharashtra", "Delhi", "Karnataka", "Tamil Nadu", "Gujarat", "Rajasthan",
+    "Uttar Pradesh", "West Bengal", "Andhra Pradesh", "Bihar", "Haryana",
+    "Kerala", "Madhya Pradesh", "Odisha", "Punjab", "Telangana",
   ];
 
-  const { cart, cartTotal, clearCart } = useCart();
+  const {
+    cart,
+    cartTotal,
+    clearCart,
+    fetchCart,
+    cgst,
+    sgst,
+    shippingCharge,
+    discountAmount,
+    appliedCoupon,
+    total,
+  } = useCart();
   const { isAuthenticated } = useAuth();
 
   const navigate = useNavigate();
-  const location = useLocation();
-
-  // Get coupon from navigation state
-  const appliedCouponFromCart = location.state?.appliedCoupon || null;
-  const discountAmountFromCart = location.state?.discountAmount || 0;
-
-  const [appliedCoupon, setAppliedCoupon] = useState(appliedCouponFromCart);
-  const [discountAmount, setDiscountAmount] = useState(discountAmountFromCart);
 
   const [step, setStep] = useState(1);
-
   const [orderPlaced, setOrderPlaced] = useState(false);
-
   const [orderId, setOrderId] = useState("");
+  const [placedTotal, setPlacedTotal] = useState(0);
+  const [placing, setPlacing] = useState(false);
 
   const [shippingInfo, setShippingInfo] = useState({
     fullName: "",
@@ -70,15 +61,7 @@ const Checkout = () => {
 
   const [paymentMethod, setPaymentMethod] = useState("cod");
 
-  // GST Calculation
-  const gstRate = 0.18;
   const subtotal = cartTotal;
-  const gstAmount = subtotal * gstRate;
-  const cgst = gstAmount / 2;
-  const sgst = gstAmount / 2;
-  const shippingCharge = subtotal > 999 ? 0 : 99;
-  const discountedSubtotal = subtotal - discountAmount;
-  const total = discountedSubtotal + gstAmount + shippingCharge;
 
   const handleShippingSubmit = (e) => {
     e.preventDefault();
@@ -86,16 +69,38 @@ const Checkout = () => {
     setStep(2);
   };
 
-  const handlePlaceOrder = () => {
-    const newOrderId = "ORD-" + Date.now().toString(36).toUpperCase();
+  const handlePlaceOrder = async () => {
+    if (paymentMethod !== "cod") {
+      showErrorToast("Online payment is coming soon — please select Cash on Delivery");
+      return;
+    }
 
-    showOrderPlacedToast(newOrderId);
+    try {
+      setPlacing(true);
+      const data = await apiHelper.post("/web/orders/place", {
+        fullName: shippingInfo.fullName,
+        phone: shippingInfo.phone,
+        email: shippingInfo.email,
+        address: shippingInfo.address,
+        city: shippingInfo.city,
+        state: shippingInfo.state,
+        pincode: shippingInfo.pincode,
+        landmark: shippingInfo.landmark,
+        paymentMethod: "COD",
+      });
 
-    setOrderId(newOrderId);
-
-    setOrderPlaced(true);
-
-    clearCart();
+      if (data.success) {
+        showOrderPlacedToast(data.order.orderId);
+        setOrderId(data.order.orderId);
+        setPlacedTotal(data.order.totalAmount);
+        setOrderPlaced(true);
+        await fetchCart(); // backend ne cart clear kar diya, local state bhi sync kar lo
+      }
+    } catch (err) {
+      showErrorToast(err.response?.data?.message || "Failed to place order");
+    } finally {
+      setPlacing(false);
+    }
   };
 
   // Login Required
@@ -104,13 +109,10 @@ const Checkout = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="text-center bg-white p-6 sm:p-8 rounded-2xl shadow-sm max-w-md w-full">
           <ShoppingCart className="h-14 w-14 sm:h-16 sm:w-16 text-gray-300 mx-auto mb-4" />
-
           <h2 className="text-xl font-bold mb-2">Please Login First</h2>
-
           <p className="text-gray-600 mb-6 text-sm sm:text-base">
             You need to login to place an order
           </p>
-
           <Link
             to="/login?redirect=/checkout"
             className="bg-green-600 text-white px-6 sm:px-8 py-3 rounded-lg font-semibold hover:bg-green-700 inline-block w-full sm:w-auto"
@@ -128,13 +130,10 @@ const Checkout = () => {
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
         <div className="text-center bg-white p-6 sm:p-8 rounded-2xl shadow-sm max-w-md w-full">
           <ShoppingCart className="h-14 w-14 sm:h-16 sm:w-16 text-gray-300 mx-auto mb-4" />
-
           <h2 className="text-xl font-bold mb-2">Your cart is empty</h2>
-
           <p className="text-gray-500 mb-6 text-sm sm:text-base">
             Add some products to your cart first.
           </p>
-
           <Link
             to="/products"
             className="bg-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-green-700 inline-block w-full sm:w-auto"
@@ -166,28 +165,19 @@ const Checkout = () => {
           <div className="bg-gray-50 rounded-xl p-4 sm:p-6 mb-6 text-left">
             <div className="flex justify-between gap-4 mb-2">
               <span className="text-gray-600">Order ID:</span>
-
-              <span className="font-semibold break-all text-right">
-                {orderId}
-              </span>
+              <span className="font-semibold break-all text-right">{orderId}</span>
             </div>
 
             <div className="flex justify-between gap-4 mb-2">
               <span className="text-gray-600">Total Amount:</span>
-
               <span className="font-bold flex-shrink-0">
-                ₹{total.toFixed(0).toLocaleString("en-IN")}
+                ₹{placedTotal.toFixed(0).toLocaleString("en-IN")}
               </span>
             </div>
 
             <div className="flex justify-between gap-4">
               <span className="text-gray-600">Payment Method:</span>
-
-              <span className="text-right">
-                {paymentMethod === "cod"
-                  ? "Cash on Delivery"
-                  : "Online Payment"}
-              </span>
+              <span className="text-right">Cash on Delivery</span>
             </div>
           </div>
 
@@ -216,63 +206,39 @@ const Checkout = () => {
       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-gray-500 mb-4 sm:mb-6 overflow-x-auto whitespace-nowrap">
-          <Link to="/" className="hover:text-green-600">
-            Home
-          </Link>
-
+          <Link to="/" className="hover:text-green-600">Home</Link>
           <ChevronRight className="h-4 w-4 flex-shrink-0" />
-
-          <Link to="/cart" className="hover:text-green-600">
-            Cart
-          </Link>
-
+          <Link to="/cart" className="hover:text-green-600">Cart</Link>
           <ChevronRight className="h-4 w-4 flex-shrink-0" />
-
           <span className="text-gray-900 font-medium">Checkout</span>
         </nav>
 
         {/* Steps */}
         <div className="flex items-center justify-center gap-2 sm:gap-4 mb-6 sm:mb-8 overflow-x-auto pb-2">
-          {/* Step 1 */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                step >= 1
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-200 text-gray-400"
+                step >= 1 ? "bg-green-600 text-white" : "bg-gray-200 text-gray-400"
               }`}
             >
               {step > 1 ? "✓" : "1"}
             </div>
-
-            <span
-              className={`text-sm font-medium ${
-                step >= 1 ? "text-gray-900" : "text-gray-400"
-              }`}
-            >
+            <span className={`text-sm font-medium ${step >= 1 ? "text-gray-900" : "text-gray-400"}`}>
               Shipping
             </span>
           </div>
 
           <div className="w-10 sm:w-16 h-0.5 bg-gray-200 flex-shrink-0"></div>
 
-          {/* Step 2 */}
           <div className="flex items-center gap-2 flex-shrink-0">
             <div
               className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                step >= 2
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-200 text-gray-400"
+                step >= 2 ? "bg-green-600 text-white" : "bg-gray-200 text-gray-400"
               }`}
             >
               2
             </div>
-
-            <span
-              className={`text-sm font-medium ${
-                step >= 2 ? "text-gray-900" : "text-gray-400"
-              }`}
-            >
+            <span className={`text-sm font-medium ${step >= 2 ? "text-gray-900" : "text-gray-400"}`}>
               Payment
             </span>
           </div>
@@ -291,22 +257,17 @@ const Checkout = () => {
                 </h2>
 
                 <form onSubmit={handleShippingSubmit} className="space-y-4">
-                  {/* Name + Phone */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Full Name <span className="text-red-600">*</span>
                       </label>
-
                       <input
                         type="text"
                         required
                         value={shippingInfo.fullName}
                         onChange={(e) =>
-                          setShippingInfo({
-                            ...shippingInfo,
-                            fullName: e.target.value,
-                          })
+                          setShippingInfo({ ...shippingInfo, fullName: e.target.value })
                         }
                         className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                         placeholder="John Doe"
@@ -317,19 +278,14 @@ const Checkout = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Phone Number <span className="text-red-600">*</span>
                       </label>
-
                       <div className="relative">
                         <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-
                         <input
                           type="tel"
                           required
                           value={shippingInfo.phone}
                           onChange={(e) =>
-                            setShippingInfo({
-                              ...shippingInfo,
-                              phone: e.target.value,
-                            })
+                            setShippingInfo({ ...shippingInfo, phone: e.target.value })
                           }
                           className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                           placeholder="+91 98765 43210"
@@ -338,24 +294,18 @@ const Checkout = () => {
                     </div>
                   </div>
 
-                  {/* Email */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Email <span className="text-red-600">*</span>
                     </label>
-
                     <div className="relative">
                       <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-
                       <input
                         type="email"
                         required
                         value={shippingInfo.email}
                         onChange={(e) =>
-                          setShippingInfo({
-                            ...shippingInfo,
-                            email: e.target.value,
-                          })
+                          setShippingInfo({ ...shippingInfo, email: e.target.value })
                         }
                         className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                         placeholder="your@email.com"
@@ -363,52 +313,36 @@ const Checkout = () => {
                     </div>
                   </div>
 
-                  {/* Address */}
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Address <span className="text-red-600">*</span>
                     </label>
-
                     <textarea
                       required
                       rows={3}
                       value={shippingInfo.address}
                       onChange={(e) =>
-                        setShippingInfo({
-                          ...shippingInfo,
-                          address: e.target.value,
-                        })
+                        setShippingInfo({ ...shippingInfo, address: e.target.value })
                       }
                       className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none resize-none"
                       placeholder="House No., Street, Area"
                     />
                   </div>
 
-                  {/* City + State */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         State <span className="text-red-600">*</span>
                       </label>
-
                       <Listbox
                         value={shippingInfo.state}
                         onChange={(value) =>
-                          setShippingInfo({
-                            ...shippingInfo,
-                            state: value,
-                          })
+                          setShippingInfo({ ...shippingInfo, state: value })
                         }
                       >
                         <div className="relative">
                           <Listbox.Button className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm text-left focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none bg-white flex items-center justify-between">
-                            <span
-                              className={
-                                shippingInfo.state
-                                  ? "text-gray-900"
-                                  : "text-gray-400"
-                              }
-                            >
+                            <span className={shippingInfo.state ? "text-gray-900" : "text-gray-400"}>
                               {shippingInfo.state || "Select State"}
                             </span>
                             <ChevronDown className="h-4 w-4 text-gray-400" />
@@ -420,9 +354,7 @@ const Checkout = () => {
                                 value={state}
                                 className={({ active, selected }) =>
                                   `cursor-pointer select-none px-4 py-2.5 ${
-                                    active
-                                      ? "bg-green-50 text-green-600"
-                                      : "text-gray-700"
+                                    active ? "bg-green-50 text-green-600" : "text-gray-700"
                                   } ${selected ? "bg-green-100 font-medium" : ""}`
                                 }
                               >
@@ -437,16 +369,12 @@ const Checkout = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         City <span className="text-red-600">*</span>
                       </label>
-
                       <input
                         type="text"
                         required
                         value={shippingInfo.city}
                         onChange={(e) =>
-                          setShippingInfo({
-                            ...shippingInfo,
-                            city: e.target.value,
-                          })
+                          setShippingInfo({ ...shippingInfo, city: e.target.value })
                         }
                         className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                         placeholder="Mumbai"
@@ -454,23 +382,18 @@ const Checkout = () => {
                     </div>
                   </div>
 
-                  {/* Pincode + Landmark */}
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Pincode <span className="text-red-600">*</span>
                       </label>
-
                       <input
                         type="text"
                         required
                         pattern="[0-9]{6}"
                         value={shippingInfo.pincode}
                         onChange={(e) =>
-                          setShippingInfo({
-                            ...shippingInfo,
-                            pincode: e.target.value,
-                          })
+                          setShippingInfo({ ...shippingInfo, pincode: e.target.value })
                         }
                         className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                         placeholder="400001"
@@ -481,15 +404,11 @@ const Checkout = () => {
                       <label className="block text-sm font-medium text-gray-700 mb-1">
                         Landmark
                       </label>
-
                       <input
                         type="text"
                         value={shippingInfo.landmark}
                         onChange={(e) =>
-                          setShippingInfo({
-                            ...shippingInfo,
-                            landmark: e.target.value,
-                          })
+                          setShippingInfo({ ...shippingInfo, landmark: e.target.value })
                         }
                         className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none"
                         placeholder="Nearby landmark"
@@ -497,7 +416,6 @@ const Checkout = () => {
                     </div>
                   </div>
 
-                  {/* Continue */}
                   <button
                     type="submit"
                     className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition-colors flex items-center justify-center gap-2"
@@ -517,7 +435,6 @@ const Checkout = () => {
                   Payment Method
                 </h2>
 
-                {/* Payment Options */}
                 <div className="space-y-3">
                   {/* COD */}
                   <label
@@ -535,42 +452,21 @@ const Checkout = () => {
                       onChange={(e) => setPaymentMethod(e.target.value)}
                       className="text-green-600 focus:ring-green-500 mt-1"
                     />
-
                     <div className="min-w-0">
-                      <p className="font-medium text-gray-900">
-                        Cash on Delivery
-                      </p>
-
+                      <p className="font-medium text-gray-900">Cash on Delivery</p>
                       <p className="text-sm text-gray-500 wrap-break-word">
                         Pay when you receive the product
                       </p>
                     </div>
                   </label>
 
-                  {/* Online */}
-                  <label
-                    className={`flex items-start gap-3 p-4 border rounded-xl cursor-pointer transition-colors ${
-                      paymentMethod === "online"
-                        ? "border-green-600 bg-green-50"
-                        : "border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="payment"
-                      value="online"
-                      checked={paymentMethod === "online"}
-                      onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="text-green-600 focus:ring-green-500 mt-1"
-                    />
-
+                  {/* Online — abhi backend support nahi karta, disabled rakha hai */}
+                  <label className="flex items-start gap-3 p-4 border rounded-xl cursor-not-allowed opacity-50 border-gray-200">
+                    <input type="radio" name="payment" value="online" disabled className="mt-1" />
                     <div className="min-w-0">
-                      <p className="font-medium text-gray-900">
-                        Online Payment
-                      </p>
-
+                      <p className="font-medium text-gray-900">Online Payment</p>
                       <p className="text-sm text-gray-500 wrap-break-word">
-                        Pay via UPI, Credit/Debit Card, or Net Banking
+                        Coming soon — UPI, Credit/Debit Card, Net Banking
                       </p>
                     </div>
                   </label>
@@ -582,21 +478,12 @@ const Checkout = () => {
                     <MapPin className="h-4 w-4 text-gray-400 flex-shrink-0" />
                     Shipping To:
                   </h3>
-
                   <div className="space-y-1 text-sm text-gray-600 wrap-break-word">
                     <p>{shippingInfo.fullName}</p>
-
-                    <p>
-                      {shippingInfo.address}, {shippingInfo.city}
-                    </p>
-
-                    <p>
-                      {shippingInfo.state} - {shippingInfo.pincode}
-                    </p>
-
+                    <p>{shippingInfo.address}, {shippingInfo.city}</p>
+                    <p>{shippingInfo.state} - {shippingInfo.pincode}</p>
                     <p>{shippingInfo.phone}</p>
                   </div>
-
                   <button
                     onClick={() => setStep(1)}
                     className="text-sm text-green-600 hover:text-green-700 font-medium mt-3"
@@ -617,9 +504,10 @@ const Checkout = () => {
 
                   <button
                     onClick={handlePlaceOrder}
-                    className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition-colors"
+                    disabled={placing}
+                    className="flex-1 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl transition-colors disabled:opacity-60"
                   >
-                    Place Order
+                    {placing ? "Placing Order..." : "Place Order"}
                   </button>
                 </div>
               </div>
@@ -634,24 +522,20 @@ const Checkout = () => {
               {/* Cart Items */}
               <div className="space-y-3 mb-4 max-h-60 overflow-y-auto">
                 {cart.map((item) => (
-                  <div key={item.id} className="flex gap-3 text-sm min-w-0">
+                  <div key={item.cartItemId} className="flex gap-3 text-sm min-w-0">
                     <img
-                      src={item.image}
+                       src={apiHelper.getImageUrl(item.image)}
                       alt={item.name}
                       className="w-12 h-12 sm:w-14 sm:h-14 object-contain bg-gray-100 rounded-lg flex-shrink-0"
                     />
-
                     <div className="flex-1 min-w-0 overflow-hidden">
                       <p className="text-gray-900 text-sm wrap-break-word line-clamp-2">
                         {item.name}
                       </p>
-
                       <p className="text-gray-500 text-xs sm:text-sm">
-                        Qty: {item.quantity} × ₹
-                        {item.price.toLocaleString("en-IN")}
+                        Qty: {item.quantity} × ₹{item.price.toLocaleString("en-IN")}
                       </p>
                     </div>
-
                     <p className="font-medium flex-shrink-0 text-sm">
                       ₹{(item.price * item.quantity).toLocaleString("en-IN")}
                     </p>
@@ -663,36 +547,22 @@ const Checkout = () => {
               <div className="border-t pt-4 space-y-2 text-sm">
                 <div className="flex justify-between gap-4">
                   <span className="text-gray-600">Subtotal</span>
-
-                  <span className="flex-shrink-0">
-                    ₹{subtotal.toLocaleString("en-IN")}
-                  </span>
+                  <span className="flex-shrink-0">₹{subtotal.toLocaleString("en-IN")}</span>
                 </div>
 
                 <div className="flex justify-between gap-4">
                   <span className="text-gray-600">CGST (9%)</span>
-
-                  <span className="flex-shrink-0">
-                    ₹{cgst.toFixed(0).toLocaleString("en-IN")}
-                  </span>
+                  <span className="flex-shrink-0">₹{cgst.toFixed(0).toLocaleString("en-IN")}</span>
                 </div>
 
                 <div className="flex justify-between gap-4">
                   <span className="text-gray-600">SGST (9%)</span>
-
-                  <span className="flex-shrink-0">
-                    ₹{sgst.toFixed(0).toLocaleString("en-IN")}
-                  </span>
+                  <span className="flex-shrink-0">₹{sgst.toFixed(0).toLocaleString("en-IN")}</span>
                 </div>
 
                 <div className="flex justify-between gap-4">
                   <span className="text-gray-600">Shipping</span>
-
-                  <span
-                    className={`flex-shrink-0 ${
-                      shippingCharge === 0 ? "text-green-600" : ""
-                    }`}
-                  >
+                  <span className={`flex-shrink-0 ${shippingCharge === 0 ? "text-green-600" : ""}`}>
                     {shippingCharge === 0 ? "FREE" : `₹${shippingCharge}`}
                   </span>
                 </div>
@@ -709,7 +579,6 @@ const Checkout = () => {
               )}
 
               {/* Total */}
-
               <div className="border-t mt-4 pt-4">
                 <div className="flex justify-between text-lg font-bold gap-4">
                   <span>Total</span>
@@ -719,20 +588,16 @@ const Checkout = () => {
                 </div>
                 {discountAmount > 0 && (
                   <p className="text-xs text-green-600 mt-1">
-                    You saved ₹{discountAmount.toLocaleString("en-IN")} with
-                    coupon!
+                    You saved ₹{discountAmount.toLocaleString("en-IN")} with coupon!
                   </p>
                 )}
-                <p className="text-xs text-gray-400 mt-1">
-                  Inclusive of all taxes
-                </p>
+                <p className="text-xs text-gray-400 mt-1">Inclusive of all taxes</p>
               </div>
 
               {/* Extra Info */}
               <div className="mt-4 space-y-3">
                 <div className="flex items-center gap-2 text-xs text-gray-500">
                   <Truck className="h-4 w-4 flex-shrink-0" />
-
                   <span>Estimated delivery: 3-5 business days</span>
                 </div>
 

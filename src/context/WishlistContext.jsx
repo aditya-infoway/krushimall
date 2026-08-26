@@ -10,18 +10,34 @@ export const useWishlist = () => {
   return context;
 };
 
+// ✅ composite key — id collision se bachne ke liye (Product id=4 aur Variant id=4 alag hain)
+const makeKey = (id, type) => `${type}:${id}`;
+
 const mapVariant = (item) => ({
+  wishlistId: item.id,               // Wishlist row ka id (delete ke liye kabhi zaroorat pad sakti hai)
   id: item.variant.id,
+  type: "variant",
   name: item.variant.productName,
   brand: item.variant.brand?.brandName || "Unknown",
   price: item.variant.exShowroomPrice || 0,
   image: apiHelper.image(item.variant.frontView),
 });
 
+const mapProduct = (item) => ({
+  wishlistId: item.id,
+  id: item.product.id,
+  type: "product",
+  name: item.product.productName,
+  brand: item.product.brand?.brandName || "Unknown",
+  price: Number(item.product.sellingPrice) || 0,
+  oldPrice: Number(item.product.mrp) || 0,
+  image: apiHelper.image(item.product.mainImage),
+});
+
 export const WishlistProvider = ({ children }) => {
   const { isAuthenticated } = useAuth();
   const [wishlistItems, setWishlistItems] = useState([]);
-  const [wishlistIds, setWishlistIds] = useState(new Set());
+  const [wishlistIds, setWishlistIds] = useState(new Set());   // ✅ ab composite keys store honge
   const [showWishlistToast, setShowWishlistToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
 
@@ -39,9 +55,19 @@ export const WishlistProvider = ({ children }) => {
     }
     try {
       const res = await apiHelper.get("/wishlist");
-      const items = (res?.data || res || []).map(mapVariant);
+      const raw = res?.data || res || [];
+
+      // ✅ har entry ke andar hai to variant hoga ya product — jo bhi ho, sahi mapper use karo
+      const items = raw
+        .map((entry) => {
+          if (entry.variant) return mapVariant(entry);
+          if (entry.product) return mapProduct(entry);
+          return null;
+        })
+        .filter(Boolean);
+
       setWishlistItems(items);
-      setWishlistIds(new Set(items.map((i) => i.id)));
+      setWishlistIds(new Set(items.map((i) => makeKey(i.id, i.type))));
     } catch (error) {
       console.error("Failed to fetch wishlist:", error);
     }
@@ -51,39 +77,54 @@ export const WishlistProvider = ({ children }) => {
     fetchWishlist();
   }, [fetchWishlist]);
 
-  const toggleWishlist = async (product) => {
+  // ✅ ab type zaroori hai: "product" ya "variant". Default "product" rakha
+  // hai taaki spare-parts pages (jahan zyada calls honge) bina change ke chal jayein.
+  const toggleWishlist = async (product, type = "product") => {
     if (!isAuthenticated) return;
-    const currentlyIn = wishlistIds.has(product.id);
+
+    const key = makeKey(product.id, type);
+    const currentlyIn = wishlistIds.has(key);
 
     // optimistic UI update
     setWishlistIds((prev) => {
       const next = new Set(prev);
-      currentlyIn ? next.delete(product.id) : next.add(product.id);
+      currentlyIn ? next.delete(key) : next.add(key);
       return next;
     });
     setWishlistItems((prev) =>
-      currentlyIn ? prev.filter((i) => i.id !== product.id) : [...prev, product]
+      currentlyIn
+        ? prev.filter((i) => !(i.id === product.id && i.type === type))
+        : [...prev, { ...product, type }]
     );
-    notify(currentlyIn ? `${product.name} removed from wishlist!` : `${product.name} added to wishlist!`);
+    notify(
+      currentlyIn
+        ? `${product.name} removed from wishlist!`
+        : `${product.name} added to wishlist!`
+    );
 
     try {
-      await apiHelper.post("/wishlist/toggle", { variantId: product.id });
+      const payload = type === "variant"
+        ? { variantId: product.id }
+        : { productId: product.id };
+
+      await apiHelper.post("/wishlist/toggle", payload);
     } catch (error) {
       console.error("Failed to toggle wishlist:", error);
       fetchWishlist(); // revert to server truth on failure
     }
   };
 
-  const addToWishlist = (product) => {
-    if (!wishlistIds.has(product.id)) toggleWishlist(product);
+  const addToWishlist = (product, type = "product") => {
+    if (!wishlistIds.has(makeKey(product.id, type))) toggleWishlist(product, type);
   };
 
-  const removeFromWishlist = (productId) => {
-    const product = wishlistItems.find((i) => i.id === productId);
-    if (product) toggleWishlist(product);
+  const removeFromWishlist = (productId, type = "product") => {
+    const item = wishlistItems.find((i) => i.id === productId && i.type === type);
+    if (item) toggleWishlist(item, type);
   };
 
-  const isInWishlist = (productId) => wishlistIds.has(productId);
+  const isInWishlist = (productId, type = "product") =>
+    wishlistIds.has(makeKey(productId, type));
 
   const clearWishlist = async () => {
     setWishlistItems([]);
