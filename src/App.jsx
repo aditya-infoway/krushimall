@@ -46,6 +46,9 @@ import UsedWebsiteVariant from "./pages/usedwebsitevariant/index.jsx";
 import BottomNavigation from "./components/BottomNavigation.jsx";
 import splashImage from "./assets/app-assets/splash.png";
 import CategoryDetail from "./pages/CategoryDetail";
+import Equipment from "./pages/Equipments.jsx";
+import EquipmentDetails from "./pages/EquipmentDetails.jsx";
+import AllBrands from "./pages/AllBrands";
 // ...
 
 function App() {
@@ -100,7 +103,7 @@ function App() {
         </div>
       )}
 
-      <Router basename={Capacitor.isNativePlatform() ? "/" : "/krushimall"}>
+     <Router basename={Capacitor.isNativePlatform() ? "/" : "/krushimall/"}>
         <AuthProvider>
           <CartProvider>
             <ScrollToTop />
@@ -179,6 +182,9 @@ function App() {
                     <Route path="/wishlist" element={<Wishlist />} />
                     <Route path="/spare-parts" element={<SpareParts />} />
                     <Route path="/categories" element={<AllCategories />} />
+                    <Route path="/equipment" element={<Equipment />} />
+                    <Route path="/equipment/:id" element={<EquipmentDetails />} />
+                    <Route path="/all-brands" element={<AllBrands />} />
                     <Route path="/tractors" element={<TractorList />} />
                     <Route path="/new-tractors" element={<NewTractors />} />
                     <Route path="/old-tractors" element={<OldTractors />} />

@@ -1522,60 +1522,70 @@ const NewTractors = () => {
       </div>
 
       {/* Popular Brands Marquee Section */}
-      <div className="bg-white border-b border-gray-100">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 pt-16 md:pt-20 lg:pt-24">
-          <h3 className="text-center text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-6">
-            Popular{" "}
-            <span className="text-transparent bg-clip-text bg-green-600">
-              Tractor Brands
-            </span>
-          </h3>
-          <div className="relative overflow-hidden">
-            {brandsLoading ? (
-              <div className="flex justify-center items-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
-              </div>
-            ) : popularBrands.length === 0 ? (
-              <p className="text-center text-gray-500 py-8">
-                No brands available
-              </p>
-            ) : (
-              <div className="flex gap-8 animate-marquee">
-                {[...popularBrands, ...popularBrands].map((brand, idx) => (
-                  <Link
-                    key={idx}
-                    to={`/tractors?type=new&brand=${encodeURIComponent(brand.name)}`}
-                    className="flex flex-col items-center gap-2 flex-shrink-0 group cursor-pointer"
-                  >
-                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-50 border-2 border-gray-200 flex items-center justify-center group-hover:border-green-600 group-hover:shadow-md group-hover:bg-green-100 transition-all duration-300 overflow-hidden">
-                      <img
-                        src={brand.logo}
-                        alt={brand.name}
-                        className="w-full h-full object-contain p-3"
-                        onError={(e) => {
-                          e.target.style.display = "none";
-                          e.target.nextSibling.style.display = "flex";
-                        }}
-                      />
-                      <span className="text-base sm:text-lg font-black text-green-700 hidden">
-                        {brand.name
-                          .split(" ")
-                          .map((w) => w[0])
-                          .join("")
-                          .slice(0, 2)
-                          .toUpperCase()}
-                      </span>
-                    </div>
-                    <span className="text-xs font-medium text-gray-600 group-hover:text-green-700 transition-colors">
-                      {brand.name}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+   {/* Popular Brands Marquee Section */}
+<div className="bg-white border-b border-gray-100">
+  <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 pt-16 md:pt-20 lg:pt-24">
+    {/* Header with View All Button */}
+    <div className="flex items-center justify-between mb-6">
+      <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+        Popular{" "}
+        <span className="text-transparent bg-clip-text bg-green-600">
+          Tractor Brands
+        </span>
+      </h3>
+      <Link
+        to="/all-brands"
+        className="flex items-center gap-2 text-green-600 hover:text-green-700 font-semibold text-sm transition-colors"
+      >
+        View All Brands
+        <ArrowRight className="h-4 w-4" />
+      </Link>
+    </div>
+
+    <div className="relative overflow-hidden">
+      {brandsLoading ? (
+        <div className="flex justify-center items-center py-8">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
         </div>
-      </div>
+      ) : popularBrands.length === 0 ? (
+        <p className="text-center text-gray-500 py-8">No brands available</p>
+      ) : (
+        <div className="flex gap-8 animate-marquee">
+          {[...popularBrands, ...popularBrands].map((brand, idx) => (
+            <Link
+              key={idx}
+              to={`/tractors?type=new&brand=${encodeURIComponent(brand.name)}`}
+              className="flex flex-col items-center gap-2 flex-shrink-0 group cursor-pointer"
+            >
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-50 border-2 border-gray-200 flex items-center justify-center group-hover:border-green-600 group-hover:shadow-md group-hover:bg-green-100 transition-all duration-300 overflow-hidden">
+                <img
+                  src={brand.logo}
+                  alt={brand.name}
+                  className="w-full h-full object-contain p-3"
+                  onError={(e) => {
+                    e.target.style.display = "none";
+                    e.target.nextSibling.style.display = "flex";
+                  }}
+                />
+                <span className="text-base sm:text-lg font-black text-green-700 hidden">
+                  {brand.name
+                    .split(" ")
+                    .map((w) => w[0])
+                    .join("")
+                    .slice(0, 2)
+                    .toUpperCase()}
+                </span>
+              </div>
+              <span className="text-xs font-medium text-gray-600 group-hover:text-green-700 transition-colors">
+                {brand.name}
+              </span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  </div>
+</div>
 
       {/* --- POPULAR COMPARISON HANDPICKS --- */}
       <div className="border-t border-gray-200 w-full">
