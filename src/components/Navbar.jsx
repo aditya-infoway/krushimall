@@ -24,6 +24,7 @@ import {
   Scale,
   CalendarCheck,
   Store,
+  Cog,
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
@@ -43,6 +44,9 @@ const Navbar = () => {
   const [hoverDropdown, setHoverDropdown] = useState(null);
   const [cartPreviewOpen, setCartPreviewOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const [desktopSearchOpen, setDesktopSearchOpen] = useState(false);
+const desktopSearchRef = useRef(null);
+const searchInputRef = useRef(null);
 
   // ============================================================
   // MEGA MENU ACTIVE STATES
@@ -60,6 +64,35 @@ const Navbar = () => {
   const userMenuRef = useRef(null);
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+  const handleClickOutsideSearch = (event) => {
+    if (
+      desktopSearchRef.current &&
+      !desktopSearchRef.current.contains(event.target)
+    ) {
+      setDesktopSearchOpen(false);
+    }
+  };
+
+  const handleEscape = (event) => {
+    if (event.key === "Escape") setDesktopSearchOpen(false);
+  };
+
+  document.addEventListener("mousedown", handleClickOutsideSearch);
+  document.addEventListener("keydown", handleEscape);
+
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutsideSearch);
+    document.removeEventListener("keydown", handleEscape);
+  };
+}, []);
+
+useEffect(() => {
+  if (desktopSearchOpen && searchInputRef.current) {
+    searchInputRef.current.focus();
+  }
+}, [desktopSearchOpen]);
 
   // ============================================================
   // LOGOUT
@@ -286,6 +319,12 @@ const Navbar = () => {
       label: "Compare",
       href: "/tractorcompare",
       icon: Scale,
+      color: "from-green-600 to-green-700",
+    },
+    {
+      label: "Equipment",
+      icon: Cog,
+      href: "/equipment",
       color: "from-green-600 to-green-700",
     },
     {
@@ -676,11 +715,11 @@ const Navbar = () => {
                                         child.subSubCategoryName;
 
                                       return (
-                                      <Link
-  key={child.id}
-  to={`/products?subSubCategoryId=${child.id}`}
-  className="group flex items-center gap-3 border border-gray-200 rounded-lg px-3 py-3 bg-white hover:border-green-500 hover:bg-green-50 transition-all"
->
+                                        <Link
+                                          key={child.id}
+                                          to={`/products?subSubCategoryId=${child.id}`}
+                                          className="group flex items-center gap-3 border border-gray-200 rounded-lg px-3 py-3 bg-white hover:border-green-500 hover:bg-green-50 transition-all"
+                                        >
                                           {/* Child Image */}
 
                                           {/* <div className="w-9 h-9 rounded-md overflow-hidden bg-gray-100 border border-gray-100 shrink-0 flex items-center justify-center">
@@ -903,21 +942,7 @@ const Navbar = () => {
             </div>
           </div>
 
-          {/* ====================================================== */}
-          {/* SEARCH BAR */}
-          {/* ====================================================== */}
-
-          <div className="hidden md:flex flex-1 max-w-md mx-1">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-2.5 h-5 w-5 text-gray-400" />
-
-              <input
-                type="text"
-                placeholder="Search parts..."
-                className="block w-full pl-10 pr-4 py-2.5 border border-gray-300 rounded-lg text-sm bg-gray-50 focus:bg-white focus:ring-2 focus:ring-green-600 focus:border-transparent outline-none"
-              />
-            </div>
-          </div>
+         
 
           {/* ====================================================== */}
           {/* RIGHT ICONS */}
@@ -933,195 +958,232 @@ const Navbar = () => {
               <Search className="h-5 w-5" />
             </button>
 
+              {/* ================================================== */}
+            {/* DESKTOP EXPANDABLE SEARCH */}
+            {/* ================================================== */}
+
+            <div
+              className="hidden md:flex items-center relative"
+              ref={desktopSearchRef}
+            >
+              <div
+                className={`flex items-center bg-gray-50 border border-gray-300 rounded-lg overflow-hidden transition-all duration-300 ease-in-out ${
+                  desktopSearchOpen
+                    ? "w-44 pl-2.5 pr-1.5 py-1.5 opacity-100 border-gray-300"
+                    : "w-0 px-0 py-0 opacity-0 border-transparent pointer-events-none"
+                }`}
+              >
+                <Search className="h-4 w-4 text-gray-400 shrink-0" />
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Search..."
+                  className="ml-2 flex-1 min-w-0 bg-transparent text-sm outline-none"
+                />
+              </div>
+
+              {!desktopSearchOpen && (
+                <button
+                  onClick={() => setDesktopSearchOpen(true)}
+                  className="text-gray-500 hover:text-green-600 transition-colors p-2"
+                  aria-label="Open search"
+                >
+                  <Search className="h-5 w-5" />
+                </button>
+              )}
+            </div>
+
             {/* ================================================== */}
             {/* USER MENU */}
             {/* ================================================== */}
 
-          <div className="relative hidden sm:block" ref={userMenuRef}>
-  {isAuthenticated ? (
-    <>
-      {/* ================= USER (priority) ================= */}
-      <button
-        onClick={() => setUserMenuOpen(!userMenuOpen)}
-        className="text-gray-500 hover:text-green-600 cursor-pointer transition-colors flex items-center gap-1 py-2"
-      >
-        <User className="h-5 w-5" />
-        <ChevronDown
-          className={`h-3 w-3 transition-transform ${
-            userMenuOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
+            <div className="relative hidden sm:block" ref={userMenuRef}>
+              {isAuthenticated ? (
+                <>
+                  {/* ================= USER (priority) ================= */}
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="text-gray-500 hover:text-green-600 cursor-pointer transition-colors flex items-center gap-1 py-2"
+                  >
+                    <User className="h-5 w-5" />
+                    <ChevronDown
+                      className={`h-3 w-3 transition-transform ${
+                        userMenuOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
 
-      {userMenuOpen && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 py-2 animate-fadeIn">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <p className="font-semibold text-gray-900 text-sm">
-              {user?.name || "User"}
-            </p>
-            <p className="text-xs text-gray-500">
-              {user?.email || "user@example.com"}
-            </p>
-          </div>
+                  {userMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 py-2 animate-fadeIn">
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <p className="font-semibold text-gray-900 text-sm">
+                          {user?.name || "User"}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {user?.email || "user@example.com"}
+                        </p>
+                      </div>
 
-          <div className="py-2">
-            <Link
-              to="/profile"
-              onClick={() => setUserMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-            >
-              <User className="h-4 w-4" />
-              My Profile
-            </Link>
+                      <div className="py-2">
+                        <Link
+                          to="/profile"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                        >
+                          <User className="h-4 w-4" />
+                          My Profile
+                        </Link>
 
-            {!isVendorLoggedIn ? (
-              <Link
-                to="/vendor-login"
-                onClick={() => setUserMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-              >
-                <Store className="h-4 w-4" />
-                Vendor Login
-              </Link>
-            ) : (
-              <Link
-                to="/vendor-profile"
-                onClick={() => setUserMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-              >
-                <Store className="h-4 w-4" />
-                Vendor Profile
-              </Link>
-            )}
+                        {!isVendorLoggedIn ? (
+                          <Link
+                            to="/vendor-login"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                          >
+                            <Store className="h-4 w-4" />
+                            Vendor Login
+                          </Link>
+                        ) : (
+                          <Link
+                            to="/vendor-profile"
+                            onClick={() => setUserMenuOpen(false)}
+                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                          >
+                            <Store className="h-4 w-4" />
+                            Vendor Profile
+                          </Link>
+                        )}
 
-            <Link
-              to="/orders"
-              onClick={() => setUserMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-            >
-              <Package className="h-4 w-4" />
-              My Orders
-            </Link>
+                        <Link
+                          to="/orders"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                        >
+                          <Package className="h-4 w-4" />
+                          My Orders
+                        </Link>
 
-            <Link
-              to="/wishlist"
-              onClick={() => setUserMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-            >
-              <Heart className="h-4 w-4" />
-              Wishlist
-            </Link>
+                        <Link
+                          to="/wishlist"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                        >
+                          <Heart className="h-4 w-4" />
+                          Wishlist
+                        </Link>
 
-            <Link
-              to="/booking-history"
-              onClick={() => setUserMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-            >
-              <CalendarCheck className="h-4 w-4" />
-              Booked Services
-            </Link>
-          </div>
+                        <Link
+                          to="/booking-history"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                        >
+                          <CalendarCheck className="h-4 w-4" />
+                          Booked Services
+                        </Link>
+                      </div>
 
-          <div className="border-t border-gray-100 pt-2">
-            <button
-              onClick={handleFullLogout}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm text-green-600 hover:bg-green-50 w-full transition-colors"
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </button>
-          </div>
-        </div>
-      )}
-    </>
-  ) : isVendorLoggedIn ? (
-    <>
-      {/* ================= VENDOR (fallback, only when user NOT logged in) ================= */}
-      <button
-        onClick={() => setUserMenuOpen(!userMenuOpen)}
-        className="text-gray-500 hover:text-green-600 cursor-pointer transition-colors flex items-center gap-1 py-2"
-      >
-        <User className="h-5 w-5" />
-        <ChevronDown
-          className={`h-3 w-3 transition-transform ${
-            userMenuOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
+                      <div className="border-t border-gray-100 pt-2">
+                        <button
+                          onClick={handleFullLogout}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-green-600 hover:bg-green-50 w-full transition-colors"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : isVendorLoggedIn ? (
+                <>
+                  {/* ================= VENDOR (fallback, only when user NOT logged in) ================= */}
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="text-gray-500 hover:text-green-600 cursor-pointer transition-colors flex items-center gap-1 py-2"
+                  >
+                    <User className="h-5 w-5" />
+                    <ChevronDown
+                      className={`h-3 w-3 transition-transform ${
+                        userMenuOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
 
-      {userMenuOpen && (
-        <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 py-2 animate-fadeIn">
-          <div className="px-4 py-3 border-b border-gray-100">
-            <p className="font-semibold text-gray-900 text-sm">
-              {vendorData?.name || vendorData?.businessName || "Vendor"}
-            </p>
-            <p className="text-xs text-gray-500">
-              {vendorData?.email || "vendor@example.com"}
-            </p>
-          </div>
+                  {userMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-56 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 py-2 animate-fadeIn">
+                      <div className="px-4 py-3 border-b border-gray-100">
+                        <p className="font-semibold text-gray-900 text-sm">
+                          {vendorData?.name ||
+                            vendorData?.businessName ||
+                            "Vendor"}
+                        </p>
+                        <p className="text-xs text-gray-500">
+                          {vendorData?.email || "vendor@example.com"}
+                        </p>
+                      </div>
 
-          <div className="py-2">
-            <Link
-              to="/vendor-profile"
-              onClick={() => setUserMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-            >
-              <Store className="h-4 w-4" />
-              My Profile
-            </Link>
+                      <div className="py-2">
+                        <Link
+                          to="/vendor-profile"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                        >
+                          <Store className="h-4 w-4" />
+                          My Profile
+                        </Link>
 
-            <Link
-              to="/login"
-              onClick={() => setUserMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-            >
-              <LogIn className="h-4 w-4" />
-              User Login
-            </Link>
-          </div>
+                        <Link
+                          to="/login"
+                          onClick={() => setUserMenuOpen(false)}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                        >
+                          <LogIn className="h-4 w-4" />
+                          User Login
+                        </Link>
+                      </div>
 
-          <div className="border-t border-gray-100 pt-2">
-            <button
-              onClick={handleVendorLogout}
-              className="flex items-center gap-3 px-4 py-2.5 text-sm text-green-600 hover:bg-green-50 w-full transition-colors"
-            >
-              <LogOut className="h-4 w-4" />
-              Logout
-            </button>
-          </div>
-        </div>
-      )}
-    </>
-  ) : (
-    <>
-      {/* ================= NOT LOGGED IN ================= */}
-      <button
-        onClick={() => setUserMenuOpen(!userMenuOpen)}
-        className="text-gray-500 hover:text-green-600 transition-colors flex items-center gap-1 py-2"
-      >
-        <User className="h-5 w-5" />
-        <ChevronDown
-          className={`h-3 w-3 transition-transform ${
-            userMenuOpen ? "rotate-180" : ""
-          }`}
-        />
-      </button>
+                      <div className="border-t border-gray-100 pt-2">
+                        <button
+                          onClick={handleVendorLogout}
+                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-green-600 hover:bg-green-50 w-full transition-colors"
+                        >
+                          <LogOut className="h-4 w-4" />
+                          Logout
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              ) : (
+                <>
+                  {/* ================= NOT LOGGED IN ================= */}
+                  <button
+                    onClick={() => setUserMenuOpen(!userMenuOpen)}
+                    className="text-gray-500 hover:text-green-600 transition-colors flex items-center gap-1 py-2"
+                  >
+                    <User className="h-5 w-5" />
+                    <ChevronDown
+                      className={`h-3 w-3 transition-transform ${
+                        userMenuOpen ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
 
-      {userMenuOpen && (
-        <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 py-2 animate-fadeIn">
-          <Link
-            to="/login"
-            onClick={() => setUserMenuOpen(false)}
-            className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-          >
-            <LogIn className="h-4 w-4" />
-            Login
-          </Link>
-        </div>
-      )}
-    </>
-  )}
-</div>
+                  {userMenuOpen && (
+                    <div className="absolute right-0 top-full mt-2 w-48 bg-white rounded-xl shadow-2xl border border-gray-100 z-50 py-2 animate-fadeIn">
+                      <Link
+                        to="/login"
+                        onClick={() => setUserMenuOpen(false)}
+                        className="flex items-center gap-3 px-4 py-3 text-sm font-medium text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
+                      >
+                        <LogIn className="h-4 w-4" />
+                        Login
+                      </Link>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
             {/* ================================================== */}
             {/* CART */}
             {/* ================================================== */}

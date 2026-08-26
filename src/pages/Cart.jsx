@@ -14,87 +14,65 @@ import {
   Ticket,
   X,
   CheckCircle,
+  ChevronLeft,
 } from "lucide-react";
-import { showCartRemovedToast, showSuccessToast } from "../utils/toast";
-
+import { showErrorToast } from "../utils/toast";
+import apiHelper from "../utils/apiHelper";
 const Cart = () => {
-  const { cart, removeFromCart, updateQuantity, cartTotal } = useCart();
+  const {
+    cart,
+    removeFromCart,
+    updateQuantity,
+    cartTotal,
+    cgst,
+    sgst,
+    shippingCharge,
+    discountAmount,
+    appliedCoupon,
+    total,
+    applyCoupon,
+    removeCoupon,
+  } = useCart();
   const { isAuthenticated } = useAuth();
   const navigate = useNavigate();
-  const [couponCode, setCouponCode] = useState("");
-  const [appliedCoupon, setAppliedCoupon] = useState(null);
-  const [couponError, setCouponError] = useState("");
 
-  // Available coupons
-  const coupons = {
-    SAVE10: { discount: 10, type: "percentage", minAmount: 500 },
-    SAVE20: { discount: 20, type: "percentage", minAmount: 1000 },
-    FLAT100: { discount: 100, type: "fixed", minAmount: 599 },
-    WELCOME50: { discount: 50, type: "fixed", minAmount: 0 },
+  const [couponCode, setCouponCode] = useState("");
+  const [couponError, setCouponError] = useState("");
+  const [applyingCoupon, setApplyingCoupon] = useState(false);
+
+  const getMaxOrderQuantity = (item) => {
+    const maxQty = Number(item?.maxOrderQuantity);
+    return maxQty > 0 ? maxQty : Infinity;
   };
 
-  // Calculate GST (18% - split into CGST 9% + SGST 9%)
-  const gstRate = 0.18;
   const subtotal = cartTotal;
-  const gstAmount = subtotal * gstRate;
-  const cgst = gstAmount / 2;
-  const sgst = gstAmount / 2;
-  const shippingCharge = subtotal > 999 ? 0 : 99;
 
-  // Calculate discount
-  let discountAmount = 0;
-  if (appliedCoupon) {
-    if (appliedCoupon.type === "percentage") {
-      discountAmount = (subtotal * appliedCoupon.discount) / 100;
-    } else if (appliedCoupon.type === "fixed") {
-      discountAmount = appliedCoupon.discount;
-    }
-    discountAmount = Math.min(discountAmount, subtotal);
-  }
-
-  const total = subtotal + gstAmount + shippingCharge - discountAmount;
-
-  const handleApplyCoupon = (codeToApply = couponCode) => {
-    if (!codeToApply.trim()) {
+  const handleApplyCoupon = async () => {
+    if (!couponCode.trim()) {
       setCouponError("Please enter a coupon code");
       return;
     }
+    setApplyingCoupon(true);
+    const result = await applyCoupon(couponCode);
+    setApplyingCoupon(false);
 
-    const coupon = coupons[codeToApply.toUpperCase()];
-
-    if (!coupon) {
-      setCouponError("Invalid coupon code");
+    if (!result?.success) {
+      setCouponError(result?.message || "Invalid coupon code");
       return;
     }
-
-    if (subtotal < coupon.minAmount) {
-      setCouponError(
-        `Minimum order of ₹${coupon.minAmount} required for this coupon`,
-      );
-      return;
-    }
-
-    setAppliedCoupon({
-      code: codeToApply.toUpperCase(),
-      discount: coupon.discount,
-      type: coupon.type,
-    });
     setCouponError("");
     setCouponCode("");
-    showSuccessToast(
-      `Coupon "${codeToApply.toUpperCase()}" applied successfully!`,
-    );
   };
 
-  const handleRemoveCoupon = () => {
-    setAppliedCoupon(null);
+  const handleRemoveCoupon = async () => {
+    await removeCoupon();
     setCouponError("");
-    showSuccessToast("Coupon removed");
   };
 
-  const handleRemoveItem = (id, name) => {
+  const handleRemoveItem = (id) => {
     removeFromCart(id);
   };
+
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
     return (
@@ -141,14 +119,24 @@ const Cart = () => {
     <div className="min-h-screen bg-gray-50 py-6 sm:py-8 pt-12 md:pt-16 lg:pt-20">
       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
         {/* Breadcrumb */}
-        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-4 sm:mb-6 overflow-x-auto">
+        <nav className="flex items-center gap-2 text-sm text-gray-500 mb-1 sm:mb-1 overflow-x-auto">
           <Link to="/" className="hover:text-green-600">
             Home
           </Link>
           <span>/</span>
           <span className="text-gray-900 font-medium">Shopping Cart</span>
         </nav>
-
+        <div className="flex justify-end mb-1">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="inline-flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:border-green-400 hover:bg-green-50 hover:text-green-600 hover:shadow-sm transition-all duration-200 cursor-pointer"
+            aria-label="Go back"
+          >
+            <ChevronLeft className="w-4 h-4" />
+            <span>Back</span>
+          </button>
+        </div>
         {/* Main Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-5 lg:gap-8">
           {/* Cart Items */}
@@ -161,16 +149,16 @@ const Cart = () => {
               <div className="space-y-4">
                 {cart.map((item) => (
                   <div
-                    key={item.id}
+                    key={item.cartItemId}
                     className="flex flex-col sm:flex-row gap-4 p-4 border border-gray-100 rounded-xl hover:border-gray-300 transition-colors"
                   >
                     {/* Product Image */}
                     <div className="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden mx-auto sm:mx-0">
-                      <img
-                        src={item.image}
-                        alt={item.name}
-                        className="w-full h-full object-contain p-2"
-                      />
+                    <img
+  src={apiHelper.getImageUrl(item.image)}
+  alt={item.name}
+  className="w-full h-full object-contain p-2"
+/>
                     </div>
 
                     {/* Product Info */}
@@ -186,6 +174,12 @@ const Cart = () => {
                         Part #: {item.partNumber}
                       </p>
 
+                      {item.stock === "OUT_OF_STOCK" && (
+                        <p className="text-xs text-red-600 font-medium mt-1">
+                          Out of stock
+                        </p>
+                      )}
+
                       {/* Actions */}
                       <div className="flex flex-wrap items-center gap-3 mt-4">
                         {/* Quantity */}
@@ -193,7 +187,7 @@ const Cart = () => {
                           <button
                             onClick={() => {
                               if (item.quantity <= 1) {
-                                handleRemoveItem(item.id, item.name);
+                                handleRemoveItem(item.id);
                               } else {
                                 updateQuantity(item.id, item.quantity - 1);
                               }
@@ -206,11 +200,21 @@ const Cart = () => {
                           <span className="w-10 text-center text-sm font-medium">
                             {item.quantity}
                           </span>
-
                           <button
-                            onClick={() =>
-                              updateQuantity(item.id, item.quantity + 1)
-                            }
+                            onClick={() => {
+                              const maxQty = getMaxOrderQuantity(item);
+
+                              if (item.quantity >= maxQty) {
+                                showErrorToast(
+                                  `Maximum order quantity is ${maxQty}. You cannot order more than ${maxQty} item${
+                                    maxQty > 1 ? "s" : ""
+                                  }.`,
+                                );
+                                return;
+                              }
+
+                              updateQuantity(item.id, item.quantity + 1);
+                            }}
                             className="p-2 cursor-pointer hover:bg-gray-50"
                           >
                             <Plus className="h-3 w-3" />
@@ -220,7 +224,7 @@ const Cart = () => {
                         {/* Remove */}
                         <div className="border border-red-600 rounded-lg ">
                           <button
-                            onClick={() => handleRemoveItem(item.id, item.name)}
+                            onClick={() => handleRemoveItem(item.id)}
                             className="cursor-pointer text-red-600 hover:text-red-700 text-sm flex px-1 py-1 items-center gap-1"
                           >
                             <Trash2 className="h-3.5 w-3.5" />
@@ -280,27 +284,15 @@ const Cart = () => {
                         </div>
                         <button
                           onClick={handleApplyCoupon}
-                          className="px-4 py-2 cursor-pointer bg-green-700 text-white text-sm font-medium rounded-lg hover:bg-green-800 transition-colors"
+                          disabled={applyingCoupon}
+                          className="px-4 py-2 cursor-pointer bg-green-700 text-white text-sm font-medium rounded-lg hover:bg-green-800 transition-colors disabled:opacity-60"
                         >
-                          Apply
+                          {applyingCoupon ? "Applying..." : "Apply"}
                         </button>
                       </div>
                       {couponError && (
-                        <p className="text-xs text-green-600 mt-1">
-                          {couponError}
-                        </p>
+                        <p className="text-xs text-red-600 mt-1">{couponError}</p>
                       )}
-                      <div className="mt-2 flex flex-wrap gap-2">
-                        {Object.keys(coupons).map((code) => (
-                          <button
-                            key={code}
-                            onClick={() => handleApplyCoupon(code)}
-                            className="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded-md hover:bg-gray-200 cursor-pointer"
-                          >
-                            {code}
-                          </button>
-                        ))}
-                      </div>
                     </div>
                   ) : (
                     <div className="bg-green-50 border border-gray-200 rounded-lg p-3">
@@ -319,7 +311,7 @@ const Cart = () => {
                         </button>
                       </div>
                       <p className="text-xs text-green-600 mt-1">
-                        {appliedCoupon.type === "percentage"
+                        {appliedCoupon.type === "PERCENTAGE"
                           ? `${appliedCoupon.discount}% discount applied`
                           : `₹${appliedCoupon.discount} discount applied`}
                       </p>
@@ -380,9 +372,7 @@ const Cart = () => {
                   </span>
                 </div>
 
-                <p className="text-xs text-gray-400 mt-1">
-                  Inclusive of all taxes
-                </p>
+                <p className="text-xs text-gray-400 mt-1">Inclusive of all taxes</p>
 
                 {discountAmount > 0 && (
                   <p className="text-xs text-green-600 mt-1">
@@ -393,14 +383,7 @@ const Cart = () => {
 
               {/* Checkout Button */}
               <button
-                onClick={() =>
-                  navigate("/checkout", {
-                    state: {
-                      appliedCoupon: appliedCoupon,
-                      discountAmount: discountAmount,
-                    },
-                  })
-                }
+                onClick={() => navigate("/checkout")}
                 className="w-full cursor-pointer bg-green-700 hover:bg-green-800 text-white font-semibold py-3 rounded-xl mt-5 flex items-center justify-center gap-2 transition-colors"
               >
                 Proceed to Checkout

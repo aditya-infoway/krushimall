@@ -27,7 +27,7 @@ import {
   // showCartAddedToast,
   showWishlistAddedToast,
   showWishlistRemovedToast,
-  showErrorToast
+  showErrorToast,
   // showLoginRequiredToast,
 } from "../utils/toast.jsx";
 import apiHelper from "../utils/apiHelper";
@@ -48,6 +48,7 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const handleMouseLeave = () => {
     setZoomStyle({ display: "none", x: 50, y: 50 });
   };
@@ -57,104 +58,119 @@ const ProductDetail = () => {
     return cartItem ? cartItem.quantity : 0;
   };
 
- const getMaxOrderQuantity = () => {
-  const maxQty = Number(product?.maxOrderQuantity);
+  const getMaxOrderQuantity = () => {
+    const maxQty = Number(product?.maxOrderQuantity);
 
-  // If backend doesn't send maxOrderQuantity,
-  // don't unnecessarily restrict the customer.
-  return maxQty > 0 ? maxQty : Infinity;
-};
+    // If backend doesn't send maxOrderQuantity,
+    // don't unnecessarily restrict the customer.
+    return maxQty > 0 ? maxQty : Infinity;
+  };
 
-const handleIncreaseQuantity = () => {
-  if (!product) return;
+  const handleIncreaseQuantity = () => {
+    if (!product) return;
 
-  const maxQty = getMaxOrderQuantity();
-  const currentQty = getCartQuantity(product.id);
+    const maxQty = getMaxOrderQuantity();
+    const currentQty = getCartQuantity(product.id);
 
-  if (currentQty >= maxQty) {
-    showErrorToast(
-      `Maximum order quantity is ${maxQty}. You cannot order more than ${maxQty} item${maxQty > 1 ? "s" : ""}.`,
-    );
-    return;
-  }
+    if (currentQty >= maxQty) {
+      showErrorToast(
+        `Maximum order quantity is ${maxQty}. You cannot order more than ${maxQty} item${
+          maxQty > 1 ? "s" : ""
+        }.`,
+      );
+      return;
+    }
 
-  addToCart(product, 1);
-};
+    addToCart(product, 1);
+  };
 
-const handleDecreaseQuantity = () => {
-  const currentQty = getCartQuantity(product.id);
+  const handleDecreaseQuantity = () => {
+    const currentQty = getCartQuantity(product.id);
 
-  if (currentQty <= 1) {
-    removeFromCart(product.id);
-    setQuantity(1);
-  } else {
-    updateQuantity(product.id, currentQty - 1);
-  }
-};
+    if (currentQty <= 1) {
+      removeFromCart(product.id);
+      setQuantity(1);
+    } else {
+      updateQuantity(product.id, currentQty - 1);
+    }
+  };
 
   const scrollRef = useRef(null);
 
- const handleAddToCart = () => {
-  if (!isAuthenticated) {
-    navigate("/login?redirect=/product/" + product.id);
-    return;
-  }
-
-  const maxQty = Number(product.maxOrderQuantity) || 1;
-
-  const currentCartQty = getCartQuantity(product.id);
-
-  // Total quantity after this addition
-  const totalQty = currentCartQty + quantity;
-
-  if (totalQty > maxQty) {
-    const remainingQty = Math.max(0, maxQty - currentCartQty);
-
-    if (remainingQty === 0) {
-      showErrorToast(
-        `Maximum order quantity is ${maxQty}. You have already reached the maximum quantity.`,
-      );
-    } else {
-      showErrorToast(
-        `You can add only ${remainingQty} more item${remainingQty > 1 ? "s" : ""}. Maximum order quantity is ${maxQty}.`,
-      );
+  const handleAddToCart = () => {
+    if (!isAuthenticated) {
+      navigate("/login?redirect=/product/" + product.id);
+      return;
     }
 
-    return;
-  }
+    const maxQty = getMaxOrderQuantity();
 
-  addToCart(product, quantity);
-};
+    const currentCartQty = getCartQuantity(product.id);
 
-const handleBuyNow = () => {
-  if (!isAuthenticated) {
-    navigate("/login?redirect=/product/" + product.id);
-    return;
-  }
+    // Total quantity after this addition
+    const totalQty = currentCartQty + quantity;
 
-  const maxQty = Number(product.maxOrderQuantity) || 1;
-  const currentCartQty = getCartQuantity(product.id);
-  const totalQty = currentCartQty + quantity;
+    if (totalQty > maxQty) {
+      const remainingQty = Math.max(0, maxQty - currentCartQty);
 
-  if (totalQty > maxQty) {
-    const remainingQty = Math.max(0, maxQty - currentCartQty);
+      if (remainingQty === 0) {
+        showErrorToast(
+          `Maximum order quantity is ${maxQty}. You have already reached the maximum quantity.`,
+        );
+      } else {
+        showErrorToast(
+          `You can add only ${remainingQty} more item${
+            remainingQty > 1 ? "s" : ""
+          }. Maximum order quantity is ${maxQty}.`,
+        );
+      }
 
-    if (remainingQty === 0) {
-      showErrorToast(
-        `Maximum order quantity is ${maxQty}. You have already reached the maximum quantity.`,
-      );
-    } else {
-      showErrorToast(
-        `You can add only ${remainingQty} more item${remainingQty > 1 ? "s" : ""}. Maximum order quantity is ${maxQty}.`,
-      );
+      return;
     }
 
-    return;
-  }
+    addToCart(product, quantity);
+  };
 
-  addToCart(product, quantity);
-  navigate("/cart");
-};
+  const handleBuyNow = () => {
+    if (!isAuthenticated) {
+      navigate("/login?redirect=/product/" + product.id);
+      return;
+    }
+
+    const currentCartQty = getCartQuantity(product.id);
+
+    // ✅ Agar item already cart me hai, quantity waha se hi control hoti hai
+    // (+/- buttons se). Buy pe dobara local `quantity` add mat karo —
+    // warna cart quantity galat badh jaati hai.
+    if (currentCartQty > 0) {
+      navigate("/cart");
+      return;
+    }
+
+    const maxQty = getMaxOrderQuantity();
+    const totalQty = currentCartQty + quantity;
+
+    if (totalQty > maxQty) {
+      const remainingQty = Math.max(0, maxQty - currentCartQty);
+
+      if (remainingQty === 0) {
+        showErrorToast(
+          `Maximum order quantity is ${maxQty}. You have already reached the maximum quantity.`,
+        );
+      } else {
+        showErrorToast(
+          `You can add only ${remainingQty} more item${
+            remainingQty > 1 ? "s" : ""
+          }. Maximum order quantity is ${maxQty}.`,
+        );
+      }
+
+      return;
+    }
+
+    addToCart(product, quantity);
+    navigate("/cart");
+  };
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -310,15 +326,36 @@ const handleBuyNow = () => {
           })(),
 
           images: images.map((image) => apiHelper.getImageUrl(image)),
-            image: data.mainImage
-    ? apiHelper.getImageUrl(data.mainImage)
-    : "",
+          image: data.mainImage ? apiHelper.getImageUrl(data.mainImage) : "",
           reviews_list: [],
 
           relatedProducts: [],
         };
 
         setProduct(mappedProduct);
+        try {
+          const relatedRes = await apiHelper.get(
+            `/web/product/${data.id}/related?limit=6`,
+          );
+          const relatedData = relatedRes?.data?.data || relatedRes?.data || [];
+
+          const mappedRelated = relatedData.map((item) => {
+            const mrp = Number(item.mrp) || 0;
+            const sellingPrice = Number(item.sellingPrice) || 0;
+            return {
+              id: item.id,
+              name: item.productName,
+              image: apiHelper.getImageUrl(item.mainImage),
+              price: sellingPrice,
+              oldPrice: mrp,
+            };
+          });
+
+          setRelatedProducts(mappedRelated);
+        } catch (err) {
+          console.error("Failed to fetch related products:", err);
+          setRelatedProducts([]);
+        }
       } catch (error) {
         console.error("Failed to fetch product:", error);
 
@@ -343,12 +380,12 @@ const handleBuyNow = () => {
       return;
     }
 
-    // Check current state before toggling to determine correct toast
-    if (isInWishlist(product.id)) {
-      toggleWishlist(product);
+    const wasInWishlist = isInWishlist(product.id); // ✅
+    toggleWishlist(product);
+
+    if (wasInWishlist) {
       showWishlistRemovedToast(product.name);
     } else {
-      toggleWishlist(product);
       showWishlistAddedToast(product.name);
     }
   };
@@ -445,7 +482,6 @@ const handleBuyNow = () => {
             <span className="text-gray-900 font-medium truncate">
               {product.name}
             </span>
-            
           </nav>
         </div>
       </div>
@@ -453,17 +489,17 @@ const handleBuyNow = () => {
       <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-5">
         {/* Product Page Layout */}
         <div className=" flex items-center justify-end mb-3">
-            <button
-              onClick={() => navigate(-1)}
-              className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group shrink-0"
-              aria-label="Go back"
-            >
-              <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" />
-              <span className="text-sm font-medium text-gray-600 group-hover:text-green-600 transition-colors">
-                Back
-              </span>
-            </button>
-            </div>
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group shrink-0"
+            aria-label="Go back"
+          >
+            <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" />
+            <span className="text-sm font-medium text-gray-600 group-hover:text-green-600 transition-colors">
+              Back
+            </span>
+          </button>
+        </div>
         <div className="grid lg:grid-cols-3 gap-8 mb-12">
           {/* Column 1: Gallery Design */}
           {/* Column 1: Gallery - Hover Zoom on Image */}
@@ -682,23 +718,25 @@ const handleBuyNow = () => {
                         <span className="w-10 text-center font-semibold text-sm text-gray-900">
                           {quantity}
                         </span>
-                      <button
-  onClick={() => {
-    const maxQty = Number(product.maxOrderQuantity) || 1;
+                        <button
+                          onClick={() => {
+                            const maxQty = getMaxOrderQuantity();
 
-    if (quantity >= maxQty) {
-      showErrorToast(
-        `Maximum order quantity is ${maxQty}. You cannot order more than ${maxQty} item${maxQty > 1 ? "s" : ""}.`,
-      );
-      return;
-    }
+                            if (quantity >= maxQty) {
+                              showErrorToast(
+                                `Maximum order quantity is ${maxQty}. You cannot order more than ${maxQty} item${
+                                  maxQty > 1 ? "s" : ""
+                                }.`,
+                              );
+                              return;
+                            }
 
-    setQuantity((prev) => prev + 1);
-  }}
-  className="p-2.5 hover:bg-gray-50 text-gray-600 cursor-pointer"
->
-  <Plus className="h-4 w-4" />
-</button>
+                            setQuantity((prev) => prev + 1);
+                          }}
+                          className="p-2.5 hover:bg-gray-50 text-gray-600 cursor-pointer"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
                       </div>
 
                       {/* Add to Cart button */}
@@ -976,64 +1014,94 @@ const handleBuyNow = () => {
           </div>
         </div>
 
+      
         {/* Related Products Section */}
-        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-bold text-gray-900">
-              Related Products
-            </h2>
-            <div className="flex items-center gap-3">
-              <Link
-                to="/products"
-                className="text-sm font-semibold text-green-600 hover:text-green-700 cursor-pointer"
-              >
-                View All
-              </Link>
-              <div className="flex items-center gap-1">
-                <button
-                  onClick={() => scrollRelated("left")}
-                  className="p-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors cursor-pointer"
-                >
-                  <ChevronLeft className="h-4 w-4" />
-                </button>
-                <button
-                  onClick={() => scrollRelated("right")}
-                  className="p-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors cursor-pointer"
-                >
-                  <ChevronRight className="h-4 w-4" />
-                </button>
-              </div>
-            </div>
+       {/* Related Products Section */}
+{relatedProducts.length > 0 && (
+  <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+    {/* Header */}
+    <div className="flex items-center justify-between mb-4">
+      <h2 className="text-lg font-bold text-gray-900">
+        Related Products
+      </h2>
+
+      <div className="flex items-center gap-3">
+        <Link
+          to="/products"
+          className="text-sm font-semibold text-green-600 hover:text-green-700 cursor-pointer"
+        >
+          View All
+        </Link>
+
+        <div className="flex items-center gap-1">
+          <button
+            onClick={() => scrollRelated("left")}
+            className="p-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors cursor-pointer"
+          >
+            <ChevronLeft className="h-4 w-4" />
+          </button>
+
+          <button
+            onClick={() => scrollRelated("right")}
+            className="p-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors cursor-pointer"
+          >
+            <ChevronRight className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {/* Products */}
+    <div
+      ref={scrollRef}
+      className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-1"
+      style={{
+        scrollbarWidth: "none",
+        msOverflowStyle: "none",
+      }}
+    >
+      {relatedProducts.map((related) => (
+        <Link
+          key={related.id}
+          to={`/product/${related.id}`}
+          className="
+            min-w-[220px]
+            md:min-w-[220px]
+            lg:min-w-[230px]
+            bg-white
+            border border-gray-300
+            rounded-xl
+            p-3
+            hover:border-green-400
+            hover:shadow-md
+            transition-all
+            snap-start
+            cursor-pointer
+          "
+        >
+          {/* Product Image */}
+          <div className="bg-gray-50 rounded-lg h-[180px] mb-3 p-3 flex items-center justify-center overflow-hidden">
+            <img
+              src={related.image}
+              alt={related.name}
+              className="h-[160px] w-[160px] object-contain"
+            />
           </div>
 
-          <div
-            ref={scrollRef}
-            className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-2"
-            style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-          >
-            {product.relatedProducts.map((related) => (
-              <Link
-                key={related.id}
-                to={`/product/${related.id}`}
-                className="min-w-[45%] md:min-w-[23%] bg-white border border-gray-300 rounded-xl p-4 hover:border-green-400 hover:shadow-md transition-all snap-start cursor-pointer"
-              >
-                <div className="bg-gray-50 rounded-lg aspect-square mb-3 p-4 flex items-center justify-center">
-                  <img
-                    src={related.image}
-                    alt={related.name}
-                    className="max-w-full max-h-full object-contain"
-                  />
-                </div>
-                <h3 className="text-sm font-semibold text-gray-900 hover:text-green-600 line-clamp-2 mb-2">
-                  {related.name}
-                </h3>
-                <span className="text-base font-bold text-gray-900">
-                  {formatPrice(related.price)}
-                </span>
-              </Link>
-            ))}
-          </div>
-        </div>
+          {/* Product Name */}
+          <h3 className="text-sm font-semibold text-gray-900 hover:text-green-600 line-clamp-2 mb-2">
+            {related.name}
+          </h3>
+
+          {/* Price */}
+          <span className="text-base font-bold text-gray-900">
+            {formatPrice(related.price)}
+          </span>
+        </Link>
+      ))}
+    </div>
+  </div>
+)}
       </div>
     </div>
   );

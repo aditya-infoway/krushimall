@@ -31,7 +31,7 @@ import {
   showWishlistAddedToast,
   showWishlistRemovedToast,
   showLoginRequiredToast,
-  
+    showErrorToast,   
 } from "../utils/toast.jsx";
 
 const Products = () => {
@@ -137,6 +137,7 @@ const Products = () => {
             rating: item.rating || 4.5,
             reviews: item.reviewsCount || 0,
             stock: Number(item.stockQuantity) || 0,
+              maxOrderQuantity: Number(item.maxOrderQuantity) || 0,
             image: apiHelper.getImageUrl(item.mainImage) || "",
             partNumber: item.sku || item.barcode || "",
             compatibility,
@@ -229,16 +230,26 @@ const Products = () => {
       document.body.style.paddingRight = "";
     };
   }, [showFilters]);
+const handleAddToCart = (e, product) => {
+  e.preventDefault();
+  if (!isAuthenticated) {
+    showLoginRequiredToast();
+    navigate("/login?redirect=/products");
+    return;
+  }
 
-  const handleAddToCart = (e, product) => {
-    e.preventDefault();
-    if (!isAuthenticated) {
-      showLoginRequiredToast();
-      navigate("/login?redirect=/products");
-      return;
-    }
-    addToCart(product, 1);
-  };
+  const maxQty = getMaxOrderQuantity(product);
+  const currentQty = getCartQuantity(product.id);
+
+  if (currentQty >= maxQty) {
+    showErrorToast(
+      `Maximum order quantity is ${maxQty}. You cannot order more than ${maxQty} item${maxQty > 1 ? "s" : ""}.`,
+    );
+    return;
+  }
+
+  addToCart(product, 1);
+};
 
   const toggleBrand = (brandId) => {
     setSelectedBrands((prev) =>
@@ -269,12 +280,26 @@ const Products = () => {
     const cartItem = cart.find((item) => item.id === productId);
     return cartItem ? cartItem.quantity : 0;
   };
+const getMaxOrderQuantity = (product) => {
+  const maxQty = Number(product?.maxOrderQuantity);
+  return maxQty > 0 ? maxQty : Infinity;
+};
+const handleIncreaseQuantity = (e, product) => {
+  e.preventDefault();
+  e.stopPropagation();
 
-  const handleIncreaseQuantity = (e, product) => {
-    e.preventDefault();
-    e.stopPropagation();
-    addToCart(product, 1);
-  };
+  const maxQty = getMaxOrderQuantity(product);
+  const currentQty = getCartQuantity(product.id);
+
+  if (currentQty >= maxQty) {
+    showErrorToast(
+      `Maximum order quantity is ${maxQty}. You cannot order more than ${maxQty} item${maxQty > 1 ? "s" : ""}.`,
+    );
+    return;
+  }
+
+  addToCart(product, 1);
+};
 
   const handleDecreaseQuantity = (e, product) => {
     e.preventDefault();

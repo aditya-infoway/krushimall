@@ -37,8 +37,14 @@ const Wishlist = () => {
       navigate("/login?redirect=/wishlist");
       return;
     }
+
+    if (product.type === "variant") {
+      // Tractor/variant items cart me nahi jaate — enquiry-based flow hai
+      return;
+    }
+
     addToCart(product, 1);
-    removeFromWishlist(product.id);
+    removeFromWishlist(product.id, product.type); // ✅ type add kiya
     showCartAddedToast(product.name);
   };
 
@@ -105,7 +111,7 @@ const Wishlist = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
           {wishlistItems.map((product) => (
             <div
-              key={product.id}
+              key={`${product.type}-${product.id}`}
               className="group bg-white rounded-xl border border-gray-200 hover:border-green-400 overflow-hidden transition-all duration-200 hover:shadow-lg"
             >
               {/* Image */}
@@ -125,7 +131,7 @@ const Wishlist = () => {
                 <button
                   onClick={(e) => {
                     e.preventDefault();
-                    removeFromWishlist(product.id);
+                    removeFromWishlist(product.id, product.type);
                     showWishlistRemovedToast(product.name);
                   }}
                   className="absolute top-2.5 right-2.5 bg-white/90 backdrop-blur-sm p-1.5 rounded-full shadow-sm hover:bg-white hover:shadow transition-all opacity-0 group-hover:opacity-100"
@@ -140,8 +146,8 @@ const Wishlist = () => {
                       product.stockStatus === "in_stock"
                         ? "bg-green-100 text-green-700"
                         : product.stockStatus === "limited_stock"
-                          ? "bg-yellow-100 text-yellow-700"
-                          : "bg-red-100 text-red-700"
+                        ? "bg-yellow-100 text-yellow-700"
+                        : "bg-red-100 text-red-700"
                     }`}
                   >
                     {product.stockStatus === "in_stock" && "In Stock"}
@@ -201,13 +207,15 @@ const Wishlist = () => {
                 </div>
 
                 {/* Add to Cart */}
-                <button
-                  onClick={() => handleAddToCart(product)}
-                  className="w-full mt-3 bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
-                >
-                  <ShoppingCart className="h-3.5 w-3.5" />
-                  Add to Cart
-                </button>
+                {product.type === "product" && (
+                  <button
+                    onClick={() => handleAddToCart(product)}
+                    className="w-full mt-3 bg-green-600 hover:bg-green-700 text-white font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-2 text-sm"
+                  >
+                    <ShoppingCart className="h-3.5 w-3.5" />
+                    Add to Cart
+                  </button>
+                )}
               </div>
             </div>
           ))}
