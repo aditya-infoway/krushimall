@@ -190,7 +190,8 @@ const ProductDetail = () => {
 
         const mrp = Number(data.mrp) || 0;
         const sellingPrice = Number(data.sellingPrice) || 0;
-
+const finalPrice =
+  Number(data.finalPrice) > 0 ? Number(data.finalPrice) : sellingPrice;
         const images = [
           data.mainImage,
           data.thumbnailImage,
@@ -216,12 +217,12 @@ const ProductDetail = () => {
             data.subSubCategory?.name ||
             "-",
 
-          price: sellingPrice,
+          price: finalPrice,
           oldPrice: mrp,
 
           discount:
-            mrp > sellingPrice && mrp > 0
-              ? Math.round(((mrp - sellingPrice) / mrp) * 100)
+            mrp > finalPrice && mrp > 0
+              ? Math.round(((mrp - finalPrice) / mrp) * 100)
               : 0,
 
           rating: 0,

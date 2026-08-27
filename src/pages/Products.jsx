@@ -104,10 +104,12 @@ const Products = () => {
             !item?.verificationStatus,
         )
         .map((item) => {
-          const mrp = Number(item.mrp) || 0;
-          const sellingPrice = Number(item.sellingPrice) || 0;
-          const discount =
-            mrp > 0 ? Math.round(((mrp - sellingPrice) / mrp) * 100) : 0;
+         const mrp = Number(item.mrp) || 0;
+const sellingPrice = Number(item.sellingPrice) || 0;
+const finalPrice =
+  Number(item.finalPrice) > 0 ? Number(item.finalPrice) : sellingPrice;
+const discount =
+  mrp > 0 ? Math.round(((mrp - finalPrice) / mrp) * 100) : 0;
 
           let compatibility = item.shortDescription || "";
           try {
@@ -131,7 +133,7 @@ const Products = () => {
             brandId: item.brand?.id ?? item.brandId ?? null,
             brand: item.brand?.brandName || item.brand?.name || "-",
             category: item.category?.categoryName || item.category?.name || "",
-            price: sellingPrice,
+            price: finalPrice,
             oldPrice: mrp,
             discount: discount > 0 ? discount : 0,
             rating: item.rating || 4.5,

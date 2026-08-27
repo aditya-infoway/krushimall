@@ -270,7 +270,7 @@ const ProductTracking = () => {
               </p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-500">Current Location</p>
+              <p className="text-sm text-gray-500">Current Status</p>
               <p className="font-semibold text-gray-900">
                 {productData.tracking.currentLocation}
               </p>

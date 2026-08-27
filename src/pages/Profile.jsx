@@ -107,68 +107,116 @@ const Profile = () => {
 
   const districtOptions = cities;
 
-  const [orders] = useState([
-    {
-      id: "ORD-2024-001",
-      date: "15 Jan 2024",
-      status: "Delivered",
-      total: "₹1,499",
-      items: "Bosch Engine Oil Filter",
-      image:
-        "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=100&h=100&fit=crop&auto=format",
-      quantity: 1,
-    },
-    {
-      id: "ORD-2024-002",
-      date: "10 Jan 2024",
-      status: "Shipped",
-      total: "₹3,899",
-      items: "Brembo Brake Pads Set",
-      image:
-        "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=100&h=100&fit=crop&auto=format",
-      quantity: 1,
-    },
-    {
-      id: "ORD-2024-003",
-      date: "05 Jan 2024",
-      status: "Processing",
-      total: "₹999",
-      items: "NGK Spark Plugs (4 Pack)",
-      image:
-        "https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=100&h=100&fit=crop&auto=format",
-      quantity: 4,
-    },
-  ]);
+  // const [orders] = useState([
+  //   {
+  //     id: "ORD-2024-001",
+  //     date: "15 Jan 2024",
+  //     status: "Delivered",
+  //     total: "₹1,499",
+  //     items: "Bosch Engine Oil Filter",
+  //     image:
+  //       "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=100&h=100&fit=crop&auto=format",
+  //     quantity: 1,
+  //   },
+  //   {
+  //     id: "ORD-2024-002",
+  //     date: "10 Jan 2024",
+  //     status: "Shipped",
+  //     total: "₹3,899",
+  //     items: "Brembo Brake Pads Set",
+  //     image:
+  //       "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=100&h=100&fit=crop&auto=format",
+  //     quantity: 1,
+  //   },
+  //   {
+  //     id: "ORD-2024-003",
+  //     date: "05 Jan 2024",
+  //     status: "Processing",
+  //     total: "₹999",
+  //     items: "NGK Spark Plugs (4 Pack)",
+  //     image:
+  //       "https://images.unsplash.com/photo-1625047509248-ec889cbff17f?w=100&h=100&fit=crop&auto=format",
+  //     quantity: 4,
+  //   },
+  // ]);
+const [orders, setOrders] = useState([]);
+const [ordersLoading, setOrdersLoading] = useState(true);
+const STATUS_LABEL_MAP = {
+  PLACED: "Processing",
+  SHIPPED: "Shipped",
+  OUT_FOR_DELIVERY: "Out for Delivery",
+  DELIVERED: "Delivered",
+  CANCELLED: "Cancelled",
+};
+const loadOrders = async () => {
+  try {
+    setOrdersLoading(true);
+    const data = await apiHelper.get("/web/orders/my-orders");
+    if (data.success) {
+      const mapped = data.orders.map((order) => ({
+        id: order.orderNumber,
+        date: new Date(order.createdAt).toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        }),
+        status: STATUS_LABEL_MAP[order.orderStatus] || order.orderStatus,
+        total: `₹${Number(order.totalAmount).toLocaleString("en-IN")}`,
+        items: order.items.map((i) => i.productName).join(", "),
+        image: apiHelper.getImageUrl(order.items[0]?.image), // backend abhi image save nahi karta -> placeholder
+        quantity: order.items.reduce((sum, i) => sum + i.quantity, 0),
+        firstItemId: order.items[0]?.id,
+      }));
+      setOrders(mapped);
+    }
+  } catch (err) {
+    console.error(err);
+    showErrorToast("Unable to load orders");
+  } finally {
+    setOrdersLoading(false);
+  }
+};
 
-  const [wishlistItems, setWishlistItems] = useState([
-    {
-      id: 1,
-      name: "KYB Shock Absorber",
-      brand: "KYB",
-      price: "₹4,499",
-      image:
-        "https://images.unsplash.com/photo-1530046339160-ce3e530c7d2f?w=200&h=200&fit=crop&auto=format",
-      inStock: true,
-    },
-    {
-      id: 2,
-      name: "Mann Air Filter",
-      brand: "Mann Filter",
-      price: "₹749",
-      image:
-        "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=200&h=200&fit=crop&auto=format",
-      inStock: true,
-    },
-    {
-      id: 3,
-      name: "Castrol EDGE 5W-30",
-      brand: "Castrol",
-      price: "₹3,299",
-      image:
-        "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=200&h=200&fit=crop&auto=format",
-      inStock: false,
-    },
-  ]);
+useEffect(() => {
+  loadOrders();
+}, []);
+
+const [wishlistItems, setWishlistItems] = useState([]);
+const [wishlistLoading, setWishlistLoading] = useState(true);
+
+// backend item -> same shape jo component pehle mock data se expect kar raha tha
+const mapWishlistItem = (item) => {
+  const entity = item.product || item.variant; // dono me se jo bhi present ho
+  return {
+    id: item.id, // wishlist row id — remove/toggle ke liye
+    productId: item.productId || null,
+    variantId: item.variantId || null,
+    name: entity?.productName || entity?.name || "Unknown Product",
+    brand: entity?.brand?.name || "",
+    price: `₹${Number(entity?.finalPrice || entity?.price || 0).toLocaleString("en-IN")}`,
+    image: apiHelper.getImageUrl(entity?.mainImage),
+    inStock: entity?.stock ? entity.stock === "IN_STOCK" : true,
+  };
+};
+
+const loadWishlist = async () => {
+  try {
+    setWishlistLoading(true);
+    const data = await apiHelper.get("/wishlist"); // ⚠️ apna actual mount prefix confirm karo (neeche note)
+    if (data.success) {
+      setWishlistItems(data.data.map(mapWishlistItem));
+    }
+  } catch (err) {
+    console.error(err);
+    showErrorToast("Unable to load wishlist");
+  } finally {
+    setWishlistLoading(false);
+  }
+};
+
+useEffect(() => {
+  loadWishlist();
+}, []);
 
   const tabs =
     userType === "vendor"
@@ -271,10 +319,38 @@ const Profile = () => {
     loadProfile();
   }, []);
 
-  const removeFromWishlist = (id) => {
-    setWishlistItems((prev) => prev.filter((item) => item.id !== id));
-  };
+const removeFromWishlist = async (item) => {
+  try {
+    const payload = item.variantId
+      ? { variantId: item.variantId }
+      : { productId: item.productId };
 
+    const data = await apiHelper.post("/wishlist/toggle", payload);
+    if (data.success && !data.wishlisted) {
+      setWishlistItems((prev) => prev.filter((w) => w.id !== item.id));
+      showSuccessToast("Removed from wishlist");
+    }
+  } catch (err) {
+    showErrorToast("Failed to remove item");
+  }
+};
+const handleAddToCart = async (item) => {
+  if (!item.productId) {
+    showErrorToast("This item can't be added to cart yet");
+    return;
+  }
+  try {
+    const data = await apiHelper.post("/web/cart/add", {
+      productId: item.productId,
+      quantity: 1,
+    });
+    if (data.success) {
+      showSuccessToast(`${item.name} added to cart`);
+    }
+  } catch (err) {
+    showErrorToast(err.response?.data?.message || "Failed to add to cart");
+  }
+};
   const handleSave = async () => {
     try {
       const formData = new FormData();
@@ -1203,143 +1279,175 @@ const Profile = () => {
             )}
 
             {/* Orders Tab - User Only */}
-            {activeTab === "orders" && userType !== "vendor" && (
-              <div className="space-y-4">
-                {orders.map((order) => {
-                  const StatusIcon = getStatusIcon(order.status);
-                  return (
-                    <div
-                      key={order.id}
-                      className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-5 lg:p-6 hover:shadow-md transition-all group"
-                    >
-                      <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
-                        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gray-100 overflow-hidden shrink-0">
-                            <img
-                              src={order.image}
-                              alt={order.items}
-                              className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                            />
-                          </div>
-                          <div className="min-w-0">
-                            <p className="text-xs text-gray-500 font-medium mb-1">
-                              {order.id}
-                            </p>
-                            <h4 className="font-semibold text-gray-900 text-sm mb-1 truncate">
-                              {order.items}
-                            </h4>
-                            <p className="text-xs text-gray-400">
-                              Qty: {order.quantity}
-                            </p>
-                            <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
-                              <Calendar className="h-3 w-3 shrink-0" />
-                              {order.date}
-                            </div>
-                          </div>
-                        </div>
-                        <span
-                          className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border shrink-0 self-start ${getStatusColor(
-                            order.status,
-                          )}`}
-                        >
-                          <StatusIcon className="h-3 w-3" />
-                          {order.status}
-                        </span>
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-gray-100">
-                        <div>
-                          <p className="text-xs text-gray-500">Total Amount</p>
-                          <p className="text-lg font-bold text-gray-900">
-                            {order.total}
-                          </p>
-                        </div>
-                        <div className="flex gap-2">
-                          <button className="flex-1 sm:flex-none text-sm font-semibold text-gray-500 hover:text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
-                            Track Order
-                          </button>
-                          <Link
-                            to={`/orders/${order.id}`}
-                            className="flex-1 sm:flex-none justify-center text-sm font-semibold text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 px-4 py-2 rounded-lg transition-colors flex items-center gap-1"
-                          >
-                            View Details <ChevronRight className="h-4 w-4" />
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
+           {/* Orders Tab - User Only */}
+{activeTab === "orders" && userType !== "vendor" && (
+  <div className="space-y-4">
+    {ordersLoading ? (
+      <div className="bg-white rounded-2xl border border-gray-200 p-10 text-center text-gray-500">
+        Loading your orders...
+      </div>
+    ) : orders.length === 0 ? (
+      <div className="bg-white rounded-2xl border border-gray-200 p-10 text-center">
+        <Package className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+        <p className="text-gray-500">You haven't placed any orders yet.</p>
+      </div>
+    ) : (
+      orders.map((order) => {
+        const StatusIcon = getStatusIcon(order.status);
+        return (
+          <div
+            key={order.id}
+            className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-5 lg:p-6 hover:shadow-md transition-all group"
+          >
+            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3 mb-4">
+              <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-xl bg-gray-100 overflow-hidden shrink-0">
+                  <img
+                    src={order.image}
+                    alt={order.items}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <p className="text-xs text-gray-500 font-medium mb-1">{order.id}</p>
+                  <h4 className="font-semibold text-gray-900 text-sm mb-1 truncate">
+                    {order.items}
+                  </h4>
+                  <p className="text-xs text-gray-400">Qty: {order.quantity}</p>
+                  <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                    <Calendar className="h-3 w-3 shrink-0" />
+                    {order.date}
+                  </div>
+                </div>
               </div>
-            )}
+              <span
+                className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full border shrink-0 self-start ${getStatusColor(
+                  order.status,
+                )}`}
+              >
+                <StatusIcon className="h-3 w-3" />
+                {order.status}
+              </span>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pt-4 border-t border-gray-100">
+              <div>
+                <p className="text-xs text-gray-500">Total Amount</p>
+                <p className="text-lg font-bold text-gray-900">{order.total}</p>
+              </div>
+              <div className="flex gap-2">
+                <Link
+                  to={`/track-product/${order.id}/${order.firstItemId}`}
+                  className="flex-1 sm:flex-none text-sm font-semibold text-gray-500 hover:text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors text-center"
+                >
+                  Track Order
+                </Link>
+                <Link
+                  to={`/orders`}
+                  
+                  className="flex-1 sm:flex-none justify-center text-sm font-semibold text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 px-4 py-2 rounded-lg transition-colors flex items-center gap-1"
+                >
+                  View Details <ChevronRight className="h-4 w-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        );
+      })
+    )}
+  </div>
+)}
 
             {/* Wishlist Tab - User Only */}
-            {activeTab === "wishlist" && userType !== "vendor" && (
-              <div className="space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
-                  <p className="text-sm text-gray-500">
-                    {wishlistItems.length} items in your wishlist
-                  </p>
-                  <button className="text-sm font-semibold text-green-600 hover:text-green-700 text-left sm:text-right">
-                    Add All to Cart
+           {/* Wishlist Tab - User Only */}
+{activeTab === "wishlist" && userType !== "vendor" && (
+  <div className="space-y-4">
+    {wishlistLoading ? (
+      <div className="bg-white rounded-2xl border border-gray-200 p-10 text-center text-gray-500">
+        Loading your wishlist...
+      </div>
+    ) : wishlistItems.length === 0 ? (
+      <div className="bg-white rounded-2xl border border-gray-200 p-10 text-center">
+        <Heart className="h-12 w-12 text-gray-300 mx-auto mb-3" />
+        <p className="text-gray-500">Your wishlist is empty.</p>
+      </div>
+    ) : (
+      <>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+          <p className="text-sm text-gray-500">
+            {wishlistItems.length} items in your wishlist
+          </p>
+        </div>
+        {wishlistItems.map((item) => (
+          <div
+            key={item.id}
+            className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-5 hover:shadow-md transition-all group"
+          >
+            <div className="flex gap-4 sm:gap-5">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-gray-100 overflow-hidden shrink-0">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0">
+                    {item.brand && (
+                      <p className="text-xs text-green-600 font-semibold uppercase tracking-wider mb-1">
+                        {item.brand}
+                      </p>
+                    )}
+                    <h4 className="font-bold text-gray-900 text-sm mb-1 truncate">
+                      {item.name}
+                    </h4>
+                    <p className="text-base sm:text-lg font-black text-green-700 mb-3">
+                      {item.price}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => removeFromWishlist(item)}
+                    className="text-gray-400 hover:text-red-500 transition-colors p-1 shrink-0"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </button>
                 </div>
-                {wishlistItems.map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-5 hover:shadow-md transition-all group"
+                <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                  {item.inStock ? (
+                    <span className="text-xs text-green-600 font-medium flex items-center gap-1">
+                      <CheckCircle className="h-3.5 w-3.5" /> In Stock
+                    </span>
+                  ) : (
+                    <span className="text-xs text-red-500 font-medium">
+                      Out of Stock
+                    </span>
+                  )}
+                  <button
+                    onClick={() => handleAddToCart(item)}
+                    disabled={!item.inStock}
+                    className="bg-green-600 hover:bg-green-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white text-xs font-semibold px-4 sm:px-5 py-2.5 rounded-lg transition-all shadow-sm hover:shadow-md flex items-center gap-1.5"
                   >
-                    <div className="flex gap-4 sm:gap-5">
-                      <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-xl bg-gray-100 overflow-hidden shrink-0">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                        />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="min-w-0">
-                            <p className="text-xs text-green-600 font-semibold uppercase tracking-wider mb-1">
-                              {item.brand}
-                            </p>
-                            <h4 className="font-bold text-gray-900 text-sm mb-1 truncate">
-                              {item.name}
-                            </h4>
-                            <p className="text-base sm:text-lg font-black text-green-700 mb-3">
-                              {item.price}
-                            </p>
-                          </div>
-                          <button
-                            onClick={() => removeFromWishlist(item.id)}
-                            className="text-gray-400 hover:text-red-500 transition-colors p-1 shrink-0"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </button>
-                        </div>
-                        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-                          {item.inStock ? (
-                            <span className="text-xs text-green-600 font-medium flex items-center gap-1">
-                              <CheckCircle className="h-3.5 w-3.5" /> In Stock
-                            </span>
-                          ) : (
-                            <span className="text-xs text-red-500 font-medium">
-                              Out of Stock
-                            </span>
-                          )}
-                          <button className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 sm:px-5 py-2.5 rounded-lg transition-all shadow-sm hover:shadow-md flex items-center gap-1.5">
-                            <ShoppingBag className="h-3.5 w-3.5" />
-                            Add to Cart
-                          </button>
-                          <button className="text-xs font-semibold text-gray-500 hover:text-green-600 transition-colors flex items-center gap-1">
-                            <Eye className="h-3.5 w-3.5" />
-                            View
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
+                    <ShoppingBag className="h-3.5 w-3.5" />
+                    Add to Cart
+                  </button>
+                  {item.productId && (
+                    <Link
+                      to={`/product/${item.productId}`}
+                      className="text-xs font-semibold text-gray-500 hover:text-green-600 transition-colors flex items-center gap-1"
+                    >
+                      <Eye className="h-3.5 w-3.5" />
+                      View
+                    </Link>
+                  )}
+                </div>
               </div>
-            )}
+            </div>
+          </div>
+        ))}
+      </>
+    )}
+  </div>
+)}
 
             {/* Settings Tab */}
             {activeTab === "settings" && (
