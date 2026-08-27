@@ -1018,7 +1018,7 @@ const ProductDetail = () => {
         {/* Related Products Section */}
        {/* Related Products Section */}
 {relatedProducts.length > 0 && (
-  <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+  <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm  mb-3">
     {/* Header */}
     <div className="flex items-center justify-between mb-4">
       <h2 className="text-lg font-bold text-gray-900">
