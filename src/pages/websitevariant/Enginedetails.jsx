@@ -103,7 +103,9 @@ const Input = ({
         )}
         <input
           {...props}
-          className={`w-full ${Icon ? "pl-10" : "px-4"} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+          className={`w-full ${
+            Icon ? "pl-10" : "px-4"
+          } pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
             error ? "border-red-300 bg-red-50" : "border-gray-200"
           } ${props.disabled ? "bg-gray-50 cursor-not-allowed" : ""}`}
         />
@@ -138,7 +140,9 @@ const Textarea = ({
         )}
         <textarea
           {...props}
-          className={`w-full ${Icon ? "pl-10" : "px-4"} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+          className={`w-full ${
+            Icon ? "pl-10" : "px-4"
+          } pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
             error ? "border-red-300 bg-red-50" : "border-gray-200"
           } ${props.disabled ? "bg-gray-50 cursor-not-allowed" : ""}`}
         />
@@ -169,7 +173,9 @@ const Button = ({
   return (
     <button
       type={type}
-      className={`${baseStyles} ${variants[variant] || variants.primary} ${className}`}
+      className={`${baseStyles} ${
+        variants[variant] || variants.primary
+      } ${className}`}
       {...props}
     >
       {children}
@@ -225,42 +231,42 @@ export default function Enginedetails({
 }) {
   const navigate = useNavigate();
 
-const {
-  register,
-  handleSubmit,
-  formState: { errors },
-  control,
-  watch,
-  setValue,
-} = useForm({
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    control,
+    watch,
+    setValue,
+  } = useForm({
     resolver: yupResolver(EnginedetailsSchema),
     defaultValues: {},
   });
 
   useEffect(() => {
-  if (!isEdit || !productData) return;
+    if (!isEdit || !productData) return;
 
-  setValue("engineType", productData.engineType || "");
-  setValue("fuelType", productData.fuelType || "");
-  setValue("horsePower", productData.horsePower || "");
-  setValue("numberOfCylinders", productData.numberOfCylinders || "");
-  setValue("cubicCapacity", productData.cubicCapacity || "");
-  setValue("ratedRpm", productData.ratedRpm || "");
-  setValue("aspiratedType", productData.aspiratedType || "");
-  setValue("emissionNorms", productData.emissionNorms || "");
-  setValue("coolingSystem", productData.coolingSystem || "");
-  setValue("airFilterType", productData.airFilterType || "");
-  setValue("maximumTorque", productData.maximumTorque || "");
-  setValue("torqueRpm", productData.torqueRpm || "");
-  setValue("torqueBackup", productData.torqueBackup || "");
-  setValue("engineCondition", productData.engineCondition || "");
-}, [isEdit, productData, setValue]);
+    setValue("engineType", productData.engineType || "");
+    setValue("fuelType", productData.fuelType || "");
+    setValue("horsePower", productData.horsePower || "");
+    setValue("numberOfCylinders", productData.numberOfCylinders || "");
+    setValue("cubicCapacity", productData.cubicCapacity || "");
+    setValue("ratedRpm", productData.ratedRpm || "");
+    setValue("aspiratedType", productData.aspiratedType || "");
+    setValue("emissionNorms", productData.emissionNorms || "");
+    setValue("coolingSystem", productData.coolingSystem || "");
+    setValue("airFilterType", productData.airFilterType || "");
+    setValue("maximumTorque", productData.maximumTorque || "");
+    setValue("torqueRpm", productData.torqueRpm || "");
+    setValue("torqueBackup", productData.torqueBackup || "");
+    setValue("engineCondition", productData.engineCondition || "");
+  }, [isEdit, productData, setValue]);
 
   const onSubmit = async (data) => {
     try {
-     const productId = isEdit
-  ? productData?.id
-  : localStorage.getItem("vendorProductId");
+      const productId = isEdit
+        ? productData?.id
+        : localStorage.getItem("vendorProductId");
       if (!productId) {
         toast("Please save basic information first.");
         return;
@@ -472,7 +478,9 @@ const {
                           className="absolute right-4 top-4 h-4 w-4 text-green-600 focus:ring-2 focus:ring-green-600"
                         />
                         <option.icon
-                          className={`h-10 w-10 flex-shrink-0 ${selected ? "text-green-600" : "text-gray-400"}`}
+                          className={`h-10 w-10 flex-shrink-0 ${
+                            selected ? "text-green-600" : "text-gray-400"
+                          }`}
                         />
                         <div>
                           <h4 className="font-medium text-gray-900">
@@ -625,9 +633,9 @@ const {
                 >
                   Cancel
                 </Button>
-               <Button type="submit" className="min-w-36cursor-pointer">
-  {isEdit ? "Update & Next" : "Save & Next"}
-</Button>
+                <Button type="submit" className="min-w-36cursor-pointer">
+                  {isEdit ? "Update & Next" : "Save & Next"}
+                </Button>
               </div>
             </div>
           </form>

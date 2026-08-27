@@ -48,7 +48,8 @@ const buildProductData = (order, item) => {
         : step === "OUT_FOR_DELIVERY"
         ? "Out for Delivery"
         : "Delivered",
-    date: idx === 0 ? placedDateTime : idx <= currentIdx ? "Completed" : "Pending",
+    date:
+      idx === 0 ? placedDateTime : idx <= currentIdx ? "Completed" : "Pending",
     location: idx <= currentIdx ? "—" : "Pending",
     completed: idx <= currentIdx,
     current: idx === currentIdx,
@@ -74,7 +75,8 @@ const buildProductData = (order, item) => {
       carrier: "—",
       estimated: order.orderStatus === "DELIVERED" ? null : "Update pending",
       currentLocation: STATUS_LABELS[order.orderStatus] || order.orderStatus,
-      deliveredDate: order.orderStatus === "DELIVERED" ? formatDate(order.updatedAt) : null,
+      deliveredDate:
+        order.orderStatus === "DELIVERED" ? formatDate(order.updatedAt) : null,
       steps,
     },
     shippingAddress: {
@@ -110,7 +112,9 @@ const ProductTracking = () => {
           setProductData(buildProductData(data.order, item));
         }
       } catch (err) {
-        setError(err.response?.data?.message || "Failed to load tracking details");
+        setError(
+          err.response?.data?.message || "Failed to load tracking details",
+        );
         showErrorToast("Failed to load tracking details");
       } finally {
         setIsLoading(false);
@@ -190,11 +194,11 @@ const ProductTracking = () => {
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 mb-6">
           <div className="flex flex-col sm:flex-row gap-6">
             <div className="w-32 h-32 bg-gray-100 rounded-xl overflow-hidden flex-shrink-0">
-             <img
-  src={productData.product.image}
-  alt={productData.product.name}
-  className="w-full h-full object-cover"
-/>
+              <img
+                src={productData.product.image}
+                alt={productData.product.name}
+                className="w-full h-full object-cover"
+              />
             </div>
             <div className="flex-1">
               <div className="flex flex-col sm:flex-row sm:justify-between gap-3">
@@ -203,7 +207,9 @@ const ProductTracking = () => {
                     {productData.product.name}
                   </h2>
                   {productData.product.brand && (
-                    <p className="text-gray-500 mt-1">{productData.product.brand}</p>
+                    <p className="text-gray-500 mt-1">
+                      {productData.product.brand}
+                    </p>
                   )}
                   <p className="text-sm text-gray-400 mt-1">
                     SKU: {productData.product.sku}
@@ -243,7 +249,9 @@ const ProductTracking = () => {
                   <Package className="h-6 w-6 text-yellow-600" />
                 )}
                 <span
-                  className={`font-semibold ${getStatusColor(productData.tracking.status)}`}
+                  className={`font-semibold ${getStatusColor(
+                    productData.tracking.status,
+                  )}`}
                 >
                   {productData.tracking.status}
                 </span>
@@ -262,14 +270,14 @@ const ProductTracking = () => {
               </p>
             </div>
             <div className="text-right">
-              <p className="text-sm text-gray-500">Current Location</p>
+              <p className="text-sm text-gray-500">Current Status</p>
               <p className="font-semibold text-gray-900">
                 {productData.tracking.currentLocation}
               </p>
-              <button className="mt-2 flex items-center gap-1 text-sm text-green-600 hover:text-green-700 ml-auto">
+              {/* <button className="mt-2 flex items-center gap-1 text-sm text-green-600 hover:text-green-700 ml-auto">
                 <Share2 className="h-4 w-4" />
                 Share Tracking
-              </button>
+              </button> */}
             </div>
           </div>
         </div>
@@ -287,7 +295,9 @@ const ProductTracking = () => {
               <div className="mb-6 p-3 bg-gray-50 rounded-xl text-sm">
                 <div className="flex justify-between mb-2">
                   <span className="text-gray-500">Carrier:</span>
-                  <span className="font-medium">{productData.tracking.carrier}</span>
+                  <span className="font-medium">
+                    {productData.tracking.carrier}
+                  </span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-500">Tracking Number:</span>
@@ -302,18 +312,26 @@ const ProductTracking = () => {
                 <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gray-200" />
 
                 {productData.tracking.steps.map((step, index) => (
-                  <div key={index} className="relative flex gap-4 pb-8 last:pb-0">
+                  <div
+                    key={index}
+                    className="relative flex gap-4 pb-8 last:pb-0"
+                  >
                     <div className="relative z-10">
                       <div
                         className={`
                         w-8 h-8 rounded-full flex items-center justify-center
-                        ${step.completed ? "bg-green-500 text-white" : "bg-gray-200 text-gray-400"}
+                        ${
+                          step.completed
+                            ? "bg-green-500 text-white"
+                            : "bg-gray-200 text-gray-400"
+                        }
                         ${step.current ? "ring-4 ring-green-100" : ""}
                       `}
                       >
                         {step.status === "Delivered" ? (
                           <CheckCircle className="h-4 w-4" />
-                        ) : step.status.includes("Transit") || step.status === "Shipped" ? (
+                        ) : step.status.includes("Transit") ||
+                          step.status === "Shipped" ? (
                           <Truck className="h-4 w-4" />
                         ) : (
                           <Package className="h-4 w-4" />
@@ -330,7 +348,9 @@ const ProductTracking = () => {
                       </p>
                       {step.date !== "Pending" ? (
                         <>
-                          <p className="text-sm text-gray-500 mt-0.5">{step.date}</p>
+                          <p className="text-sm text-gray-500 mt-0.5">
+                            {step.date}
+                          </p>
                           {step.location && (
                             <p className="text-sm text-gray-400 mt-0.5 flex items-center gap-1">
                               <MapPin className="h-3 w-3" />
@@ -339,7 +359,9 @@ const ProductTracking = () => {
                           )}
                         </>
                       ) : (
-                        <p className="text-sm text-gray-400 italic mt-0.5">Pending</p>
+                        <p className="text-sm text-gray-400 italic mt-0.5">
+                          Pending
+                        </p>
                       )}
                       {step.current && (
                         <div className="mt-2 flex items-center gap-2">
@@ -382,7 +404,8 @@ const ProductTracking = () => {
                   <p className="text-sm text-gray-900">
                     {productData.shippingAddress.address}
                     <br />
-                    {productData.shippingAddress.city}, {productData.shippingAddress.state}
+                    {productData.shippingAddress.city},{" "}
+                    {productData.shippingAddress.state}
                     <br />
                     {productData.shippingAddress.pincode}
                   </p>

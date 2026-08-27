@@ -545,6 +545,7 @@ const validateStep3 = () => {
                       { value: "vehicle", label: "Vehicle" },
                       { value: "spare-parts", label: "Spare Parts" },
                       { value: "service", label: "Service" },
+                      { value: "equipment", label: "Equipment" },
                     ].map((opt) => (
                       <Field
                         key={opt.value}

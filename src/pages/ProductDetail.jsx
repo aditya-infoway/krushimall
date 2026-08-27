@@ -190,7 +190,8 @@ const ProductDetail = () => {
 
         const mrp = Number(data.mrp) || 0;
         const sellingPrice = Number(data.sellingPrice) || 0;
-
+const finalPrice =
+  Number(data.finalPrice) > 0 ? Number(data.finalPrice) : sellingPrice;
         const images = [
           data.mainImage,
           data.thumbnailImage,
@@ -216,12 +217,12 @@ const ProductDetail = () => {
             data.subSubCategory?.name ||
             "-",
 
-          price: sellingPrice,
+          price: finalPrice,
           oldPrice: mrp,
 
           discount:
-            mrp > sellingPrice && mrp > 0
-              ? Math.round(((mrp - sellingPrice) / mrp) * 100)
+            mrp > finalPrice && mrp > 0
+              ? Math.round(((mrp - finalPrice) / mrp) * 100)
               : 0,
 
           rating: 0,
@@ -1018,7 +1019,7 @@ const ProductDetail = () => {
         {/* Related Products Section */}
        {/* Related Products Section */}
 {relatedProducts.length > 0 && (
-  <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm">
+  <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm  mb-3">
     {/* Header */}
     <div className="flex items-center justify-between mb-4">
       <h2 className="text-lg font-bold text-gray-900">

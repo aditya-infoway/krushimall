@@ -1223,7 +1223,7 @@ useEffect(() => {
                         className="flex gap-3 p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors"
                       >
                         <img
-                          src={item.image}
+                   src={apiHelper.getImageUrl(item.image)}
                           alt={item.name}
                           className="w-16 h-16 rounded-lg object-cover bg-gray-100 shrink-0"
                         />
