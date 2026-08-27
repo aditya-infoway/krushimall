@@ -169,6 +169,9 @@ const VendorProfile = () => {
   const [loadingEnquiries, setLoadingEnquiries] = useState(false);
   const [todayFollowups, setTodayFollowups] = useState([]);
   const [loadingTodayFollowups, setLoadingTodayFollowups] = useState(false);
+  const [equipmentProducts, setEquipmentProducts] = useState([]);
+  const [loadingEquipmentProducts, setLoadingEquipmentProducts] =
+    useState(false);
 
   const [searchParams] = useSearchParams();
 
@@ -239,6 +242,16 @@ const VendorProfile = () => {
     currentPage * itemsPerPage,
   );
 
+
+   const equipmentTotalPages = Math.ceil(
+    (equipmentProducts?.length || 0) / itemsPerPage,
+  );
+
+  const paginatedEquipmentProducts = (equipmentProducts || []).slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
   const todayFollowupTotalPages = Math.ceil(
     (todayFollowups?.length || 0) / itemsPerPage,
   );
@@ -251,6 +264,10 @@ const VendorProfile = () => {
   useEffect(() => {
     setCurrentPage(1);
   }, [products.length]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [equipmentProducts.length]);
 
   // Load countries on mount
   useEffect(() => {
@@ -377,9 +394,25 @@ const VendorProfile = () => {
       setLoadingProducts(false);
     }
   };
+
+
+  const loadEquipmentProducts = async () => {
+    try {
+      setLoadingEquipmentProducts(true);
+       const res = await apiHelper.get("/vendor-web/equipmentvariant");
+     setEquipmentProducts(res.data || []);
+    } catch (err) {
+      console.log(err);
+      showErrorToast("Unable to load equipment products");
+    } finally {
+      setLoadingEquipmentProducts(false);
+    }
+  };
+
   useEffect(() => {
     loadVendorData();
   }, [user]);
+
   useEffect(() => {
     if (!vendorData.vehicleType) return;
 
@@ -404,6 +437,18 @@ const VendorProfile = () => {
       showSuccessToast("Product deleted");
     } catch (err) {
       showErrorToast("Unable to delete");
+    }
+  };
+
+   const handleDeleteEquipment = async (id) => {
+    if (!window.confirm("Delete this equipment?")) return;
+
+    try {
+      await apiHelper.delete(`/vendor-web/equipmentvariant/${id}`);
+      loadEquipmentProducts();
+      showSuccessToast("Equipment deleted");
+    } catch (err) {
+      showErrorToast("Unable to delete equipment");
     }
   };
 
@@ -436,7 +481,6 @@ const VendorProfile = () => {
   ];
 
   // Tabs for vendor
-  // Tabs for vendor
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
 
@@ -446,6 +490,10 @@ const VendorProfile = () => {
 
     ...(vendorData.vendorType === "vehicle" && vendorData.vehicleType === "used"
       ? [{ id: "usedProducts", label: "Used Vehicle", icon: Truck }]
+      : []),
+
+    ...(vendorData.vendorType === "equipment"
+      ? [{ id: "equipmentProducts", label: "Equipment", icon: Wrench }]
       : []),
 
     { id: "enquiries", label: "Inquiry Register", icon: MessageSquare },
@@ -491,6 +539,10 @@ const VendorProfile = () => {
 
     if (activeTab === "todayFollowup") {
       fetchTodayFollowups();
+    }
+
+    if (activeTab === "equipmentProducts") {
+      loadEquipmentProducts();
     }
   }, [activeTab]);
 
@@ -1535,6 +1587,168 @@ const VendorProfile = () => {
                 )}
               </div>
             )}
+
+            {activeTab === "equipmentProducts" && (
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+                      Your Equipment{" "}
+                      {equipmentProducts.length > 0 &&
+                        `(${equipmentProducts.length})`}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                      Manage your equipment listings
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => navigate("/vendor/add-equipment")}
+                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white cursor-pointer px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold w-full sm:w-auto"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Equipment
+                  </button>
+                </div>
+
+                {loadingEquipmentProducts ? (
+                  <div className="text-center py-10">Loading...</div>
+                ) : equipmentProducts.length === 0 ? (
+                  <div className="text-center py-12">
+                    <Wrench className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      No Equipment Listed
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-6">
+                      Start selling by adding your first equipment listing
+                    </p>
+                  </div>
+                ) : (
+                  <>
+                    <div className="overflow-x-auto">
+                      <table className="min-w-full border border-gray-200 rounded-xl">
+                        <thead className="bg-gray-50 whitespace-nowrap">
+                          <tr>
+                            <th className="px-4 py-3 text-left">Sr. No.</th>
+                            <th className="px-4 py-3 text-left">Equipment</th>
+                            <th className="px-4 py-3 text-left">Type</th>
+                            <th className="px-4 py-3 text-left">Brand</th>
+                            <th className="px-4 py-3 text-left">Condition</th>
+                            <th className="px-4 py-3 text-left">Status</th>
+                            <th className="px-4 py-3 text-center">Action</th>
+                          </tr>
+                        </thead>
+
+                        <tbody>
+                          {paginatedEquipmentProducts.map((item, index) => (
+                            <tr
+                              key={item.id}
+                              className="border-t whitespace-nowrap"
+                            >
+                              <td className="px-4 py-3 text-gray-500">
+                                {(currentPage - 1) * itemsPerPage + index + 1}
+                              </td>
+                              <td className="px-4 py-3">
+                                {item.model || item.productName || "-"}
+                              </td>
+                              <td className="px-4 py-3 capitalize">
+                                {item.equipmentType || "-"}
+                              </td>
+                              <td className="px-4 py-3">
+                                {item.brand || "-"}
+                              </td>
+                              <td className="px-4 py-3 capitalize">
+                                {item.equipmentCondition || "-"}
+                              </td>
+                              <td className="px-4 py-3">
+                                {item.status || "DRAFT"}
+                              </td>
+                              <td className="px-4 py-3">
+                                <div className="flex justify-center gap-2">
+                                  <button
+                                    onClick={() =>
+                                      navigate(
+                                        `/vendor/edit-equipment/${item.id}`,
+                                      )
+                                    }
+                                    className="px-3 py-1 bg-blue-500 text-white rounded-lg cursor-pointer"
+                                  >
+                                    Edit
+                                  </button>
+                                  <button
+                                    onClick={() =>
+                                      handleDeleteEquipment(item.id)
+                                    }
+                                    className="px-3 py-1 bg-red-500 text-white rounded-lg cursor-pointer"
+                                  >
+                                    Delete
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {equipmentTotalPages > 1 && (
+                      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 px-1">
+                        <p className="text-xs text-gray-500">
+                          Showing {(currentPage - 1) * itemsPerPage + 1}–
+                          {Math.min(
+                            currentPage * itemsPerPage,
+                            equipmentProducts.length,
+                          )}{" "}
+                          of {equipmentProducts.length} equipment
+                        </p>
+
+                        <div className="flex items-center gap-1 flex-wrap justify-center">
+                          <button
+                            onClick={() =>
+                              setCurrentPage((p) => Math.max(1, p - 1))
+                            }
+                            disabled={currentPage === 1}
+                            className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          >
+                            Previous
+                          </button>
+
+                          {Array.from(
+                            { length: equipmentTotalPages },
+                            (_, i) => i + 1,
+                          ).map((page) => (
+                            <button
+                              key={page}
+                              onClick={() => setCurrentPage(page)}
+                              className={`w-8 h-8 text-sm rounded-lg transition-colors ${
+                                currentPage === page
+                                  ? "bg-green-600 text-white font-medium"
+                                  : "text-gray-600 hover:bg-gray-50 border border-gray-200"
+                              }`}
+                            >
+                              {page}
+                            </button>
+                          ))}
+
+                          <button
+                            onClick={() =>
+                              setCurrentPage((p) =>
+                                Math.min(equipmentTotalPages, p + 1),
+                              )
+                            }
+                            disabled={currentPage === equipmentTotalPages}
+                            className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                          >
+                            Next
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+            )}
+
             {/* Enquiries Tab */}
             {activeTab === "enquiries" && (
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">

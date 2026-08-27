@@ -617,6 +617,20 @@ const Register = () => {
 
                         <span className="text-sm text-gray-700">Service</span>
                       </label>
+
+ <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                        type="radio"
+                          name="vendorType"
+                          value="Equipment"
+                          checked={vendorType === "Equipment"}
+                          onChange={() => setVendorType("Equipment")}
+                          className="h-5 w-5 text-green-600 focus:ring-green-500"
+                        />
+
+                        <span className="text-sm text-gray-700">Equipment</span>
+                      </label>
+
                     </div>
                   </div>
 

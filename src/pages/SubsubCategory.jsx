@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useLocation } from "react-router-dom";
-import { ChevronRight, Home, Wrench, ArrowLeft } from "lucide-react";
+import { ChevronRight, Home, Wrench, ArrowLeft,  Search, } from "lucide-react";
 import apiHelper from "../utils/apiHelper";
 
 const SubSubCategory = () => {
@@ -11,7 +11,7 @@ const SubSubCategory = () => {
   const [subCategory, setSubCategory] = useState(null);
   const [subSubCategories, setSubSubCategories] = useState([]);
   const [loading, setLoading] = useState(true);
-
+const [searchTerm, setSearchTerm] = useState("");
 const categoryId = location.state?.categoryId || category?.id;
 
 const backTo = categoryId
@@ -44,7 +44,13 @@ const backLabel = category?.categoryName || "Categories";
     item?.subsubcategoryImage ||
     item?.icon ||
     null;
+const filteredSubSubCategories = subSubCategories.filter((item) => {
+  const name = getSubSubCategoryName(item);
 
+  return name
+    .toLowerCase()
+    .includes(searchTerm.trim().toLowerCase());
+});
   const getEmbeddedChildren = (sub) => {
     if (Array.isArray(sub?.subSubCategories)) return sub.subSubCategories;
     if (Array.isArray(sub?.subSubCategory)) return sub.subSubCategory;
@@ -202,58 +208,90 @@ const backLabel = category?.categoryName || "Categories";
         <p className="text-sm text-gray-500 mt-1">
           Select sub-category to find parts • {subSubCategories.length} subcategories
         </p>
+        <div className="relative mt-4 w-full max-w-[425px]">
+  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+
+  <input
+    type="text"
+    value={searchTerm}
+    onChange={(e) => setSearchTerm(e.target.value)}
+    placeholder="Search subcategories..."
+    className="w-full h-10 pl-10 pr-4 border border-gray-300 rounded-lg bg-white text-sm text-gray-900 placeholder-gray-400 outline-none focus:border-green-500 focus:ring-1 focus:ring-green-500 transition-colors"
+  />
+</div>
       </div>
 
       {/* Grid */}
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pb-16">
-        {subSubCategories.length === 0 ? (
-          <div className="text-center py-20">
-            <p className="text-gray-500">No subcategories found</p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,240px))] gap-6">
-            {subSubCategories.map((child) => {
-              const childName = getSubSubCategoryName(child);
-              const childImage = getSubSubCategoryImage(child);
+    {/* Grid */}
+<div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pb-16">
+  {filteredSubSubCategories.length === 0 ? (
+    <div className="text-center py-20">
+      <p className="text-gray-500">
+        {searchTerm
+          ? "No subcategories found matching your search"
+          : "No subcategories found"}
+      </p>
 
-              return (
-                <Link
-                  key={child.id || childName}
-                 to={`/products?subSubCategoryId=${child.id}`}
-                  className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden"
-                >
-                  <div className="relative h-38 overflow-hidden bg-gray-100">
-                    {childImage ? (
-                      <img
-                        src={apiHelper.image(childImage)}
-                        alt={childName}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                        loading="lazy"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
-                        <span className="text-2xl font-bold text-gray-300 uppercase">
-                          {childName?.substring(0, 2)}
-                        </span>
-                      </div>
-                    )}
-                    <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent" />
-                    <div className="absolute bottom-4 left-4 text-white">
-                      <Wrench className="h-8 w-8 mb-2" />
-                      <h3 className="text-lg font-bold">{childName}</h3>
-                    </div>
-                  </div>
-                  <div className="p-4 border-t border-gray-100">
-                    <span className="text-sm text-green-600 group-hover:text-green-700 font-medium flex items-center gap-1">
-                      View Products <ChevronRight className="h-4 w-4" />
-                    </span>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        )}
-      </div>
+      {searchTerm && (
+        <button
+          type="button"
+          onClick={() => setSearchTerm("")}
+          className="mt-3 text-sm text-green-600 hover:text-green-700 font-medium"
+        >
+          Clear Search
+        </button>
+      )}
+    </div>
+  ) : (
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(240px,240px))] gap-6">
+      {filteredSubSubCategories.map((child) => {
+        const childName = getSubSubCategoryName(child);
+        const childImage = getSubSubCategoryImage(child);
+
+        return (
+          <Link
+            key={child.id || childName}
+            to={`/products?subSubCategoryId=${child.id}`}
+            className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden"
+          >
+            <div className="relative h-38 overflow-hidden bg-gray-100">
+              {childImage ? (
+                <img
+                  src={apiHelper.image(childImage)}
+                  alt={childName}
+                  className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                  <span className="text-2xl font-bold text-gray-300 uppercase">
+                    {childName?.substring(0, 2)}
+                  </span>
+                </div>
+              )}
+
+              <div className="absolute inset-0 bg-linear-to-t from-black/70 to-transparent" />
+
+              <div className="absolute bottom-4 left-4 text-white">
+                <Wrench className="h-8 w-8 mb-2" />
+                <h3 className="text-lg font-bold">
+                  {childName}
+                </h3>
+              </div>
+            </div>
+
+            <div className="p-4 border-t border-gray-100">
+              <span className="text-sm text-green-600 group-hover:text-green-700 font-medium flex items-center gap-1">
+                View Products
+                <ChevronRight className="h-4 w-4" />
+              </span>
+            </div>
+          </Link>
+        );
+      })}
+    </div>
+  )}
+</div>
     </div>
   );
 };

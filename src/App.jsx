@@ -36,7 +36,7 @@ import Profile from "./pages/Profile";
 import BookingHistory from "./pages/BookingHistory";
 import { Toaster } from "react-hot-toast";
 import AllCategories from "./pages/AllCategories";
-import BecomeVendor from "./pages/BecomeVendor";
+import BecomeVendor from "./pages/Becomevendor.jsx";
 import VendorProfile from "./pages/VendorProfile";
 import VendorLogin from "./pages/VendorLogin";
 import WebsiteVariant from "./pages/websitevariant/index.jsx";
@@ -49,6 +49,7 @@ import CategoryDetail from "./pages/CategoryDetail";
 import Equipment from "./pages/Equipments.jsx";
 import EquipmentDetails from "./pages/EquipmentDetails.jsx";
 import AllBrands from "./pages/AllBrands";
+import EquipmentVariant from "./pages/equipments/index.js";
 // ...
 
 function App() {
@@ -163,6 +164,16 @@ function App() {
                       path="/vendor/edit-used-product/:id"
                       element={<UsedWebsiteVariant />}
                     />
+
+                      <Route
+                      path="/vendor/add-used-product"
+                      element={<UsedWebsiteVariant />}
+                    />
+                     <Route
+                      path="/vendor/add-equipment"
+                      element={<EquipmentVariant />}
+                    />
+
                     <Route path="/help" element={<Help />} />
                     <Route
                       path="/booking-history"
