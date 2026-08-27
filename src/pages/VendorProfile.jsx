@@ -169,6 +169,9 @@ const VendorProfile = () => {
   const [loadingEnquiries, setLoadingEnquiries] = useState(false);
   const [todayFollowups, setTodayFollowups] = useState([]);
   const [loadingTodayFollowups, setLoadingTodayFollowups] = useState(false);
+  const [equipmentProducts, setEquipmentProducts] = useState([]);
+  const [loadingEquipmentProducts, setLoadingEquipmentProducts] =
+    useState(false);
 
   const [searchParams] = useSearchParams();
 
@@ -377,9 +380,27 @@ const VendorProfile = () => {
       setLoadingProducts(false);
     }
   };
+
+  // TODO: replace with real endpoint once the equipment product API exists,
+  // e.g. apiHelper.get("/vendor-web/equipment-product")
+  const loadEquipmentProducts = async () => {
+    try {
+      setLoadingEquipmentProducts(true);
+      // const res = await apiHelper.get("/vendor-web/equipment-product");
+      // setEquipmentProducts(res.data || []);
+      setEquipmentProducts([]);
+    } catch (err) {
+      console.log(err);
+      showErrorToast("Unable to load equipment products");
+    } finally {
+      setLoadingEquipmentProducts(false);
+    }
+  };
+
   useEffect(() => {
     loadVendorData();
   }, [user]);
+
   useEffect(() => {
     if (!vendorData.vehicleType) return;
 
@@ -436,7 +457,6 @@ const VendorProfile = () => {
   ];
 
   // Tabs for vendor
-  // Tabs for vendor
   const tabs = [
     { id: "profile", label: "Profile", icon: User },
 
@@ -446,6 +466,10 @@ const VendorProfile = () => {
 
     ...(vendorData.vendorType === "vehicle" && vendorData.vehicleType === "used"
       ? [{ id: "usedProducts", label: "Used Vehicle", icon: Truck }]
+      : []),
+
+    ...(vendorData.vendorType === "equipment"
+      ? [{ id: "equipmentProducts", label: "Equipment", icon: Wrench }]
       : []),
 
     { id: "enquiries", label: "Inquiry Register", icon: MessageSquare },
@@ -491,6 +515,10 @@ const VendorProfile = () => {
 
     if (activeTab === "todayFollowup") {
       fetchTodayFollowups();
+    }
+
+    if (activeTab === "equipmentProducts") {
+      loadEquipmentProducts();
     }
   }, [activeTab]);
 
@@ -1535,6 +1563,46 @@ const VendorProfile = () => {
                 )}
               </div>
             )}
+
+            {activeTab === "equipmentProducts" && (
+              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
+                  <div>
+                    <h2 className="text-lg sm:text-xl font-bold text-gray-900">
+                      Your Equipment{" "}
+                      {equipmentProducts.length > 0 &&
+                        `(${equipmentProducts.length})`}
+                    </h2>
+                    <p className="text-xs sm:text-sm text-gray-500 mt-1">
+                      Manage your equipment listings
+                    </p>
+                  </div>
+
+                  <button
+                    onClick={() => navigate("/vendor/add-equipment")}
+                    className="flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white cursor-pointer px-4 sm:px-5 py-2.5 rounded-xl text-sm font-semibold w-full sm:w-auto"
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add Equipment
+                  </button>
+                </div>
+
+                {loadingEquipmentProducts ? (
+                  <div className="text-center py-10">Loading...</div>
+                ) : (
+                  <div className="text-center py-12">
+                    <Wrench className="h-16 w-16 text-gray-300 mx-auto mb-4" />
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      No Equipment Listed
+                    </h3>
+                    <p className="text-sm text-gray-500 mb-6">
+                      Start selling by adding your first equipment listing
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Enquiries Tab */}
             {activeTab === "enquiries" && (
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">
