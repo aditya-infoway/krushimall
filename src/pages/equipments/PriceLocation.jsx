@@ -268,7 +268,7 @@ export default function PriceLocation({
         if (!productId) return;
 
         const res = await apiHelper.get(
-          `/vendor-web/website-variant/${productId}`
+          `/vendor-web/equipmentvariant/${productId}`,
         );
 
         const data = res.data.data || res.data;
@@ -330,7 +330,7 @@ export default function PriceLocation({
 
       await apiHelper.put(
         `/vendor-web/equipmentvariant/${productId}/save-step`,
-        payload
+        payload,
       );
 
       toast.success("Price and location details saved!");
@@ -340,7 +340,7 @@ export default function PriceLocation({
       console.error(error);
       toast.error(
         error.response?.data?.message ||
-          "Failed to save price and location details."
+          "Failed to save price and location details.",
       );
     }
   };
@@ -365,7 +365,7 @@ export default function PriceLocation({
     (c) => ({
       value: c.name,
       label: c.name,
-    })
+    }),
   );
 
   const negotiableOptions = [
@@ -418,7 +418,7 @@ export default function PriceLocation({
                         data={negotiableOptions}
                         value={
                           negotiableOptions.find(
-                            (o) => o.value === field.value
+                            (o) => o.value === field.value,
                           ) || null
                         }
                         onChange={(o) => field.onChange(o?.value)}
@@ -507,9 +507,8 @@ export default function PriceLocation({
                           placeholder="Search State"
                           isDisabled={!country}
                           value={
-                            stateOptions.find(
-                              (o) => o.value === field.value
-                            ) || null
+                            stateOptions.find((o) => o.value === field.value) ||
+                            null
                           }
                           onChange={(selected) => {
                             field.onChange(selected?.value || "");
@@ -540,7 +539,7 @@ export default function PriceLocation({
                           isDisabled={!selectedState}
                           value={
                             districtOptions.find(
-                              (o) => o.value === field.value
+                              (o) => o.value === field.value,
                             ) || null
                           }
                           onChange={(selected) =>
@@ -571,7 +570,7 @@ export default function PriceLocation({
                           isDisabled={!selectedState}
                           value={
                             districtOptions.find(
-                              (o) => o.value === field.value
+                              (o) => o.value === field.value,
                             ) || null
                           }
                           onChange={(selected) =>
@@ -602,7 +601,7 @@ export default function PriceLocation({
                           isDisabled={!selectedState}
                           value={
                             districtOptions.find(
-                              (o) => o.value === field.value
+                              (o) => o.value === field.value,
                             ) || null
                           }
                           onChange={(selected) =>
