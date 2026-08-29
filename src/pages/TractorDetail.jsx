@@ -1307,7 +1307,7 @@ const TractorDetails = () => {
                     onClick={() => setShowEnquiryModal(true)}
                     className="bg-green-600 text-white cursor-pointer px-4 py-1.5 rounded-lg text-sm font-semibold hover:shadow-lg transition-all"
                   >
-                    Inquiry
+                    Enquiry
                   </button>
                 </div>
               </div>
@@ -1352,7 +1352,7 @@ const TractorDetails = () => {
                     key={index}
                     className="bg-white rounded-2xl border border-green-400 shadow-sm p-3 flex gap-3 hover:shadow-lg transition-all"
                   >
-                    <div className="w-[92px] h-[92px] rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                    <div className="w-23 h-23 rounded-xl overflow-hidden bg-gray-100 shrink-0">
                       <img
                         src={item.image || "/mah.png"}
                         alt={item.name}
