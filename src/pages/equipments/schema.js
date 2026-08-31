@@ -10,6 +10,12 @@ export const EquipmentBasicInfoSchema = Yup.object({
   modelId: Yup.number().required("Model is required"),
   variantId: Yup.number().nullable(),
 
+  displayName: Yup
+  .string()
+  .trim()
+  .required("Display Name is required")
+  .max(200, "Display Name cannot exceed 200 characters"),
+
   // Change manufacturingYear to accept date string
   manufacturingYear: Yup.string()
     .required("Manufacturing Year is required")

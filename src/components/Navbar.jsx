@@ -1432,6 +1432,22 @@ useEffect(() => {
                   </p>
                 </div>
               </div>
+            ) : isVendorLoggedIn ? (
+              <div className="flex items-center gap-3 p-3 bg-white/10 rounded-xl">
+                <div className="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">
+                  {vendorData?.name?.charAt(0) || "V"}
+                </div>
+
+                <div className="text-white">
+                  <p className="font-semibold text-sm">
+                    {vendorData?.name || "Vendor"}
+                  </p>
+
+                  <p className="text-xs text-gray-300">
+                    {vendorData?.email || "vendor@example.com"}
+                  </p>
+                </div>
+              </div>
             ) : (
               <div className="space-y-2">
                 <Link
@@ -1484,6 +1500,10 @@ useEffect(() => {
             </div>
 
             {/* ================================================== */}
+            {/* PROFILE MENU */}
+            {/* ================================================== */}
+
+                    {/* ================================================== */}
             {/* PROFILE MENU */}
             {/* ================================================== */}
 
@@ -1569,6 +1589,35 @@ useEffect(() => {
               </div>
             )}
 
+            {!isAuthenticated && isVendorLoggedIn && (
+              <div className="border-t-2 border-dashed border-gray-200 pt-4">
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">
+                  My Account
+                </p>
+
+                <Link
+                  to="/vendor-profile"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group hover:bg-green-700 hover:text-white hover:shadow-xl hover:shadow-green-700/20 hover:scale-[1.02] transform mb-1"
+                >
+                  <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors duration-300">
+                    <Store className="h-5 w-5 text-green-600 group-hover:text-white" />
+                  </div>
+                  <span className="font-semibold flex-1">Vendor Profile</span>
+                </Link>
+
+                <Link
+                  to="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group hover:bg-green-700 hover:text-white hover:shadow-xl hover:shadow-green-700/20 hover:scale-[1.02] transform mb-1"
+                >
+                  <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors duration-300">
+                    <LogIn className="h-5 w-5 text-green-600 group-hover:text-white" />
+                  </div>
+                  <span className="font-semibold flex-1">User Login</span>
+                </Link>
+              </div>
+            )}
             {/* ================================================== */}
             {/* QUICK LINKS */}
             {/* ================================================== */}
@@ -1648,7 +1697,7 @@ useEffect(() => {
           {/* MOBILE LOGOUT */}
           {/* ================================================== */}
 
-          {isAuthenticated && (
+                  {(isAuthenticated || isVendorLoggedIn) && (
             <div className="shrink-0 border-t border-gray-200 bg-white px-4 py-4">
               <button
                 onClick={handleFullLogout}

@@ -1,5 +1,5 @@
 import { useEffect, useState, useRef, Fragment } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import {
   Dialog,
   Transition,
@@ -133,7 +133,9 @@ function ResponseListbox({ value, onChange, error }) {
                 {({ selected }) => (
                   <>
                     <span
-                      className={`${option.color} ${selected ? "font-medium" : "font-normal"}`}
+                      className={`${option.color} ${
+                        selected ? "font-medium" : "font-normal"
+                      }`}
                     >
                       {option.label}
                     </span>
@@ -292,8 +294,8 @@ function DatePicker({
                       !d
                         ? "invisible"
                         : selected
-                          ? "bg-green-600 font-medium text-white"
-                          : "text-gray-700 hover:bg-green-50 hover:text-green-700"
+                        ? "bg-green-600 font-medium text-white"
+                        : "text-gray-700 hover:bg-green-50 hover:text-green-700"
                     }`}
                   >
                     {d}
@@ -325,7 +327,8 @@ export default function VendorFollowup() {
   // `id` here is the enquiry id the follow-up board is scoped to
   const { id } = useParams();
   const navigate = useNavigate();
-
+  const [searchParams] = useSearchParams();
+  const isEquipmentVendor = searchParams.get("type") === "equipment";
   const [enquiry, setEnquiry] = useState(null);
   const [followups, setFollowups] = useState([]);
   const [followupCount, setFollowupCount] = useState(0);
@@ -341,7 +344,10 @@ export default function VendorFollowup() {
   // -- data loading -----------------------------------------------------
   const fetchEnquiry = async () => {
     try {
-      const res = await apiHelper.get(`/vendor-web/website-enquiry/${id}`);
+      const endpoint = isEquipmentVendor
+        ? `/vendor-web/equipmentenquiry/${id}`
+        : `/vendor-web/website-enquiry/${id}`;
+      const res = await apiHelper.get(endpoint);
       setEnquiry(res.data || res);
     } catch (error) {
       console.error(error);
@@ -350,9 +356,10 @@ export default function VendorFollowup() {
 
   const fetchFollowups = async () => {
     try {
-      const res = await apiHelper.get(
-        `/vendor-web/website-enquiry-followup/enquiry/${id}`,
-      );
+      const endpoint = isEquipmentVendor
+        ? `/vendor-web/equipmentenquiryfollowup/enquiry/${id}`
+        : `/vendor-web/website-enquiry-followup/enquiry/${id}`;
+      const res = await apiHelper.get(endpoint);
 
       setFollowups(res.data || []);
       setFollowupCount(res.total || 0);
@@ -415,7 +422,12 @@ export default function VendorFollowup() {
         discussion,
       };
 
-      await apiHelper.post(`/vendor-web/website-enquiry-followup`, payload);
+      await apiHelper.post(
+        isEquipmentVendor
+          ? `/vendor-web/equipmentenquiryfollowup`
+          : `/vendor-web/website-enquiry-followup`,
+        payload,
+      );
 
       showSuccessToast("Follow-up added successfully!");
       setOpenModal(false);
@@ -601,7 +613,11 @@ export default function VendorFollowup() {
                         onChange={(e) => setCallTime(e.target.value)}
                         className={`w-full rounded-xl border px-4 py-3 text-sm outline-none transition-all
                           focus:border-green-600 focus:ring-2 focus:ring-green-600
-                          ${errors.callTime ? "border-red-300 bg-red-50" : "border-gray-200"}`}
+                          ${
+                            errors.callTime
+                              ? "border-red-300 bg-red-50"
+                              : "border-gray-200"
+                          }`}
                       />
                       {errors.callTime && (
                         <p className="mt-1 text-xs text-red-600">

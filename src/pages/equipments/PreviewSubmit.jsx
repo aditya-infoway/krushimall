@@ -247,7 +247,7 @@ export default function PreviewSubmit({
         localStorage.removeItem("vendorProductId");
       }
 
-      navigate("/vendor-profile?tab=products", { replace: true });
+      navigate("/vendor-profile?tab=equipmentProducts", { replace: true });
     } catch (error) {
       console.error(error);
       toast.error(
@@ -346,7 +346,7 @@ export default function PreviewSubmit({
                 <div className="lg:col-span-5">
                   <div className="flex items-center gap-3 flex-wrap">
                     <h2 className="text-2xl font-bold text-gray-900">
-                      {equipmentData?.productName || "-"}
+                      {equipmentData?.displayName || "-"}
                     </h2>
                     <StatusBadge
                       label={conditionScore.label}
@@ -403,7 +403,7 @@ export default function PreviewSubmit({
                   </div>
                 </div>
 
-                <div className="lg:col-span-3">
+                {/* <div className="lg:col-span-3">
                   <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
                     <h4 className="mb-3 text-sm font-semibold text-gray-700 flex items-center gap-2">
                       <Tag className="h-4 w-4 text-green-600" />
@@ -431,7 +431,7 @@ export default function PreviewSubmit({
                       )}
                     </ul>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
 
@@ -446,18 +446,9 @@ export default function PreviewSubmit({
                     equipmentData?.category?.categoryName
                   }
                 />
-                <PreviewRow
-                  label="Brand"
-                 value={equipmentData?.brand}
-                />
-                <PreviewRow
-                  label="Model"
-                  value={equipmentData?.model}
-                />
-                <PreviewRow
-                  label="Variant"
-                   value={equipmentData?.variant}
-                />
+                <PreviewRow label="Brand" value={equipmentData?.brand} />
+                <PreviewRow label="Model" value={equipmentData?.model} />
+                <PreviewRow label="Variant" value={equipmentData?.variant} />
                 <PreviewRow
                   label="Serial Number"
                   value={equipmentData?.serialNumber}
@@ -541,7 +532,7 @@ export default function PreviewSubmit({
                 <PreviewRow label="RPM" value={equipmentData?.rpm} />
                 <PreviewRow
                   label="Number of Blades/Tines"
-                   value={equipmentData?.numberOfBlades}
+                  value={equipmentData?.numberOfBlades}
                 />
                 <PreviewRow
                   label="Number of Rows"

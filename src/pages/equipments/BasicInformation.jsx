@@ -23,6 +23,7 @@ const equipmentTypeOptions = [
   { label: "Seed Drill", value: "seed_drill" },
   { label: "MB Plough", value: "mb_plough" },
   { label: "Trolley", value: "trolley" },
+    { label: "Trailer", value: "trailer" },
   { label: "Other", value: "other" },
 ];
 
@@ -472,6 +473,7 @@ export default function BasicInformation({
   onComplete,
   productData,
   isEdit,
+   id,
 }) {
   const navigate = useNavigate();
   const {
@@ -525,39 +527,56 @@ export default function BasicInformation({
     if (watchDistrict) setDistrictName(watchDistrict);
   }, [watchDistrict]);
 
-  useEffect(() => {
-    if (!isEdit || !productData) return;
+useEffect(() => {
+  if (!isEdit || !productData) return;
 
-    setCountry(productData.country || "");
-    setStateCode(productData.state || "");
-    setDistrictName(productData.district || "");
+  // Wait until dropdown data is loaded
+  if (!categoryOptions.length) return;
+  if (!brandOptions.length) return;
+  if (!modelOptions.length) return;
+  if (!variantOptions.length) return;
 
-    reset({
-      categoryId: productData.categoryId,
-      equipmentType: productData.equipmentType,
-      brandId: productData.brandId,
-      modelId: productData.modelId,
-      variantId: productData.variantId,
+  setCountry(productData.country || "");
+  setStateCode(productData.state || "");
+  setDistrictName(productData.district || "");
 
-      manufacturingYear: productData.manufacturingYear,
-      purchaseYear: productData.purchaseYear,
-      equipmentCondition: productData.equipmentCondition,
-      serialNumber: productData.serialNumber,
-      productCode: productData.productCode,
-      color: productData.color,
+  reset({
+     displayName: productData.displayName || "",
+    categoryId: Number(productData.categoryId),
+    equipmentType: productData.equipmentType || "",
+    brandId: Number(productData.brandId),
+    modelId: Number(productData.modelId),
+    variantId: Number(productData.variantId),
 
-      country: productData.country || "",
-      state: productData.state || "",
-      district: productData.district || "",
-      taluka: productData.taluka || "",
-      village: productData.village || "",
+    manufacturingYear: productData.manufacturingYear || "",
+    purchaseYear: productData.purchaseYear || "",
+    equipmentCondition: productData.equipmentCondition || "",
+    serialNumber: productData.serialNumber || "",
+    productCode: productData.productCode || "",
+    color: productData.color || "",
 
-      sellerType: productData.sellerType,
-      ownerType: productData.ownerType,
-      ownershipProofAvailable: productData.ownershipProofAvailable,
-      usage: productData.usage,
-    });
-  }, [productData, isEdit, reset]);
+    country: productData.country || "",
+    state: productData.state || "",
+    district: productData.district || "",
+    taluka: productData.taluka || "",
+    village: productData.village || "",
+
+    sellerType: productData.sellerType || "",
+    ownerType: productData.ownerType || "",
+    ownershipProofAvailable: Boolean(
+      productData.ownershipProofAvailable
+    ),
+    usage: productData.usage || "",
+  });
+}, [
+  productData,
+  isEdit,
+  reset,
+  categoryOptions,
+  brandOptions,
+  modelOptions,
+  variantOptions,
+]);
 
   const countryOptions = Country.getAllCountries().map((c) => ({
     value: c.isoCode,
@@ -596,6 +615,10 @@ export default function BasicInformation({
     );
 
     const payload = {
+
+
+      displayName: data.displayName?.trim() || "",
+
       // ==========================
       // Equipment Classification
       // ==========================
@@ -686,20 +709,29 @@ export default function BasicInformation({
     console.log("Equipment Variant Payload:", payload);
 
     // ONLY CREATE FOR NOW
-    const res = await apiHelper.post(
-      "/vendor-web/equipmentvariant",
-      payload,
-    );
+   let res;
+
+if (isEdit) {
+  res = await apiHelper.put(
+    `/vendor-web/equipmentvariant/${id}`,
+    payload,
+  );
+} else {
+  res = await apiHelper.post(
+    "/vendor-web/equipmentvariant",
+    payload,
+  );
+}
 
     console.log("Equipment Variant Created:", res.data);
 
     // Store created ID for next steps
- if (res.data?.id) {
-      localStorage.setItem(
-        "vendorEquipmentId",
-        res.data.id.toString(),
-      );
-    }
+if (!isEdit && res.data?.id) {
+  localStorage.setItem(
+    "vendorEquipmentId",
+    res.data.id.toString(),
+  );
+}
 
     toast.success("Basic information saved!");
 
@@ -726,10 +758,14 @@ export default function BasicInformation({
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Page Header */}
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">Add Equipment</h1>
+<h1 className="text-2xl font-bold text-gray-900">
+  {isEdit ? "Edit Equipment" : "Add Equipment"}
+</h1>
           <p className="text-sm text-gray-500 mt-1">
-            Fill in the equipment details below to list your product
-          </p>
+  {isEdit
+    ? "Update your equipment details"
+    : "Fill in the equipment details below to list your product"}
+</p>
         </div>
 
         {/* Form Card */}
@@ -749,10 +785,11 @@ export default function BasicInformation({
                     render={({ field }) => (
                       <CustomListbox
                         data={categoryOptions}
-                        value={
-                          categoryOptions.find((c) => c.id === field.value) ||
-                          null
-                        }
+                       value={
+  categoryOptions.find(
+    (c) => Number(c.id) === Number(field.value)
+  ) || null
+}
                         onChange={(option) => {
                           field.onChange(option.id);
                           setValue("brandId", "");
@@ -797,10 +834,11 @@ export default function BasicInformation({
                     render={({ field }) => (
                       <CustomListbox
                         data={filteredBrands}
-                        value={
-                          filteredBrands.find((b) => b.id === field.value) ||
-                          null
-                        }
+                       value={
+  filteredBrands.find(
+    (b) => Number(b.id) === Number(field.value)
+  ) || null
+}
                         onChange={(option) => {
                           field.onChange(option.id);
                           setValue("modelId", "");
@@ -822,10 +860,11 @@ export default function BasicInformation({
                     render={({ field }) => (
                       <CustomListbox
                         data={filteredModels}
-                        value={
-                          filteredModels.find((m) => m.id === field.value) ||
-                          null
-                        }
+                       value={
+  filteredModels.find(
+    (m) => Number(m.id) === Number(field.value)
+  ) || null
+}
                         onChange={(option) => {
                           field.onChange(option.id);
                           setValue("variantId", "");
@@ -846,10 +885,11 @@ export default function BasicInformation({
                     render={({ field }) => (
                       <CustomListbox
                         data={filteredVariants}
-                        value={
-                          filteredVariants.find((v) => v.id === field.value) ||
-                          null
-                        }
+                       value={
+  filteredVariants.find(
+    (v) => Number(v.id) === Number(field.value)
+  ) || null
+}
                         onChange={(option) => field.onChange(option?.id)}
                         displayField="variantName"
                         placeholder="Select Variant / Version"
@@ -858,6 +898,15 @@ export default function BasicInformation({
                       />
                     )}
                   />
+
+                  {/* 1. Display Name */}
+<Input
+  {...register("displayName")}
+  label="Display Name"
+  placeholder="Enter display name"
+  error={errors?.displayName?.message}
+  required
+/>
 
                   {/* 6. Manufacturing Year - Using DatePicker */}
                   <Controller

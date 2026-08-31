@@ -35,7 +35,7 @@ const EquipmentVariant = () => {
     const loadProduct = async () => {
       try {
         // TODO: swap once the real equipment endpoint exists
-        const res = await apiHelper.get(`/vendor-web/equipment-variant/${id}`);
+        const res = await apiHelper.get(`/vendor-web/equipmentvariant/${id}`);
 
         setProductData(res.data);
       } catch (err) {
@@ -86,6 +86,7 @@ const EquipmentVariant = () => {
     onComplete: markStepCompleted,
     productData,
     isEdit,
+      id,
   };
 
   return (

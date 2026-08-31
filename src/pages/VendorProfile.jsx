@@ -496,39 +496,72 @@ const VendorProfile = () => {
       ? [{ id: "equipmentProducts", label: "Equipment", icon: Wrench }]
       : []),
 
-    { id: "enquiries", label: "Inquiry Register", icon: MessageSquare },
+    { id: "enquiries", label: "Enquiry Register", icon: MessageSquare },
     { id: "todayFollowup", label: "Today Follow up", icon: Clock },
   ];
-  const fetchEnquiries = async () => {
-    try {
-      setLoadingEnquiries(true);
+  
+const fetchEnquiries = async () => {
+  try {
+    setLoadingEnquiries(true);
 
-      const res = await apiHelper.get("/vendor-web/website-enquiry");
+    const isEquipmentVendor = vendorData.vendorType === "equipment";
+    const endpoint = isEquipmentVendor
+      ? "/vendor-web/equipmentenquiry" // match your actual mount path
+      : "/vendor-web/website-enquiry";
 
-      console.log(res);
+    const res = await apiHelper.get(endpoint);
+    const raw = Array.isArray(res) ? res : res?.data || [];
 
-      setEnquiries(Array.isArray(res) ? res : []);
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setLoadingEnquiries(false);
-    }
-  };
+    // equipment_enquiry has a different shape: mobile (not mobileNumber),
+    // status (not followupStage), equipment.model (not websiteVariant.productName)
+    const normalized = isEquipmentVendor
+      ? raw.map((e) => ({
+          ...e,
+          mobileNumber: e.mobile,
+          followupStage: e.status || "NEW",
+          websiteVariant: e.equipment
+            ? { productName: e.equipment.model }
+            : null,
+        }))
+      : raw;
 
-  const fetchTodayFollowups = async () => {
-    try {
-      setLoadingTodayFollowups(true);
+    setEnquiries(normalized);
+  } catch (err) {
+    console.log(err);
+  } finally {
+    setLoadingEnquiries(false);
+  }
+};
 
-      const res = await apiHelper.get(
-        "/vendor-web/website-enquiry-followup/today",
-      );
-      setTodayFollowups(res.data || []);
-    } catch (err) {
-      console.log(err);
-    } finally {
-      setLoadingTodayFollowups(false);
-    }
-  };
+ const fetchTodayFollowups = async () => {
+  try {
+    setLoadingTodayFollowups(true);
+
+    const isEquipmentVendor = vendorData.vendorType === "equipment";
+    const endpoint = isEquipmentVendor
+      ? "/vendor-web/equipmentenquiryfollowup/today"
+      : "/vendor-web/website-enquiry-followup/today";
+
+    const res = await apiHelper.get(endpoint);
+    const raw = res?.data || [];
+
+    // equipment followups nest the enquiry (fullName, mobile) under `enquiry`,
+    // and the enquiry's own id is `enquiryId`, not the followup's `id`
+    const normalized = isEquipmentVendor
+      ? raw.map((f) => ({
+          ...f,
+          fullName: f.enquiry?.fullName,
+          mobileNumber: f.enquiry?.mobile,
+        }))
+      : raw;
+
+    setTodayFollowups(normalized);
+  } catch (err) {
+    console.log(err);
+  } finally {
+    setLoadingTodayFollowups(false);
+  }
+};
 
   useEffect(() => {
     setCurrentPage(1);
@@ -1755,11 +1788,11 @@ const VendorProfile = () => {
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <h2 className="text-lg sm:text-xl font-bold text-gray-900">
-                      Your Inquiries{" "}
+                      Your Enquiries{" "}
                       {enquiries.length > 0 && `(${enquiries.length})`}
                     </h2>
                     <p className="text-xs sm:text-sm text-gray-500 mt-1">
-                      Manage customer inquiries
+                      Manage customer enquiries
                     </p>
                   </div>
                 </div>
@@ -1771,11 +1804,11 @@ const VendorProfile = () => {
                     <MessageSquare className="h-16 w-16 text-gray-300 mx-auto mb-4" />
 
                     <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                      No Inquiries Yet
+                      No Enquiries Yet
                     </h3>
 
                     <p className="text-sm text-gray-500">
-                      Customer inquiries will appear here.
+                      Customer enquiries will appear here.
                     </p>
                   </div>
                 ) : (
@@ -1851,9 +1884,13 @@ const VendorProfile = () => {
                               <td className="px-4 py-3">
                                 <div className="flex justify-center">
                                   <button
-                                    onClick={() =>
-                                      navigate(`/vendor/followup/${item.id}`)
-                                    }
+                                   onClick={() =>
+  navigate(
+    vendorData.vendorType === "equipment"
+      ? `/vendor/followup/${item.id}?type=equipment`
+      : `/vendor/followup/${item.id}`,
+  )
+}
                                     className="px-3 py-1 cursor-pointer bg-green-600 hover:bg-green-700 text-white rounded-lg"
                                   >
                                     Follow Up
@@ -2021,13 +2058,13 @@ const VendorProfile = () => {
                               <td className="px-4 py-3">
                                 <div className="flex justify-center">
                                   <button
-                                    onClick={() =>
-                                      navigate(
-                                        `/vendor/followup/${
-                                          item.enquiryId || item.id
-                                        }`,
-                                      )
-                                    }
+                                   onClick={() =>
+  navigate(
+    vendorData.vendorType === "equipment"
+      ? `/vendor/followup/${item.enquiryId || item.id}?type=equipment`
+      : `/vendor/followup/${item.enquiryId || item.id}`,
+  )
+}
                                     className="px-3 py-1 cursor-pointer bg-green-600 hover:bg-green-700 text-white rounded-lg"
                                   >
                                     Follow Up

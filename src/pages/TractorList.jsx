@@ -313,7 +313,7 @@ useEffect(() => {
           <img
             src={tractor.image}
             alt={tractor.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-500"
           />
           <div className="absolute top-2 left-2">
             <span className="text-white text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-600">
@@ -1023,7 +1023,7 @@ useEffect(() => {
                 </button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 xs:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5">
+              <div className="grid grid-cols-2 xs:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4 sm:gap-5">
                 {sortedTractors.map((tractor, index) => (
                   <TractorCard
                     key={`${tractor.id}-${index}`}

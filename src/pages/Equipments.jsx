@@ -22,153 +22,8 @@ import {
 } from "lucide-react";
 import Select from "react-select";
 import { State, City } from "country-state-city";
-
-// ===== SAMPLE DATA =====
-const EQUIPMENTS = [
-  {
-    id: "1",
-    name: "Multicrop Thresher",
-    brand: "Shree Nath Trade Link",
-    category: "Thresher",
-    model: "Multicrop Hopper Model",
-    price: 85000,
-    image:
-      "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&auto=format&fit=crop&q=80",
-    rating: 4.5,
-    location: "Punjab, India",
-    year: "2024",
-    hp: "25 HP",
-  },
-  {
-    id: "2",
-    name: "Chaff Cutter",
-    brand: "New Vishwakarma Cutter",
-    category: "Cutter",
-    model: "Tokri Thresher",
-    price: 45000,
-    image:
-      "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&auto=format&fit=crop&q=80",
-    rating: 4.2,
-    location: "Haryana, India",
-    year: "2024",
-    hp: "15 HP",
-  },
-  {
-    id: "3",
-    name: "Maize Sheller",
-    brand: "SB Marketing",
-    category: "Sheller",
-    model: "P-885 Reinforce Punjab",
-    price: 65000,
-    image:
-      "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&auto=format&fit=crop&q=80",
-    rating: 4.7,
-    location: "Punjab, India",
-    year: "2024",
-    hp: "20 HP",
-  },
-  {
-    id: "4",
-    name: "Peanut Thresher",
-    brand: "Reinforce P940 Ground Nut",
-    category: "Thresher",
-    model: "Back Tokri Thresher Machine",
-    price: 72000,
-    image:
-      "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&auto=format&fit=crop&q=80",
-    rating: 4.3,
-    location: "Gujarat, India",
-    year: "2024",
-    hp: "22 HP",
-  },
-  {
-    id: "5",
-    name: "Paddy Thresher",
-    brand: "SB Marketing",
-    category: "Thresher",
-    model: "P-80 Reinforce Punjab Paddy",
-    price: 98000,
-    image:
-      "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&auto=format&fit=crop&q=80",
-    rating: 4.8,
-    location: "Punjab, India",
-    year: "2024",
-    hp: "30 HP",
-  },
-  {
-    id: "6",
-    name: "Seed Drill",
-    brand: "SB Marketing",
-    category: "Drill",
-    model: "Multi Crop Hopper Model",
-    price: 55000,
-    image:
-      "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&auto=format&fit=crop&q=80",
-    rating: 4.4,
-    location: "Uttar Pradesh, India",
-    year: "2024",
-    hp: "18 HP",
-  },
-  {
-    id: "7",
-    name: "Farming Implements",
-    brand: "Shree Nath Trade Link",
-    category: "Implements",
-    model: "Complete Farming Kit",
-    price: 120000,
-    image:
-      "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&auto=format&fit=crop&q=80",
-    rating: 4.6,
-    location: "Rajasthan, India",
-    year: "2024",
-    hp: "35 HP",
-  },
-  {
-    id: "8",
-    name: "Ground Nut Thresher",
-    brand: "Reinforce P940",
-    category: "Thresher",
-    model: "Ground Nut Back Tokri",
-    price: 78000,
-    image:
-      "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&auto=format&fit=crop&q=80",
-    rating: 4.1,
-    location: "Gujarat, India",
-    year: "2024",
-    hp: "24 HP",
-  },
-];
-
-// ===== CATEGORY OPTIONS =====
-const CATEGORIES = [
-  "All Categories",
-  "Thresher",
-  "Cutter",
-  "Sheller",
-  "Drill",
-  "Implements",
-];
-
-const BRANDS = [
-  "All Brands",
-  "Shree Nath Trade Link",
-  "New Vishwakarma Cutter",
-  "SB Marketing",
-  "Reinforce P940 Ground Nut",
-  "Reinforce P940",
-];
-
-const HP_OPTIONS = [
-  "All HP",
-  "15 HP",
-  "18 HP",
-  "20 HP",
-  "22 HP",
-  "24 HP",
-  "25 HP",
-  "30 HP",
-  "35 HP",
-];
+import apiHelper from "../utils/apiHelper";
+import { showErrorToast, showSuccessToast } from "../utils/toast";
 
 // ===== INDIA STATES (static, computed once) =====
 const INDIA_STATES = State.getStatesOfCountry("IN").map((s) => ({
@@ -223,23 +78,69 @@ const Equipments = () => {
   });
 
   // Filtered and sorted products
-  const [filteredProducts, setFilteredProducts] = useState(EQUIPMENTS);
+  const [equipments, setEquipments] = useState([]);
+  const [filteredProducts, setFilteredProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const loadEquipments = async () => {
+    try {
+      setLoading(true);
+
+      const res = await apiHelper.get("/vendor-web/equipmentvariant");
+
+      const data = res.data?.data || res.data || [];
+
+      const mappedData = data.map((item) => ({
+        ...item,
+
+        name: item.displayName || item.productName || "Equipment",
+        image: apiHelper.image(item.frontView),
+        location: [item.district, item.state].filter(Boolean).join(", "),
+        price: Number(item.expectedPrice || 0),
+        hp: Number(item.requiredTractorHp || 0),
+
+        brand: item.brand || "",
+        model: item.model || "",
+      }));
+
+      console.log("Mapped equipments:", mappedData);
+
+      setEquipments(mappedData);
+      setFilteredProducts(mappedData);
+    } catch (error) {
+      console.error("Failed to load equipments:", error);
+      setEquipments([]);
+      setFilteredProducts([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadEquipments();
+  }, []);
 
   // Max price for slider
+
   const maxPrice = 150000;
+
+  const categories = ["All Categories"];
+  const BRANDS = ["All Brands"];
+  const HP_OPTIONS = ["All HP"];
 
   // ===== FILTER LOGIC =====
   useEffect(() => {
-    let result = [...EQUIPMENTS];
+    let result = [...equipments];
 
     // Search filter
     if (searchQuery.trim()) {
       const query = searchQuery.toLowerCase().trim();
+
       result = result.filter(
         (item) =>
-          item.name.toLowerCase().includes(query) ||
-          item.brand.toLowerCase().includes(query) ||
-          item.model.toLowerCase().includes(query),
+          item.name?.toLowerCase().includes(query) ||
+          item.brand?.toLowerCase().includes(query) ||
+          item.model?.toLowerCase().includes(query),
       );
     }
 
@@ -260,28 +161,34 @@ const Equipments = () => {
 
     // Price filter
     result = result.filter(
-      (item) => item.price >= priceRange[0] && item.price <= priceRange[1],
+      (item) =>
+        Number(item.price || 0) >= priceRange[0] &&
+        Number(item.price || 0) <= priceRange[1],
     );
 
     // Sorting
     switch (sortBy) {
       case "price-low":
-        result.sort((a, b) => a.price - b.price);
+        result.sort((a, b) => Number(a.price || 0) - Number(b.price || 0));
         break;
+
       case "price-high":
-        result.sort((a, b) => b.price - a.price);
+        result.sort((a, b) => Number(b.price || 0) - Number(a.price || 0));
         break;
+
       case "rating":
-        result.sort((a, b) => b.rating - a.rating);
+        result.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
         break;
+
       case "popular":
       default:
-        result.sort((a, b) => b.rating - a.rating);
+        result.sort((a, b) => Number(b.rating || 0) - Number(a.rating || 0));
         break;
     }
 
     setFilteredProducts(result);
   }, [
+    equipments,
     searchQuery,
     selectedCategory,
     selectedBrand,
@@ -329,20 +236,55 @@ const Equipments = () => {
     });
   };
 
-  const submitEnquiry = (e) => {
-    e.preventDefault();
-    if (!enquiryForm.state || !enquiryForm.city) {
-      alert("Please select both state and city.");
-      return;
-    }
-    console.log("Enquiry submitted:", {
-      product: enquiryProduct?.id,
-      ...enquiryForm,
+const submitEnquiry = async (e) => {
+  e.preventDefault();
+
+  if (!enquiryForm.state || !enquiryForm.city) {
+    showErrorToast("Please select both state and city.");
+    return;
+  }
+
+  try {
+    const payload = {
+      equipmentId: enquiryProduct?.id,
+      fullName: enquiryForm.fullName,
+      email: enquiryForm.email,
+      mobile: enquiryForm.mobile,
       state: enquiryForm.state.label,
       city: enquiryForm.city.label,
-    });
+      address: enquiryForm.address,
+      pincode: enquiryForm.pincode,
+    };
+
+    console.log("Enquiry payload:", payload);
+
+    const res = await apiHelper.post(
+      "/vendor-web/equipmentenquiry",
+      payload
+    );
+
+    if (res.data?.success === false) {
+      showErrorToast(
+        res.data?.message || "Failed to submit enquiry."
+      );
+      return;
+    }
+
+    showSuccessToast(
+      res.data?.message || "Enquiry submitted successfully."
+    );
+
     closeEnquiryModal();
-  };
+  } catch (error) {
+    console.error("Enquiry submission error:", error);
+    console.error("Backend response:", error?.response?.data);
+
+    showErrorToast(
+      error?.response?.data?.message ||
+        "Failed to submit enquiry. Please try again."
+    );
+  }
+};
 
   // Cities for the currently selected state (recomputes only when state changes)
   const cityOptions = enquiryForm.state
@@ -367,8 +309,11 @@ const Equipments = () => {
             src={equipment.image}
             alt={equipment.name}
             className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            onError={(e) => {
+              e.currentTarget.onerror = null;
+              e.currentTarget.src = "/mah.png";
+            }}
           />
-
           <button
             onClick={(e) => {
               e.preventDefault();
@@ -414,7 +359,7 @@ const Equipments = () => {
           </p>
 
           {/* Enquiry Button - Always Visible */}
-          <div className="pt-2 border-t border-gray-100">
+          <div className="pt-2 border-t border-gray-700">
             <button
               onClick={(e) => {
                 e.preventDefault();
@@ -485,7 +430,6 @@ const Equipments = () => {
         className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-8 lg:py-12"
       >
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8">
-          {/* ===== LEFT SIDE - FILTERS ===== */}
           {/* ===== LEFT SIDE - FILTERS ===== */}
           <div className="lg:col-span-1">
             {/* Mobile Filter Trigger Button */}
@@ -576,7 +520,7 @@ const Equipments = () => {
                         <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                       </Listbox.Button>
                       <Listbox.Options className="absolute z-[9999] mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-                        {CATEGORIES.map((category) => (
+                        {categories.map((category) => (
                           <Listbox.Option
                             key={category}
                             value={category}
