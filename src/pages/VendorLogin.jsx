@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Eye,
   EyeOff,
@@ -12,12 +12,12 @@ import {
   Users,
   ChevronRight,
 } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
+// import { useAuth } from "../context/AuthContext";
 import apiHelper from "../utils/apiHelper";
 import { showSuccessToast, showErrorToast } from "../utils/toast";
 const VendorLogin = () => {
   const navigate = useNavigate();
-  const location = useLocation();
+  // const location = useLocation();
 
 
   const [showPassword, setShowPassword] = useState(false);
@@ -131,7 +131,7 @@ const validateForm = () => {
 
   return (
     <div className="bg-gray-50 pb-8 min-h-screen flex items-center">
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Side - Form */}
           <div className="max-w-md mx-auto lg:mx-0 w-full">
@@ -249,7 +249,7 @@ const validateForm = () => {
                 {/* Submit */}
                 <button
                   type="submit"
-                  className="w-full cursor-pointer bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 group shadow-lg shadow-green-700/20 hover:shadow-green-700/40"
+                  className="w-full cursor-pointer bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 group shadow-lg shadow-green-700/20 hover:shadow-green-700/40"
                 >
                   <Store className="h-5 w-5" />
                   Vendor Login
@@ -274,7 +274,7 @@ const validateForm = () => {
 
           {/* Right Side - Benefits */}
           <div className="hidden lg:block">
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 md:p-12 text-white">
+            <div className="bg-linear-to-br from-gray-900 to-gray-800 rounded-2xl p-8 md:p-12 text-white">
               <div className="flex items-center gap-3 mb-6">
                 <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center">
                   <Store className="h-6 w-6 text-white" />
@@ -294,7 +294,7 @@ const validateForm = () => {
                     key={index}
                     className="flex items-start gap-4 group hover:bg-white/5 p-3 rounded-xl transition-all duration-300"
                   >
-                    <div className="flex-shrink-0 w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center group-hover:bg-green-600/30 transition-colors">
+                    <div className="shrink-0 w-10 h-10 bg-green-600/20 rounded-lg flex items-center justify-center group-hover:bg-green-600/30 transition-colors">
                       <benefit.icon className="h-5 w-5 text-green-400" />
                     </div>
                     <div>

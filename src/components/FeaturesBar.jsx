@@ -1,4 +1,4 @@
-import React from 'react';
+// import React from 'react';
 import { Tractor, Wrench, Settings, ArrowRight } from 'lucide-react';
 
 const FeaturesBar = () => {
@@ -8,7 +8,7 @@ const FeaturesBar = () => {
       title: 'Premium Tractors',
       description: 'Explore our latest lineup of high-performance, fuel-efficient tractors built to tackle any field or farming demand.',
       icon: <Tractor className="w-6 h-6 text-green-600 group-hover:text-white transition-colors duration-300" />,
-      link: '/tractors',
+      link: 'tractors',
       buttonText: 'View Inventory'
     },
     {
@@ -16,7 +16,7 @@ const FeaturesBar = () => {
       title: 'Genuine Spare Parts',
       description: 'Keep your machinery running like new with our extensive catalog of certified, factory-original replacement parts.',
       icon: <Settings className="w-6 h-6 text-green-600 group-hover:text-white transition-all duration-500 group-hover:rotate-90" />,
-      link: '/spare-parts',
+      link: 'spare-parts',
       buttonText: 'Shop Parts'
     },
     {
@@ -24,7 +24,7 @@ const FeaturesBar = () => {
       title: 'Expert Service',
       description: 'Schedule routine maintenance or urgent repairs with our certified technicians to minimize your downtime.',
       icon: <Wrench className="w-6 h-6 text-green-600 group-hover:text-white transition-all duration-300 group-hover:-translate-y-0.5 group-hover:rotate-12" />,
-      link: '/service',
+      link: 'service',
       buttonText: 'Book Service'
     }
   ];
@@ -33,7 +33,7 @@ const FeaturesBar = () => {
     // STANDARDIZED: Same spacing pattern as BrandsMakers for consistency
     <div className="w-full bg-gray-50 pt-12 md:pt-16 lg:pt-20 px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
       {/* Inner container with bottom padding to match top spacing */}
-      <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto ">
+      <div className="w-full max-w-360 xl:max-w-400 2xl:max-w-430 mx-auto ">
         
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 xl:gap-10">
           {features.map((feature) => (

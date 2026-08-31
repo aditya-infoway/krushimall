@@ -414,7 +414,7 @@ const [errors, setErrors] = useState({});
               <div className="space-y-6 mb-8">
                 {benefits.map((benefit, index) => (
                   <div key={index} className="flex items-start gap-4">
-                    <div className="flex-shrink-0 w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
+                    <div className="shrink-0 w-10 h-10 bg-white/10 rounded-lg flex items-center justify-center">
                       <benefit.icon className="h-5 w-5 text-green-400" />
                     </div>
                     <div>
