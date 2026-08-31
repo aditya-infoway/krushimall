@@ -320,7 +320,7 @@ useEffect(() => {
       onTouchMove={handleTouchMove}
       onTouchEnd={handleTouchEnd}
     >
-      <div className="relative min-h-[600px] md:min-h-[700px] lg:min-h-[750px] xl:min-h-[800px] 2xl:min-h-[850px] flex items-center  overflow-visible">
+      <div className="relative min-h-150 md:min-h-175 lg:min-h-187.5 xl:min-h-200 2xl:min-h-212.5 flex items-center  overflow-visible">
         {slides.map((slide, index) => (
           <div
             key={index}
@@ -337,12 +337,12 @@ useEffect(() => {
               loading={index === 0 ? "eager" : "lazy"}
             />
             <div className="absolute inset-0 bg-black/60"></div>
-            <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent"></div>
+            <div className="absolute inset-0 bg-linear-to-r from-black/50 via-black/20 to-transparent"></div>
           </div>
         ))}
 
         {/* CONTAINER FOR CONTENT */}
-        <div className="relative z-20 w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 h-full flex items-start">
+        <div className="relative z-20 w-full max-w-360 xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 h-full flex items-start">
           <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16 items-start w-full pt-12 md:pt-16 lg:pt-20 pb-10">
             {/* LEFT CONTENT */}
             <div className="lg:col-span-7 text-white space-y-6 lg:max-w-xl xl:max-w-2xl 2xl:max-w-3xl">

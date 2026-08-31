@@ -41,8 +41,7 @@ const Footer = () => {
         {/* Updated: Matching BrandsMakers spacing */}
         <div className="px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-2 md:py-16 lg:py-10">
           {/* Updated: Applied the same max-width wrapper */}
-          <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto">
-            
+          <div className="w-full max-w-360 xl:max-w-400 2xl:max-w-430 mx-auto">
             <div className="grid grid-cols-4 gap-8 xl:gap-12">
               {/* About */}
               <div>
@@ -50,9 +49,9 @@ const Footer = () => {
                   Krushi <span className="text-white">Mall</span>
                 </h2>
                 <p className="mt-4 text-sm text-gray-400 leading-relaxed">
-                  India's #1 online marketplace for tractor spare parts, new & used
-                  tractors. Trusted by 50,000+ farmers across the country with
-                  genuine parts from 100+ brands.
+                  India's #1 online marketplace for tractor spare parts, new &
+                  used tractors. Trusted by 50,000+ farmers across the country
+                  with genuine parts from 100+ brands.
                 </p>
                 <div className="mt-6 space-y-3">
                   <a
@@ -162,7 +161,6 @@ const Footer = () => {
                 </div>
               </div>
             </div>
-            
           </div>
         </div>
       </div>
@@ -287,7 +285,6 @@ const Footer = () => {
         <div className="px-4 sm:px-6 lg:px-20 xl:px-24">
           {/* Updated: Applied the same max-width wrapper */}
           <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto py-6">
-            
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <p className="text-sm text-gray-400 text-center sm:text-left">
                 Download the Krushi Mall app for easy tractor parts ordering
@@ -305,7 +302,6 @@ const Footer = () => {
                 </button>
               </div>
             </div>
-            
           </div>
         </div>
       </div>
@@ -316,11 +312,10 @@ const Footer = () => {
         <div className="px-4 sm:px-6 lg:px-20 xl:px-24">
           {/* Updated: Applied the same max-width wrapper */}
           <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto py-4">
-            
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
               <p className="text-xs text-gray-500 text-center sm:text-left">
-                © 2025 Krushi Mall. All rights reserved. | India's Trusted Tractor
-                Marketplace
+                © 2025 Krushi Mall. All rights reserved. | India's Trusted
+                Tractor Marketplace
               </p>
               <div className="flex gap-4">
                 <a
@@ -337,7 +332,6 @@ const Footer = () => {
                 </a>
               </div>
             </div>
-            
           </div>
         </div>
       </div>

@@ -117,7 +117,7 @@ const Cart = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 py-6 sm:py-8 pt-12 md:pt-16 lg:pt-20">
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
         {/* Breadcrumb */}
         <nav className="flex items-center gap-2 text-sm text-gray-500 mb-1 sm:mb-1 overflow-x-auto">
           <Link to="/" className="hover:text-green-600">
@@ -126,7 +126,7 @@ const Cart = () => {
           <span>/</span>
           <span className="text-gray-900 font-medium">Shopping Cart</span>
         </nav>
-        <div className="flex justify-end mb-1">
+        <div className="flex justify-end mb-2">
           <button
             type="button"
             onClick={() => navigate(-1)}
@@ -142,7 +142,7 @@ const Cart = () => {
           {/* Cart Items */}
           <div className="lg:col-span-2">
             <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6">
-              <h1 className="text-lg sm:text-xl font-bold mb-5 sm:mb-6 break-words">
+              <h1 className="text-lg sm:text-xl font-bold mb-5 sm:mb-6 wrap-break-word">
                 Shopping Cart ({cart.length} items)
               </h1>
 
@@ -153,7 +153,7 @@ const Cart = () => {
                     className="flex flex-col sm:flex-row gap-4 p-4 border border-gray-100 rounded-xl hover:border-gray-300 transition-colors"
                   >
                     {/* Product Image */}
-                    <div className="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden mx-auto sm:mx-0">
+                    <div className="w-20 h-20 bg-gray-100 rounded-lg shrink-0 overflow-hidden mx-auto sm:mx-0">
                       <img
                         src={apiHelper.getImageUrl(item.image)}
                         alt={item.name}
@@ -165,7 +165,7 @@ const Cart = () => {
                     <div className="flex-1 min-w-0">
                       <Link
                         to={`/product/${item.id}`}
-                        className="font-medium text-gray-900 hover:text-green-600 text-sm sm:text-base break-words line-clamp-2"
+                        className="font-medium text-gray-900 hover:text-green-600 text-sm sm:text-base wrap-break-word line-clamp-2"
                       >
                         {item.name}
                       </Link>
@@ -235,7 +235,7 @@ const Cart = () => {
                     </div>
 
                     {/* Price */}
-                    <div className="text-left sm:text-right flex-shrink-0">
+                    <div className="text-left sm:text-right shrink-0">
                       <p className="font-bold text-gray-900 text-base sm:text-lg">
                         ₹{(item.price * item.quantity).toLocaleString("en-IN")}
                       </p>
@@ -262,7 +262,7 @@ const Cart = () => {
                   <span className="text-gray-600">
                     Subtotal ({cart.length} items)
                   </span>
-                  <span className="font-medium flex-shrink-0">
+                  <span className="font-medium shrink-0">
                     ₹{subtotal.toLocaleString("en-IN")}
                   </span>
                 </div>
@@ -333,14 +333,14 @@ const Cart = () => {
 
                 <div className="flex justify-between gap-4">
                   <span className="text-gray-600">CGST (9%)</span>
-                  <span className="font-medium flex-shrink-0">
+                  <span className="font-medium shrink-0">
                     ₹{cgst.toFixed(0).toLocaleString("en-IN")}
                   </span>
                 </div>
 
                 <div className="flex justify-between gap-4">
                   <span className="text-gray-600">SGST (9%)</span>
-                  <span className="font-medium flex-shrink-0">
+                  <span className="font-medium shrink-0">
                     ₹{sgst.toFixed(0).toLocaleString("en-IN")}
                   </span>
                 </div>
@@ -348,11 +348,11 @@ const Cart = () => {
                 <div className="flex justify-between gap-4">
                   <span className="text-gray-600">Shipping</span>
                   {shippingCharge === 0 ? (
-                    <span className="text-green-600 font-medium flex-shrink-0">
+                    <span className="text-green-600 font-medium shrink-0">
                       FREE
                     </span>
                   ) : (
-                    <span className="font-medium flex-shrink-0">
+                    <span className="font-medium shrink-0">
                       ₹{shippingCharge}
                     </span>
                   )}
@@ -369,7 +369,7 @@ const Cart = () => {
               <div className="border-t border-gray-200 mt-4 pt-4">
                 <div className="flex justify-between items-center gap-4 text-lg font-bold">
                   <span>Total</span>
-                  <span className="flex-shrink-0 text-green-700">
+                  <span className="shrink-0 text-green-700">
                     ₹{total.toFixed(0).toLocaleString("en-IN")}
                   </span>
                 </div>
@@ -405,12 +405,12 @@ const Cart = () => {
               {/* Trust Badges */}
               <div className="mt-6 space-y-3">
                 <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <Shield className="h-4 w-4 text-green-600 flex-shrink-0" />
+                  <Shield className="h-4 w-4 text-green-600 shrink-0" />
                   <span>Secure checkout with SSL encryption</span>
                 </div>
 
                 <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <Truck className="h-4 w-4 text-green-600 flex-shrink-0" />
+                  <Truck className="h-4 w-4 text-green-600 shrink-0" />
                   <span>Free shipping above ₹999</span>
                 </div>
               </div>

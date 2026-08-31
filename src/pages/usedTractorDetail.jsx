@@ -12,30 +12,30 @@ import {
   MapPin,
   Zap,
   Droplets,
-  Wind,
+  // Wind,
   Wrench,
   DollarSign,
-  Tag,
+  // Tag,
   CheckCircle,
-  XCircle,
+  // XCircle,
   Info,
   Package,
-  Cog,
-  Store,
+  // Cog,
+  // Store,
   Fuel,
-  Weight,
-  Ruler,
+  // Weight,
+  // Ruler,
   AlertCircle,
   Loader2,
-  Calendar,
+  // Calendar,
   Award,
-  Truck,
+  // Truck,
   Shield,
   Star,
   User,
   Calendar as CalendarIcon,
-  MessageSquare,
-  ThumbsUp,
+  // MessageSquare,
+  // ThumbsUp,
   Eye,
   ShoppingCart,
 } from "lucide-react";
@@ -217,7 +217,7 @@ const ColorDot = ({ color }) => {
   return (
     <div className="flex items-center gap-1.5">
       <div
-        className="w-5 h-5 rounded-full border border-gray-300 flex-shrink-0"
+        className="w-5 h-5 rounded-full border border-gray-300 shrink-0"
         style={{ background: bg }}
       />
       <span className="text-xs text-gray-600">{color}</span>
@@ -300,7 +300,7 @@ const ReviewCard = ({ review }) => {
   return (
     <div className="border-b border-gray-100 last:border-0 py-4 first:pt-0">
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 rounded-full bg-linear-to-br from-green-500 to-green-600 flex items-center justify-center shrink-0">
           <span className="text-white font-semibold text-sm">
             {review.userName?.charAt(0)?.toUpperCase() || "U"}
           </span>
@@ -1084,7 +1084,7 @@ const getVisibleRelated = () => {
   return (
     <div className="bg-gray-100 min-h-screen">
       {/* Breadcrumb with Back Button on Right */}
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-8 pb-4">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-8 pb-4">
         <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-sm flex-wrap">
             <Link
@@ -1101,7 +1101,7 @@ const getVisibleRelated = () => {
               Tractor
             </Link>
             <span className="text-gray-400">/</span>
-            <span className="text-gray-500 truncate max-w-[150px] sm:max-w-[250px]">
+            <span className="text-gray-500 truncate max-w-37.5 sm:max-w-62.5">
               {tractor.name}
             </span>
           </div>
@@ -1120,7 +1120,7 @@ const getVisibleRelated = () => {
       </div>
 
       {/* ── Main Content ── */}
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pb-10">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pb-10">
         {/* Top Grid - Image, Info, Sidebar */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* LEFT - Images */}
@@ -1189,7 +1189,7 @@ const getVisibleRelated = () => {
                   <button
                     key={index}
                     onClick={() => setCurrentImage(index)}
-                    className={`w-20 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${
+                    className={`w-20 h-16 rounded-lg overflow-hidden border-2 shrink-0 transition-all ${
                       currentImage === index
                         ? "border-green-500 shadow-md"
                         : "border-gray-200 hover:border-gray-400"
@@ -1367,7 +1367,7 @@ const getVisibleRelated = () => {
                     key={index}
                     className="bg-white rounded-2xl border border-green-400 shadow-sm p-3 flex gap-3 hover:shadow-lg transition-all"
                   >
-                    <div className="w-[92px] h-[92px] rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                    <div className="w-23 h-23 rounded-xl overflow-hidden bg-gray-100 shrink-0">
                       <img
                         src={item.image || "/mah.png"}
                         alt={item.name}
@@ -1461,16 +1461,16 @@ const getVisibleRelated = () => {
                 <Link
                   key={product.id}
                   to={`/tractor/${product.id}`}
-                  className="snap-start w-[75vw] flex-shrink-0"
+                  className="snap-start w-[75vw] shrink-0"
                 >
                   <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-green-300 transition-all duration-300">
-                    <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 h-44 overflow-hidden">
+                    <div className="relative bg-linear-to-br from-gray-100 to-gray-200 h-44 overflow-hidden">
                       <img
                         src={product.image || "/mah.png"}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+                      <div className="absolute inset-0 bg-linear-to-t from-black/30 via-transparent to-transparent"></div>
                       <span className="absolute top-3 left-3 bg-green-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
                         <Award className="w-3 h-3" />
                         Featured
@@ -1494,7 +1494,7 @@ const getVisibleRelated = () => {
                         {product.name}
                       </h4>
                       <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-                        <MapPin className="h-3 w-3 flex-shrink-0" />
+                        <MapPin className="h-3 w-3 shrink-0" />
                         <span>
                           {product.location || "Location not specified"}
                         </span>
@@ -1547,16 +1547,16 @@ const getVisibleRelated = () => {
                   <Link
                     key={`${product.id}-${relatedIndex}-${idx}`}
                     to={`/used-tractor/${product.id}`}
-                    className="flex-shrink-0 group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-green-300 transition-all duration-300 w-full sm:w-[calc(50%-6px)] lg:w-[calc(25%-12px)]"
+                    className="shrink-0 group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-green-300 transition-all duration-300 w-full sm:w-[calc(50%-6px)] lg:w-[calc(25%-12px)]"
                   >
-                    <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 h-48 overflow-hidden">
+                    <div className="relative bg-linear-to-br from-gray-100 to-gray-200 h-48 overflow-hidden">
                       <img
                         src={product.image || "/mah.png"}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-                      <span className="absolute top-3 left-3 bg-gradient-to-r from-green-600 to-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
+                      <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent"></div>
+                      <span className="absolute top-3 left-3 bg-linear-to-r from-green-600 to-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
                         <Award className="w-3 h-3" />
                         Featured
                       </span>
@@ -1590,7 +1590,7 @@ const getVisibleRelated = () => {
                         {product.name}
                       </h4>
                       <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-                        <MapPin className="h-3 w-3 flex-shrink-0" />
+                        <MapPin className="h-3 w-3 shrink-0" />
                         <span>
                           {product.location || "Location not specified"}
                         </span>
@@ -1631,7 +1631,7 @@ const getVisibleRelated = () => {
           <div className="text-center mt-10">
             <Link
               to="/tractors"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-3.5 rounded-xl font-semibold hover:shadow-xl hover:scale-105 transition-all duration-300"
+              className="inline-flex items-center gap-2 bg-linear-to-r from-green-600 to-green-700 text-white px-8 py-3.5 rounded-xl font-semibold hover:shadow-xl hover:scale-105 transition-all duration-300"
             >
               <Eye className="w-4 h-4" />
               View All Products
@@ -1666,7 +1666,7 @@ const DescriptionTab = ({ tractor, keyHighlights }) => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {keyHighlights.map((highlight, index) => (
             <div key={index} className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+              <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
               <span className="text-gray-700 text-sm">{highlight}</span>
             </div>
           ))}

@@ -566,7 +566,7 @@ const applyFilters = () => {
   };
 
   const TractorCard = ({ tractor }) => (
-    <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col flex-shrink-0 w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]">
+    <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col shrink-0 w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]">
       {/* Clickable Image */}
       <Link
         to={`/used-tractor/${tractor.id}`}
@@ -604,7 +604,7 @@ const applyFilters = () => {
             {tractor.brandRef?.brandName}
           </Link>
           <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-            <MapPin className="h-3 w-3 flex-shrink-0" />
+            <MapPin className="h-3 w-3 shrink-0" />
             <span className="truncate">
               {tractor.city}, {tractor.state}
             </span>
@@ -733,7 +733,7 @@ const applyFilters = () => {
             {tractors.map((tractor) => (
               <div
                 key={tractor.id}
-                className="snap-start w-[75vw] flex-shrink-0"
+                className="snap-start w-[75vw] shrink-0"
               >
                 <TractorCard tractor={tractor} />
               </div>
@@ -786,7 +786,7 @@ const applyFilters = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* ========== HERO SECTION ========== */}
-      <div className="relative text-white min-h-[600px] md:min-h-[650px] flex items-center ">
+      <div className="relative text-white min-h-150 md:min-h-162.5 flex items-center ">
         <div className="absolute inset-0 z-0">
           <img
             src="https://images.unsplash.com/photo-1523348837708-15d4a09cfac2?w=1920&auto=format&fit=crop&q=90"
@@ -794,9 +794,9 @@ const applyFilters = () => {
             className="w-full h-full object-cover object-center"
           />
 
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-900/70 via-gray-900/40 to-gray-900/20" />
+          <div className="absolute inset-0 bg-linear-to-r from-gray-900/70 via-gray-900/40 to-gray-900/20" />
         </div>
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-8 relative z-10 overflow-visible">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-8 relative z-10 overflow-visible">
           <div className="flex items-center gap-2 text-sm mb-6">
             <Link
               to="/"
@@ -949,7 +949,7 @@ const applyFilters = () => {
                           </span>
                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         </Listbox.Button>
-                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
                           <Listbox.Option
                             value=""
                             className={({ active }) =>
@@ -998,7 +998,7 @@ const applyFilters = () => {
                           </span>
                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         </Listbox.Button>
-                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
                           <Listbox.Option
                             value=""
                             className={({ active }) =>
@@ -1057,7 +1057,7 @@ const applyFilters = () => {
                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         </Listbox.Button>
 
-                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 text-black rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 text-black rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
                           <Listbox.Option
                             value=""
                             className={({ active }) =>
@@ -1114,7 +1114,7 @@ const applyFilters = () => {
                           </span>
                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         </Listbox.Button>
-                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
                           <Listbox.Option
                             value=""
                             className={({ active }) =>
@@ -1165,7 +1165,7 @@ const applyFilters = () => {
                           </span>
                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         </Listbox.Button>
-                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
                           <Listbox.Option
                             value=""
                             className={({ active }) =>
@@ -1220,7 +1220,7 @@ const applyFilters = () => {
                           </span>
                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         </Listbox.Button>
-                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
                           <Listbox.Option
                             value=""
                             className={({ active }) =>
@@ -1464,7 +1464,7 @@ const applyFilters = () => {
 
       {/* Results Bar - Outside Hero */}
       <div className="bg-white border-b lg:mt-6 border-gray-200 sticky top-16 z-30">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-4">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
@@ -1537,7 +1537,7 @@ const applyFilters = () => {
       </div>
 
       {/* ========== SLIDER SECTIONS ========== */}
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
         <div className="mb-8 md:mb-14 lg:mb-20">
           <SliderSection
             title="Popular Used Tractors"
@@ -1577,7 +1577,7 @@ const applyFilters = () => {
       {/* ========== POPULAR BRANDS MARQUEE ========== */}
       {/* Popular Brands Marquee Section */}
           <div className="bg-white border-b border-gray-100">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 pt-16 md:pt-20 lg:pt-24">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 pt-16 md:pt-20 lg:pt-24">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
               Popular{" "}
@@ -1609,7 +1609,7 @@ const applyFilters = () => {
                   <Link
                     key={idx}
                     to={`/tractors?type=used&brand=${encodeURIComponent(brand.name)}`}
-                    className="flex flex-col items-center gap-2 flex-shrink-0 group cursor-pointer"
+                    className="flex flex-col items-center gap-2 shrink-0 group cursor-pointer"
                   >
                     <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-50 border-2 border-gray-200 flex items-center justify-center group-hover:border-green-600 group-hover:shadow-md group-hover:bg-green-100 transition-all duration-300 overflow-hidden">
                       <img
@@ -1643,7 +1643,7 @@ const applyFilters = () => {
 
       {/* ========== COMPARISON SECTION (DYNAMIC) ========== */}
       <div className="border-t border-gray-200">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
             Compare{" "}
             <span className="text-transparent bg-clip-text bg-green-600">
@@ -1656,7 +1656,7 @@ const applyFilters = () => {
             </span>
           </div>
         </div>
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-12">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-12">
           {comparisonsLoading ? (
             <div className="col-span-full flex justify-center py-8">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
@@ -1735,7 +1735,7 @@ const applyFilters = () => {
 
       {/* ========== ABOUT SECTION ========== */}
       <div className="relative bg-white overflow-hidden border-t border-gray-400">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 relative z-10">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 relative z-10">
           <div className="text-center mb-10">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-3">
               About <span className="text-green-700">Krushi Mall</span>
@@ -1792,7 +1792,7 @@ const applyFilters = () => {
 
       {/* ========== ENQUIRY FORM SECTION ========== */}
       <section id="enquiry-form" className="bg-gray-50 pt-12 md:pt-16 lg:pt-20">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
           <div className="grid lg:grid-cols-5 gap-8 lg:gap-12">
             <div className="lg:col-span-2">
               <div className="inline-flex items-center gap-2 bg-green-100 text-green-700 px-4 py-2 rounded-full text-sm font-semibold mb-4">
@@ -1826,7 +1826,7 @@ const applyFilters = () => {
                   },
                 ].map((feature, idx) => (
                   <div key={idx} className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                    <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
                       <feature.icon className="h-5 w-5 text-green-600" />
                     </div>
                     <div>

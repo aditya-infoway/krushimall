@@ -6,9 +6,9 @@ import {
   MapPin,
   Heart,
   Star,
-  Fuel,
+  // Fuel,
   Gauge,
-  Calendar,
+  // Calendar,
   ChevronLeft,
   ChevronRight,
   Sparkles,
@@ -20,8 +20,8 @@ import {
   Users,
   ShoppingBag,
   Package,
-  Search,
-  SlidersHorizontal,
+  // Search,
+  // SlidersHorizontal,
   Check,
   Filter,
   ChevronDown,
@@ -617,7 +617,7 @@ const NewTractors = () => {
     const wishlisted = isInWishlist(tractor.id);
 
     return (
-      <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col flex-shrink-0 w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]">
+      <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col shrink-0 w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]">
         {/* Clickable Image */}
         <Link
           to={`/tractor/${tractor.id}`}
@@ -668,7 +668,7 @@ const NewTractors = () => {
               {tractor.brand}
             </Link>
             <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-              <MapPin className="h-3 w-3 flex-shrink-0" />
+              <MapPin className="h-3 w-3 shrink-0" />
               <span className="truncate">{tractor.location}</span>
             </div>
           </div>
@@ -799,7 +799,7 @@ const NewTractors = () => {
             {tractors.map((tractor) => (
               <div
                 key={tractor.id}
-                className="snap-start w-[75vw] flex-shrink-0"
+                className="snap-start w-[75vw] shrink-0"
               >
                 <TractorCard tractor={tractor} />
               </div>
@@ -848,7 +848,7 @@ const NewTractors = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero Section */}
-      <div className="relative text-white min-h-[600px] md:min-h-[650px] flex items-center ">
+      <div className="relative text-white min-h-150 md:min-h-162.5 flex items-center ">
         {/* Full Section Background Image */}
         <div className="absolute inset-0 z-0">
           <img
@@ -857,10 +857,10 @@ const NewTractors = () => {
             className="w-full h-full object-cover object-center"
           />
           {/* Lighter overlay - image more visible but text still readable */}
-          <div className="absolute inset-0 bg-gradient-to-r from-gray-900/70 via-gray-900/40 to-gray-900/20" />
+          <div className="absolute inset-0 bg-linear-to-r from-gray-900/70 via-gray-900/40 to-gray-900/20" />
         </div>
 
-        <div className="max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-8 relative z-10 w-full">
+        <div className="max-w-360 xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-8 relative z-10 w-full">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm mb-6">
             <Link
@@ -1022,7 +1022,7 @@ const NewTractors = () => {
                           </span>
                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         </Listbox.Button>
-                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
                           <Listbox.Option
                             value=""
                             className={({ active }) =>
@@ -1077,7 +1077,7 @@ const NewTractors = () => {
                           </span>
                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         </Listbox.Button>
-                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
                           <Listbox.Option
                             value=""
                             className={({ active }) =>
@@ -1135,7 +1135,7 @@ const NewTractors = () => {
                           </span>
                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         </Listbox.Button>
-                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
                           <Listbox.Option
                             value=""
                             className={({ active }) =>
@@ -1192,7 +1192,7 @@ const NewTractors = () => {
                           </span>
                           <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
                         </Listbox.Button>
-                        <Listbox.Options className="absolute z-[9999]  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
                           <Listbox.Option
                             value=""
                             className={({ active }) =>
@@ -1398,7 +1398,7 @@ const NewTractors = () => {
 
       {/* Results Bar - Outside Hero */}
       <div className="bg-white border-b border-gray-200 lg:mt-6 sticky top-16 z-30">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-4">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-4">
           <div className="flex items-center justify-between flex-wrap gap-3">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
@@ -1470,12 +1470,12 @@ const NewTractors = () => {
         </div>
       </div>
 
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
         <TractorCategory />
       </div>
 
       {/* Slider Sections - Spacing classes fixed below to match old layout */}
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-16 md:pt-20 lg:pt-24 mb-20">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-16 md:pt-20 lg:pt-24 mb-20">
         <div className="mb-8 md:mb-14 lg:mb-20">
           <SliderSection
             title="Popular Tractor"
@@ -1524,7 +1524,7 @@ const NewTractors = () => {
       {/* Popular Brands Marquee Section */}
    {/* Popular Brands Marquee Section */}
 <div className="bg-white border-b border-gray-100">
-  <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 pt-16 md:pt-20 lg:pt-24">
+  <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 pt-16 md:pt-20 lg:pt-24">
     {/* Header with View All Button */}
     <div className="flex items-center justify-between mb-6">
       <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
@@ -1555,7 +1555,7 @@ const NewTractors = () => {
             <Link
               key={idx}
               to={`/tractors?type=new&brand=${encodeURIComponent(brand.name)}`}
-              className="flex flex-col items-center gap-2 flex-shrink-0 group cursor-pointer"
+              className="flex flex-col items-center gap-2 shrink-0 group cursor-pointer"
             >
               <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-50 border-2 border-gray-200 flex items-center justify-center group-hover:border-green-600 group-hover:shadow-md group-hover:bg-green-100 transition-all duration-300 overflow-hidden">
                 <img
@@ -1589,10 +1589,10 @@ const NewTractors = () => {
 
       {/* --- POPULAR COMPARISON HANDPICKS --- */}
       <div className="border-t border-gray-200 w-full">
-        <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-16 md:pt-20 lg:pt-24 mx-auto">
+        <div className="w-full max-w-360 xl:max-w-400 2xl:max-w-430 px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-16 md:pt-20 lg:pt-24 mx-auto">
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
             Compare to buy{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-700">
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-green-700">
               the right tractor
             </span>
           </h2>
@@ -1684,7 +1684,7 @@ const NewTractors = () => {
       </div>
 
       <div className="relative lg:mt-12 bg-white overflow-hidden border-t border-gray-400">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-16 md:pt-20 lg:pt-24 relative z-10">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-16 md:pt-20 lg:pt-24 relative z-10">
           <div className="text-center mb-10">
             <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-3">
               About <span className="text-green-700">Krushi Mall</span>
@@ -1747,7 +1747,7 @@ const NewTractors = () => {
       </div>
 
       <section id="enquiry-form" className="bg-gray-50 pt-16 md:pt-20 lg:pt-24">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
           <div className="grid lg:grid-cols-5 gap-6 lg:gap-12">
             {/* Left Side - Info */}
             <div className="lg:col-span-2">
@@ -1767,7 +1767,7 @@ const NewTractors = () => {
               {/* Features */}
               <div className="space-y-4 mb-8">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
                     <BadgeCheck className="h-5 w-5 text-green-600" />
                   </div>
                   <div>
@@ -1780,7 +1780,7 @@ const NewTractors = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
                     <Shield className="h-5 w-5 text-green-600" />
                   </div>
                   <div>
@@ -1793,7 +1793,7 @@ const NewTractors = () => {
                   </div>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+                  <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center shrink-0">
                     <Clock className="h-5 w-5 text-green-600" />
                   </div>
                   <div>
@@ -2024,7 +2024,7 @@ const NewTractors = () => {
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
                         openIndex === index ? "bg-green-100" : "bg-gray-100"
                       }`}
                     >
@@ -2045,7 +2045,7 @@ const NewTractors = () => {
                     </span>
                   </div>
                   <ChevronDown
-                    className={`h-4 w-4 text-gray-400 flex-shrink-0 transition-transform duration-300 ${
+                    className={`h-4 w-4 text-gray-400 shrink-0 transition-transform duration-300 ${
                       openIndex === index ? "rotate-180 text-green-600" : ""
                     }`}
                   />
@@ -2113,7 +2113,7 @@ const NewTractors = () => {
 
       {/* Trust Badges */}
       <div className="bg-white">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-12">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-12">
           <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
             {[
               {
@@ -2150,7 +2150,7 @@ const NewTractors = () => {
                 className="group relative bg-white rounded-2xl border border-gray-100 shadow-md hover:shadow-xl transition-all duration-300 overflow-hidden"
               >
                 <div
-                  className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r ${badge.color}`}
+                  className={`absolute top-0 left-0 right-0 h-1 bg-linear-to-r ${badge.color}`}
                 ></div>
                 <div className="p-5 text-center">
                   <div
