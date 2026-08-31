@@ -21,7 +21,7 @@ import Checkout from "./pages/Checkout";
 import { WishlistProvider } from "./context/WishlistContext";
 import Wishlist from "./pages/Wishlist";
 import SpareParts from "./pages/SpareParts";
-import SubSubCategory  from "./pages/SubsubCategory.jsx";
+import SubSubCategory from "./pages/SubsubCategory.jsx";
 import SubCategoryPage from "./pages/SubCategoryPage";
 import TractorCompare from "./pages/TractorCompare";
 import TractorDetail from "./pages/TractorDetail";
@@ -104,7 +104,7 @@ function App() {
         </div>
       )}
 
-     <Router basename={Capacitor.isNativePlatform() ? "/" : "/krushimall/"}>
+      <Router basename={Capacitor.isNativePlatform() ? "/" : "/krushimall/"}>
         <AuthProvider>
           <CartProvider>
             <ScrollToTop />
@@ -165,12 +165,17 @@ function App() {
                       element={<UsedWebsiteVariant />}
                     />
 
-                      <Route
+                    <Route
                       path="/vendor/add-used-product"
                       element={<UsedWebsiteVariant />}
                     />
-                     <Route
+                    <Route
                       path="/vendor/add-equipment"
+                      element={<EquipmentVariant />}
+                    />
+
+                    <Route
+                      path="/vendor/edit-equipment/:id"
                       element={<EquipmentVariant />}
                     />
 
@@ -194,7 +199,10 @@ function App() {
                     <Route path="/spare-parts" element={<SpareParts />} />
                     <Route path="/categories" element={<AllCategories />} />
                     <Route path="/equipment" element={<Equipment />} />
-                    <Route path="/equipment/:id" element={<EquipmentDetails />} />
+                    <Route
+                      path="/equipment/:id"
+                      element={<EquipmentDetails />}
+                    />
                     <Route path="/all-brands" element={<AllBrands />} />
                     <Route path="/tractors" element={<TractorList />} />
                     <Route path="/new-tractors" element={<NewTractors />} />
@@ -202,7 +210,7 @@ function App() {
 
                     <Route
                       path="/subsubcategory/:subCategoryName"
-                      element={<SubSubCategory  />}
+                      element={<SubSubCategory />}
                     />
                     <Route
                       path="/category/:subCategoryName"

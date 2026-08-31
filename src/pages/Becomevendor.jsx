@@ -500,7 +500,7 @@ const validateStep3 = () => {
 
   return (
     <div className="bg-gray-50 pb-8 min-h-screen">
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
         <div className="max-w-2xl mx-auto">
           <Link
             to="/profile"
@@ -683,7 +683,7 @@ const validateStep3 = () => {
                 <button
                   type="button"
                   onClick={handleStep1Next}
-                  className="cursor-pointer w-full bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 group shadow-lg shadow-green-700/20 hover:shadow-green-700/40"
+                  className="cursor-pointer w-full bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 group shadow-lg shadow-green-700/20 hover:shadow-green-700/40"
                 >
                   Next Step
                   <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -819,7 +819,7 @@ const validateStep3 = () => {
                   <button
                     type="button"
                     onClick={handleStep2Next}
-                    className="cursor-pointer flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 group shadow-lg shadow-green-700/20 hover:shadow-green-700/40"
+                    className="cursor-pointer flex-1 bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 group shadow-lg shadow-green-700/20 hover:shadow-green-700/40"
                   >
                     Next Step
                     <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -933,7 +933,7 @@ const validateStep3 = () => {
                     type="button"
                     onClick={handleRegisterVendor}
                     disabled={isLoading}
-                    className="cursor-pointer flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-green-700/20 hover:shadow-green-700/40"
+                    className="cursor-pointer flex-1 bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-green-700/20 hover:shadow-green-700/40"
                   >
                     {isLoading ? (
                       <>
@@ -1010,7 +1010,7 @@ const validateStep3 = () => {
                   type="button"
                   onClick={handleVerifyOTP}
                   disabled={isLoading}
-                  className="w-full cursor-pointer bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-green-700/20 hover:shadow-green-700/40"
+                  className="w-full cursor-pointer bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-green-700/20 hover:shadow-green-700/40"
                 >
                   {isLoading ? (
                     <>

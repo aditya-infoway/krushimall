@@ -1,5 +1,5 @@
 // components/EquipmentDetails.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useParams, useNavigate } from "react-router-dom";
 import {
   ChevronLeft,
@@ -32,8 +32,28 @@ import {
   Eye,
   ShoppingCart,
   AlertCircle,
+  DollarSign,
+  Fuel,
+  Weight,
+  Ruler,
+  Zap,
+  Droplets,
+  Wind,
+  Cog,
+  Store,
+  List,
+  Grid,
+  Check,
+  Sparkles,
+  Play,
+  X,
 } from "lucide-react";
-import EnquiryModal from "../components/EnquiryModal";
+import apiHelper from "../utils/apiHelper";
+import { useWishlist } from "../context/WishlistContext";
+import { useAuth } from "../context/AuthContext";
+import Select from "react-select";
+import { State, City } from "country-state-city";
+import { showErrorToast, showSuccessToast } from "../utils/toast";
 
 // ─── Helper Functions ──────────────────────────────────────────────────────
 const hasValidValue = (value) => {
@@ -47,91 +67,87 @@ const hasValidValue = (value) => {
   );
 };
 
-// ─── Static Sample Data ────────────────────────────────────────────────────
-const SAMPLE_EQUIPMENT = {
-  id: "1",
-  name: "New Vishwakarma Cutter Tokri Thresher",
-  brand: "Shree Nath Trade Link",
-  category: "Thresher",
-  model: "Tokri Thresher Model",
-  price: 85000,
-  description:
-    "The New Vishwakarma Cutter Tokri Thresher is a high-performance agricultural machine designed for efficient threshing of various crops. Easily driven with 35HP with overall weight machine is 22-23 Quintal. Suitable for Wheat, Mustard, Millet, Barley, Pigeon Pea, Gram, Bean, Kidney Bean, Peas. Output thresher is 24 quintal per hour approximate.",
-  keyHighlights: [
-    "35 HP Power Output",
-    "22-23 Quintal Weight",
-    "24 Quintal/Hour Output",
-    "Multi-Crop Compatibility",
-    "Heavy Duty Construction",
-    "Easy Operation",
-  ],
-  specifications: {
-    Power: "35 HP",
-    Weight: "22-23 Quintal",
-    Output: "24 Quintal/Hour",
-    Crops: "Wheat, Mustard, Millet, Barley, Gram, Beans",
-    Warranty: "1 Year",
-    Condition: "New",
-  },
-  sellerName: "Shree Nath Trade Link",
-  sellerType: "Wholesaler",
-  sellerRating: 4.8,
-  sellerReviews: 127,
-  sellerSince: "2010",
-  sellerPhone: "+91 98765 43210",
-  sellerEmail: "info@shreenathtrade.com",
-  stockStatus: "In Stock",
-  warranty: "1 Year Manufacturer Warranty",
-  delivery: "Free Delivery Available",
-  images: [
-    "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=800&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=800&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=800&auto=format&fit=crop&q=80",
-    "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=800&auto=format&fit=crop&q=80",
-  ],
-  tags: ["Cutter", "Tokri", "Thresher", "Agriculture", "Farming"],
-  location: "Punjab, India",
-  year: "2024",
-  hp: "35 HP",
+const DetailRow = ({ label, value, last = false }) => {
+  if (!hasValidValue(value)) return null;
+
+  return (
+    <div
+      className={`flex justify-between py-3 ${
+        !last ? "border-b border-gray-600" : ""
+      }`}
+    >
+      <span className="text-gray-500 text-sm">{label}</span>
+      <span className="font-semibold text-gray-900 text-sm capitalize text-right max-w-[55%]">
+        {value}
+      </span>
+    </div>
+  );
 };
 
-// ─── Related Products ──────────────────────────────────────────────────────
-const RELATED_EQUIPMENTS = [
-  {
-    id: "2",
-    name: "Multicrop Thresher Pro",
-    price: 95000,
-    image:
-      "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&auto=format&fit=crop&q=80",
-    location: "Haryana, India",
-  },
-  {
-    id: "3",
-    name: "Chaff Cutter Deluxe",
-    price: 55000,
-    image:
-      "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&auto=format&fit=crop&q=80",
-    location: "Rajasthan, India",
-  },
-  {
-    id: "4",
-    name: "Maize Sheller Plus",
-    price: 72000,
-    image:
-      "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&auto=format&fit=crop&q=80",
-    location: "Punjab, India",
-  },
-  {
-    id: "5",
-    name: "Paddy Thresher Max",
-    price: 110000,
-    image:
-      "https://images.unsplash.com/photo-1592982537447-7440770cbfc9?w=400&auto=format&fit=crop&q=80",
-    location: "Uttar Pradesh, India",
-  },
-];
+const SectionCard = ({ title, icon: Icon, children, className = "" }) => {
+  let hasContent = false;
 
-// ─── Star Rating Component ──────────────────────────────────────────────────
+  if (children) {
+    if (typeof children === "string" && children.trim() !== "") {
+      hasContent = true;
+    } else if (Array.isArray(children)) {
+      hasContent = children.some((child) => {
+        if (typeof child === "string" && child.trim() !== "") return true;
+        if (child && typeof child === "object") {
+          if (child.props && child.props.children) {
+            if (
+              typeof child.props.children === "string" &&
+              child.props.children.trim() !== ""
+            )
+              return true;
+            if (
+              Array.isArray(child.props.children) &&
+              child.props.children.length > 0
+            )
+              return true;
+          }
+          return true;
+        }
+        return false;
+      });
+    } else if (typeof children === "object" && children !== null) {
+      hasContent = true;
+    }
+  }
+
+  if (!hasContent) return null;
+
+  return (
+    <div
+      className={`bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${className}`}
+    >
+      <div className="bg-green-600 px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-2">
+        {Icon && <Icon size={18} className="text-white flex-shrink-0" />}
+        <h3 className="text-base sm:text-lg font-bold text-white">{title}</h3>
+      </div>
+      <div className="p-4 sm:p-6 ">{children}</div>
+    </div>
+  );
+};
+
+const BadgeList = ({ items }) => {
+  const validItems = items?.filter((item) => hasValidValue(item)) || [];
+  if (validItems.length === 0) return null;
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      {validItems.map((item, i) => (
+        <span
+          key={i}
+          className="bg-green-50 text-green-700 border border-green-200 text-xs font-medium px-3 py-1.5 rounded-full"
+        >
+          {item}
+        </span>
+      ))}
+    </div>
+  );
+};
+
 const StarRating = ({ rating }) => {
   const fullStars = Math.floor(rating);
   const hasHalfStar = rating % 1 >= 0.5;
@@ -154,6 +170,33 @@ const StarRating = ({ rating }) => {
           className="w-3 h-3 sm:w-4 sm:h-4 text-gray-300"
         />
       ))}
+    </div>
+  );
+};
+
+const ColorDot = ({ color }) => {
+  if (!hasValidValue(color)) return null;
+
+  const colorMap = {
+    Red: "#ef4444",
+    Blue: "#3b82f6",
+    Green: "#22c55e",
+    Yellow: "#eab308",
+    Orange: "#f97316",
+    Black: "#111827",
+    White: "#f9fafb",
+    Grey: "#6b7280",
+    Pink: "#ec4899",
+    Purple: "#8b5cf6",
+  };
+  const bg = colorMap[color] || "#d1d5db";
+  return (
+    <div className="flex items-center gap-1.5">
+      <div
+        className="w-5 h-5 rounded-full border border-gray-300 flex-shrink-0"
+        style={{ background: bg }}
+      />
+      <span className="text-xs text-gray-600">{color}</span>
     </div>
   );
 };
@@ -233,89 +276,309 @@ const PincodeChecker = ({ equipmentId }) => {
   );
 };
 
-// ─── Detail Row Component ──────────────────────────────────────────────────
-const DetailRow = ({ label, value, last = false }) => {
-  if (!hasValidValue(value)) return null;
+// ─── Enquiry Modal Component ──────────────────────────────────────────────
+const EnquiryModal = ({ isOpen, onClose, equipment }) => {
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    mobile: "",
+    state: null,
+    city: null,
+    address: "",
+    pincode: "",
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
 
-  return (
-    <div
-      className={`flex flex-col sm:flex-row sm:justify-between py-3 ${
-        !last ? "border-b border-gray-100" : ""
-      }`}
-    >
-      <span className="text-gray-500 text-sm">{label}</span>
-      <span className="font-semibold text-gray-900 text-sm capitalize sm:text-right">
-        {value}
-      </span>
-    </div>
-  );
-};
+  const INDIA_STATES = State.getStatesOfCountry("IN").map((s) => ({
+    value: s.isoCode,
+    label: s.name,
+  }));
 
-// ─── Section Card Component ────────────────────────────────────────────────
-const SectionCard = ({ title, icon: Icon, children, className = "" }) => {
-  let hasContent = false;
+  const cityOptions = formData.state
+    ? City.getCitiesOfState("IN", formData.state.value).map((c) => ({
+        value: c.name,
+        label: c.name,
+      }))
+    : [];
 
-  if (children) {
-    if (typeof children === "string" && children.trim() !== "") {
-      hasContent = true;
-    } else if (Array.isArray(children)) {
-      hasContent = children.some((child) => {
-        if (typeof child === "string" && child.trim() !== "") return true;
-        if (child && typeof child === "object") {
-          if (child.props && child.props.children) {
-            if (
-              typeof child.props.children === "string" &&
-              child.props.children.trim() !== ""
-            )
-              return true;
-            if (
-              Array.isArray(child.props.children) &&
-              child.props.children.length > 0
-            )
-              return true;
-          }
-          return true;
-        }
-        return false;
-      });
-    } else if (typeof children === "object" && children !== null) {
-      hasContent = true;
+  const selectStyles = {
+    control: (base, state) => ({
+      ...base,
+      borderRadius: "0.75rem",
+      borderColor: state.isFocused ? "#15803d" : "#e5e7eb",
+      boxShadow: state.isFocused ? "0 0 0 2px rgba(21,128,61,0.4)" : "none",
+      backgroundColor: "#f9fafb",
+      minHeight: "42px",
+      "&:hover": { backgroundColor: "#fff" },
+    }),
+    option: (base, state) => ({
+      ...base,
+      backgroundColor: state.isSelected
+        ? "#dcfce7"
+        : state.isFocused
+        ? "#f0fdf4"
+        : "#fff",
+      color: "#374151",
+      cursor: "pointer",
+    }),
+    menu: (base) => ({ ...base, zIndex: 9999 }),
+  };
+
+  const handleChange = (field, value) => {
+    setFormData((prev) => {
+      const next = { ...prev, [field]: value };
+      if (field === "state") next.city = null;
+      return next;
+    });
+  };
+
+  // NEW
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (
+      !formData.fullName ||
+      !formData.email ||
+      !formData.mobile ||
+      !formData.state ||
+      !formData.city
+    ) {
+      showErrorToast("Please fill in all required fields.");
+      return;
     }
-  }
 
-  if (!hasContent) return null;
+    setIsSubmitting(true);
+    try {
+      const payload = {
+        equipmentId: equipment?.id,
+        fullName: formData.fullName,
+        email: formData.email,
+        mobile: formData.mobile,
+        state: formData.state.label,
+        city: formData.city.label,
+        address: formData.address,
+        pincode: formData.pincode,
+      };
+
+      const res = await apiHelper.post("/vendor-web/equipmentenquiry", payload);
+
+      if (res.data?.success === false) {
+        showErrorToast(res.data?.message || "Failed to submit enquiry.");
+        setIsSubmitting(false);
+        return;
+      }
+
+      showSuccessToast(res.data?.message || "Enquiry submitted successfully.");
+      setSubmitted(true);
+      setTimeout(() => {
+        setSubmitted(false);
+        setFormData({
+          fullName: "",
+          email: "",
+          mobile: "",
+          state: null,
+          city: null,
+          address: "",
+          pincode: "",
+        });
+        onClose();
+      }, 2000);
+    } catch (error) {
+      console.error("Enquiry submission error:", error);
+      console.error("Backend response:", error?.response?.data);
+      showErrorToast(
+        error?.response?.data?.message ||
+          "Failed to submit enquiry. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!isOpen) return null;
 
   return (
     <div
-      className={`bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ${className}`}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 p-4"
+      onClick={onClose}
     >
-      <div className="bg-green-600 px-4 sm:px-6 py-3 sm:py-4 flex items-center gap-2">
-        {Icon && <Icon size={18} className="text-white flex-shrink-0" />}
-        <h3 className="text-base sm:text-lg font-bold text-white">{title}</h3>
+      <div
+        className="bg-white rounded-2xl shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex items-center justify-between px-6 py-4 bg-green-600 border-b border-gray-100">
+          <div>
+            <h3 className="text-lg font-bold text-white">Enquiry Form</h3>
+            <p className="text-xs text-white mt-0.5">
+              {equipment?.name || "Equipment"}
+            </p>
+          </div>
+          <button
+            onClick={onClose}
+            className="p-1.5 rounded-full hover:bg-white text-white hover:text-green-600 cursor-pointer transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {submitted ? (
+          <div className="px-6 py-8 text-center">
+            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <CheckCircle className="h-8 w-8 text-green-600" />
+            </div>
+            <h4 className="text-xl font-bold text-gray-900 mb-2">
+              Enquiry Sent!
+            </h4>
+            <p className="text-gray-500 text-sm">
+              We'll contact you within 24 hours.
+            </p>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="px-6 py-5 space-y-4">
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                Full Name <span className="text-red-600">*</span>
+              </label>
+              <input
+                type="text"
+                required
+                value={formData.fullName}
+                onChange={(e) => handleChange("fullName", e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-gray-50 hover:bg-white transition-colors"
+                placeholder="Enter full name"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                Email <span className="text-red-600">*</span>
+              </label>
+              <input
+                type="email"
+                required
+                value={formData.email}
+                onChange={(e) => handleChange("email", e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-gray-50 hover:bg-white transition-colors"
+                placeholder="Enter email"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                Mobile Number <span className="text-red-600">*</span>
+              </label>
+              <input
+                type="tel"
+                required
+                pattern="[0-9]{10}"
+                value={formData.mobile}
+                onChange={(e) => handleChange("mobile", e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-gray-50 hover:bg-white transition-colors"
+                placeholder="Mobile number"
+              />
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  State <span className="text-red-600">*</span>
+                </label>
+                <Select
+                  options={INDIA_STATES}
+                  value={formData.state}
+                  onChange={(option) => handleChange("state", option)}
+                  placeholder="Select state..."
+                  isSearchable
+                  classNamePrefix="rs"
+                  styles={selectStyles}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                  City <span className="text-red-600">*</span>
+                </label>
+                <Select
+                  options={cityOptions}
+                  value={formData.city}
+                  onChange={(option) => handleChange("city", option)}
+                  placeholder="Select city..."
+                  isSearchable
+                  isDisabled={!formData.state}
+                  classNamePrefix="rs"
+                  styles={selectStyles}
+                />
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                Address
+              </label>
+              <input
+                type="text"
+                value={formData.address}
+                onChange={(e) => handleChange("address", e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-gray-50 hover:bg-white transition-colors"
+                placeholder="Address"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold text-gray-700 mb-1.5">
+                Pincode
+              </label>
+              <input
+                type="text"
+                pattern="[0-9]{6}"
+                value={formData.pincode}
+                onChange={(e) => handleChange("pincode", e.target.value)}
+                className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm outline-none focus:ring-2 focus:ring-green-600 focus:border-green-600 bg-gray-50 hover:bg-white transition-colors"
+                placeholder="Enter Pincode"
+              />
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-gray-700 border border-gray-200 hover:bg-gray-50 cursor-pointer transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting}
+                className="flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white bg-green-700 hover:bg-green-800 cursor-pointer transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+              >
+                {isSubmitting ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Submitting...
+                  </span>
+                ) : (
+                  "Submit"
+                )}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
-      <div className="p-4 sm:p-6">{children}</div>
     </div>
   );
 };
 
-// ─── Badge List Component ──────────────────────────────────────────────────
-const BadgeList = ({ items }) => {
-  const validItems = items?.filter((item) => hasValidValue(item)) || [];
-  if (validItems.length === 0) return null;
-
-  return (
-    <div className="flex flex-wrap gap-2">
-      {validItems.map((item, i) => (
-        <span
-          key={i}
-          className="bg-green-50 text-green-700 border border-green-200 text-xs font-medium px-3 py-1.5 rounded-full"
-        >
-          {item}
-        </span>
-      ))}
-    </div>
-  );
-};
+// ─── Tabs Configuration ────────────────────────────────────────────────────
+const TABS = [
+  { id: "description", label: "Description" },
+  { id: "basic-info", label: "Basic Information" },
+  { id: "specifications", label: "Specifications" },
+  { id: "mechanical", label: "Mechanical" },
+  { id: "electrical", label: "Electrical" },
+  { id: "parts", label: "Parts & Attachments" },
+  { id: "seller", label: "Seller Details" },
+  { id: "media", label: "Media & Documents" },
+];
 
 // ─── Main Component ─────────────────────────────────────────────────────────
 const EquipmentDetails = () => {
@@ -323,15 +586,325 @@ const EquipmentDetails = () => {
   const navigate = useNavigate();
   const [currentImage, setCurrentImage] = useState(0);
   const [showEnquiryModal, setShowEnquiryModal] = useState(false);
-  const [isWishlisted, setIsWishlisted] = useState(false);
   const [activeTab, setActiveTab] = useState("description");
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [equipmentData, setEquipmentData] = useState(null);
+  const [relatedProducts, setRelatedProducts] = useState([]);
+  const [similarProducts, setSimilarProducts] = useState([]);
+  const [relatedIndex, setRelatedIndex] = useState(0);
+  const intervalRef = useRef(null);
+  const relatedScrollRef = useRef(null);
+  const [isScrollingRelated, setIsScrollingRelated] = useState(false);
+  const scrollTimeoutRef = useRef(null);
+  const containerRef = useRef(null);
+  const [zoomStyle, setZoomStyle] = useState({ display: "none", x: 50, y: 50 });
+  const { isInWishlist, toggleWishlist } = useWishlist();
+  const { isAuthenticated } = useAuth();
 
-  // Static for now — replace with API call later
-  const equipment = SAMPLE_EQUIPMENT;
-  const relatedProducts = RELATED_EQUIPMENTS;
+  // ─── Fetch Data ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await apiHelper.get(
+          `/vendor-web/equipmentvariant/${id}`,
+        );
 
+        const data = response.data;
+        setEquipmentData(data);
+
+        if (data.similarProducts) {
+          setSimilarProducts(data.similarProducts);
+        }
+        if (data.relatedProducts) {
+          setRelatedProducts(data.relatedProducts);
+        }
+      } catch (error) {
+        console.error("Error fetching equipment data:", error);
+        setError(error.message || "Failed to load equipment details");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchData();
+  }, [id]);
+
+  // ─── Process Images ─────────────────────────────────────────────────────
+  const imageUrls = equipmentData
+    ? [
+        equipmentData.frontView,
+        equipmentData.leftView,
+        equipmentData.rightView,
+        equipmentData.rearView,
+        equipmentData.mainEquipment,
+        equipmentData.workingMechanism,
+        equipmentData.controlPanel,
+        equipmentData.serialNumberImage,
+        equipmentData.attachmentsImage,
+        equipmentData.tyresWheels,
+      ]
+        .filter((img) => hasValidValue(img))
+        .map((img) => apiHelper.image(img))
+    : [];
+
+  const finalImages = imageUrls.length > 0 ? imageUrls : ["/mah.png"];
+
+  // ─── Process Equipment Data ─────────────────────────────────────────────
+  const d = equipmentData || {};
+
+  const keyHighlights = [
+    d.highlight1,
+    d.highlight2,
+    d.highlight3,
+    d.highlight4,
+    d.highlight5,
+  ].filter((h) => hasValidValue(h));
+
+  const availableColors = d.color ? [d.color] : [];
+
+  const attachments = d.attachments || {};
+  const attachmentList = Object.keys(attachments).filter(
+    (key) => attachments[key] === true,
+  );
+
+  // ─── Equipment Object ──────────────────────────────────────────────────────
+  const equipment = {
+    id: d.id,
+    name: d.displayName || d.productName || "Equipment",
+    brand: d.brand || "Unknown",
+    category: d.categoryId || d.equipmentType || "Equipment",
+    model: d.model || "Unknown",
+    variant: d.variant || "Unknown",
+    variantId: d.variantId,
+    modelId: d.modelId,
+    brandId: d.brandId,
+    categoryId: d.categoryId,
+    productName: d.productName,
+    displayName: d.displayName,
+    equipmentType: d.equipmentType,
+
+    price: hasValidValue(d.expectedPrice)
+      ? `₹ ${Number(d.expectedPrice).toLocaleString("en-IN")}`
+      : "₹ 0",
+    expectedPrice: d.expectedPrice,
+    negotiable: d.negotiable,
+    exchangeAvailable: d.exchangeAvailable,
+    financeAvailable: d.financeAvailable,
+
+    manufacturingYear: d.manufacturingYear,
+    purchaseYear: d.purchaseYear,
+    equipmentCondition: d.equipmentCondition || "New",
+    serialNumber: d.serialNumber || "",
+    productCode: d.productCode || "",
+    color: d.color || "",
+
+    country: d.country || "",
+    state: d.state || "",
+    district: d.district || "",
+    taluka: d.taluka || "",
+    village: d.village || "",
+    pincode: d.pincode || "",
+    landmark: d.landmark || "",
+    latitude: d.latitude,
+    longitude: d.longitude,
+
+    sellerType: d.sellerType || "",
+    ownerType: d.ownerType || "",
+    ownershipProofAvailable: d.ownershipProofAvailable || false,
+    usage: d.usage || "",
+
+    description:
+      d.shortDescription || d.description || "Equipment details not available.",
+    images: finalImages,
+
+    stockStatus: d.status === "ACTIVE" ? "In Stock" : "Out of Stock",
+    warranty: d.warranty || "1 Year Manufacturer Warranty",
+    delivery: d.delivery || "Free Delivery Available",
+
+    sellerName: d.vendor?.name || d.createdBy || "Trusted Seller",
+    sellerTypeDisplay: d.sellerType || "Dealer",
+    sellerSince: d.createdAt
+      ? new Date(d.createdAt).getFullYear().toString()
+      : "2024",
+    sellerRating: d.sellerRating || 4.5,
+    sellerReviews: d.sellerReviews || 0,
+    sellerPhone: d.phone || d.vendor?.phone || "+91 98765 43210",
+    sellerEmail: d.email || d.vendor?.email || "info@example.com",
+
+    tags: d.tags || ["Agriculture", "Farming", "Equipment"],
+    location: [d.district, d.state].filter(Boolean).join(", "),
+    year: d.manufacturingYear || d.purchaseYear || "2024",
+
+    hp: d.requiredTractorHp
+      ? `${d.requiredTractorHp} HP`
+      : d.powerRequirement || "35 HP",
+    powerSource: d.powerSource,
+    ptoRequirement: d.ptoRequirement,
+    requiredTractorHp: d.requiredTractorHp,
+
+    workingWidth: d.workingWidth,
+    workingCapacity: d.workingCapacity,
+    workingSpeed: d.workingSpeed,
+    weight: d.weight,
+    length: d.length,
+    width: d.width,
+    height: d.height,
+    productionCapacity: d.productionCapacity,
+    fuelConsumption: d.fuelConsumption,
+    rpm: d.rpm,
+    numberOfBlades: d.numberOfBlades,
+    numberOfRows: d.numberOfRows,
+    tankCapacity: d.tankCapacity,
+    workingDepth: d.workingDepth,
+
+    threshingCapacity: d.threshingCapacity,
+    cropType: d.cropType,
+    drumSize: d.drumSize,
+    fanType: d.fanType,
+    cleaningSystem: d.cleaningSystem,
+    rotorRpm: d.rotorRpm,
+    sprayWidth: d.sprayWidth,
+    pumpType: d.pumpType,
+    nozzleCount: d.nozzleCount,
+    pressure: d.pressure,
+
+    overallCondition: d.overallCondition,
+    oilLeakage: d.oilLeakage,
+    workingCondition: d.workingCondition,
+    mechanical: d.mechanical || {},
+    electrical: d.electrical || {},
+
+    partsCondition: d.partsCondition || {},
+    attachments: d.attachments || {},
+    attachmentList: attachmentList,
+    otherAttachmentName: d.otherAttachmentName,
+
+    lastServiceDate: d.lastServiceDate,
+    majorRepair: d.majorRepair,
+    partsReplaced: d.partsReplaced || {},
+    accidentDamage: d.accidentDamage,
+    floodDamage: d.floodDamage,
+
+    purchaseInvoice: d.purchaseInvoice,
+    ownershipProof: d.ownershipProof,
+    warrantyDocument: d.warrantyDocument,
+    insurance: d.insurance,
+    serviceRecords: d.serviceRecords,
+    otherDocuments: d.otherDocuments,
+
+    walkaroundVideo: d.walkaroundVideo,
+    workingVideo: d.workingVideo,
+    machineStartVideo: d.machineStartVideo,
+    ptoWorkingVideo: d.ptoWorkingVideo,
+    hydraulicWorkingVideo: d.hydraulicWorkingVideo,
+
+    status: d.status,
+    isCompleted: d.isCompleted,
+    currentStep: d.currentStep,
+    agreed: d.agreed,
+    enquiryCount: d.enquiryCount || 0,
+  };
+
+  const wishlistProduct = {
+    id: Number(id),
+    name: equipment.name,
+    brand: equipment.brand,
+    price: equipment.expectedPrice || 0,
+    image: equipment.images[0],
+  };
+
+  const handleWishlistClick = () => {
+    if (!isAuthenticated) {
+      navigate(`/login?redirect=/equipment/${id}`);
+      return;
+    }
+    toggleWishlist(wishlistProduct);
+  };
+
+  // ─── Auto Slider ──────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!relatedProducts.length) return;
+
+    intervalRef.current = setInterval(() => {
+      setRelatedIndex((prev) => (prev + 1) % relatedProducts.length);
+    }, 3000);
+
+    return () => clearInterval(intervalRef.current);
+  }, [relatedProducts.length]);
+
+  const cardsToShow = 4;
+  const getVisibleRelated = () => {
+    if (!relatedProducts?.length) return [];
+
+    const visible = [];
+    for (let i = 0; i < Math.min(cardsToShow, relatedProducts.length); i++) {
+      visible.push(
+        relatedProducts[(relatedIndex + i) % relatedProducts.length],
+      );
+    }
+    return visible;
+  };
+
+  const slideRelated = (direction) => {
+    clearInterval(intervalRef.current);
+    if (direction === "next") {
+      setRelatedIndex((prev) => (prev + 1) % relatedProducts.length);
+    } else {
+      setRelatedIndex(
+        (prev) => (prev - 1 + relatedProducts.length) % relatedProducts.length,
+      );
+    }
+    intervalRef.current = setInterval(() => {
+      setRelatedIndex((prev) => (prev + 1) % relatedProducts.length);
+    }, 3000);
+  };
+
+  useEffect(() => {
+    const slider = relatedScrollRef.current;
+    if (!slider) return;
+    const handleScroll = () => {
+      setIsScrollingRelated(true);
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+      scrollTimeoutRef.current = setTimeout(
+        () => setIsScrollingRelated(false),
+        1500,
+      );
+    };
+    slider.addEventListener("scroll", handleScroll, { passive: true });
+    slider.addEventListener("touchstart", handleScroll, { passive: true });
+    return () => {
+      slider.removeEventListener("scroll", handleScroll);
+      slider.removeEventListener("touchstart", handleScroll);
+      if (scrollTimeoutRef.current) clearTimeout(scrollTimeoutRef.current);
+    };
+  }, []);
+
+  const scrollRelated = (direction) => {
+    if (!relatedScrollRef.current) return;
+    const { scrollLeft, clientWidth } = relatedScrollRef.current;
+    relatedScrollRef.current.scrollTo({
+      left:
+        direction === "left"
+          ? scrollLeft - clientWidth * 0.8
+          : scrollLeft + clientWidth * 0.8,
+      behavior: "smooth",
+    });
+  };
+
+  // ─── Zoom Handlers ───────────────────────────────────────────────────────
+  const handleMouseMove = (e) => {
+    if (!containerRef.current) return;
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setZoomStyle({ display: "block", x, y });
+  };
+  const handleMouseLeave = () =>
+    setZoomStyle({ display: "none", x: 50, y: 50 });
+
+  // ─── Image Navigation ────────────────────────────────────────────────────
   const handleImageNav = (dir) => {
     setCurrentImage((prev) => {
       if (dir === "prev")
@@ -344,125 +917,185 @@ const EquipmentDetails = () => {
   const renderTabContent = () => {
     switch (activeTab) {
       case "description":
-        return <DescriptionTab equipment={equipment} />;
+        return (
+          <DescriptionTab equipment={equipment} keyHighlights={keyHighlights} />
+        );
+      case "basic-info":
+        return <BasicInfoTab equipment={equipment} />;
       case "specifications":
         return <SpecificationsTab equipment={equipment} />;
+      case "mechanical":
+        return <MechanicalTab equipment={equipment} />;
+      case "electrical":
+        return <ElectricalTab equipment={equipment} />;
+      case "parts":
+        return <PartsAttachmentsTab equipment={equipment} />;
       case "seller":
         return <SellerTab equipment={equipment} />;
+      case "media":
+        return <MediaDocumentsTab equipment={equipment} />;
       default:
-        return <DescriptionTab equipment={equipment} />;
+        return (
+          <DescriptionTab equipment={equipment} keyHighlights={keyHighlights} />
+        );
     }
   };
+
+  
+
+  // ─── Loading State ──────────────────────────────────────────────────────
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-green-600 mx-auto mb-4" />
+          <p className="text-gray-600 font-medium">
+            Loading equipment details…
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── Error State ────────────────────────────────────────────────────────
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="text-center max-w-md">
+          <AlertCircle className="w-12 h-12 text-red-500 mx-auto mb-4" />
+          <h3 className="text-lg font-semibold text-gray-900">
+            Error Loading Data
+          </h3>
+          <p className="text-gray-600 mt-2">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   // ─── Render ──────────────────────────────────────────────────────────────
   return (
     <div className="bg-gray-50 min-h-screen">
-      {/* ── Top Sticky Header ── */}
-      <div className="bg-white border-b border-gray-200 sticky top-[80px] sm:top-[80px] lg:top-[120px] z-40 shadow-sm">
-        <div className="max-w-[1400px] mx-auto px-3 sm:px-4 lg:px-10 py-2 sm:py-3 flex items-center justify-between gap-2 sm:gap-4">
-          <div className="flex items-center gap-2 sm:gap-3 min-w-0">
-            <button
-              onClick={() => navigate(-1)}
-              className="p-1.5 sm:p-2 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer flex-shrink-0"
+      {/* Breadcrumb */}
+      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-20 pt-8 pb-4">
+        <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center gap-2 text-sm flex-wrap">
+            <Link
+              to="/"
+              className="text-green-600 hover:text-green-700 font-medium transition-colors"
             >
-              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
-            </button>
-            <img
-              src={equipment.images[0]}
-              alt={equipment.name}
-              className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg object-cover flex-shrink-0 border border-gray-200"
-            />
-            <h1 className="text-sm sm:text-base lg:text-lg font-bold text-gray-900 truncate max-w-[120px] sm:max-w-[200px] lg:max-w-[300px]">
+              Home
+            </Link>
+            <span className="text-gray-400">/</span>
+            <Link
+              to="/equipment"
+              className="text-green-600 hover:text-green-700 font-medium transition-colors"
+            >
+              Equipment
+            </Link>
+            <span className="text-gray-400">/</span>
+            <span className="text-gray-500 truncate max-w-[150px] sm:max-w-[250px]">
               {equipment.name}
-            </h1>
+            </span>
           </div>
-          <div className="flex items-center gap-1 sm:gap-2 lg:gap-3">
-            <button
-              onClick={() => setIsWishlisted(!isWishlisted)}
-              className="p-2 sm:p-2.5 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer"
-            >
-              <Heart
-                className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                  isWishlisted ? "fill-red-500 text-red-500" : "text-gray-600"
-                }`}
-              />
-            </button>
-            <button className="p-2 sm:p-2.5 hover:bg-gray-100 rounded-lg transition-colors cursor-pointer hidden xs:inline-flex">
-              <Share2 className="w-4 h-4 sm:w-5 sm:h-5 text-gray-600" />
-            </button>
-            <button
-              onClick={() => setShowEnquiryModal(true)}
-              className="bg-green-700 hover:bg-green-800 text-white text-xs sm:text-sm font-semibold px-3 sm:px-4 lg:px-6 py-1.5 sm:py-2.5 rounded-lg cursor-pointer transition-colors flex-shrink-0 shadow-lg shadow-green-700/20 hover:shadow-green-700/30"
-            >
-              <span className="hidden sm:inline">Enquiry Now</span>
-              <span className="sm:hidden">Enquiry</span>
-            </button>
-          </div>
+
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group flex-shrink-0"
+          >
+            <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" />
+            <span className="text-sm font-medium text-gray-600 group-hover:text-green-600 transition-colors">
+              Back
+            </span>
+          </button>
         </div>
       </div>
 
-      <div className="max-w-[1400px] mx-auto px-3 sm:px-4 lg:px-10 py-4 sm:py-6 mt-6  lg:mt-10">
-        {/* ── Breadcrumb ── */}
-        <nav className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm text-gray-500 mb-4 sm:mb-6 flex-wrap">
-          <Link
-            to="/"
-            className="text-green-600 hover:text-green-700 font-medium"
-          >
-            Home
-          </Link>
-          <span className="text-gray-300">/</span>
-          <Link
-            to="/equipment"
-            className="text-green-600 hover:text-green-700 font-medium"
-          >
-            Equipment
-          </Link>
-          <span className="text-gray-300">/</span>
-          <span className="text-gray-700 font-medium truncate max-w-[120px] sm:max-w-[200px]">
-            {equipment.name}
-          </span>
-        </nav>
-
-        {/* ── Main Grid ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 lg:gap-8">
-          {/* LEFT - Image Gallery */}
-          <div className="lg:col-span-6">
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-              {/* Main Image */}
-              <div className="relative aspect-[4/3] bg-gray-100 overflow-hidden">
+      {/* ── Main Content ── */}
+      <div className="w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-20 pb-10">
+        {/* Top Grid - Image, Info, Sidebar */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* LEFT - Images */}
+          <div className="lg:col-span-5">
+            <div className="bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
+              <div
+                ref={containerRef}
+                className="relative aspect-[4/3] bg-gray-100 overflow-hidden cursor-zoom-in"
+                onMouseMove={handleMouseMove}
+                onMouseLeave={handleMouseLeave}
+              >
                 <img
                   src={equipment.images[currentImage]}
                   alt={equipment.name}
-                  className="w-full h-full object-contain p-2 sm:p-4"
+                  className="w-full h-full transition-transform duration-200 object-contain"
+                  style={{
+                    transform:
+                      zoomStyle.display === "block" ? "scale(2)" : "scale(1)",
+                    transformOrigin: `${zoomStyle.x || 50}% ${
+                      zoomStyle.y || 50
+                    }%`,
+                  }}
                 />
                 {equipment.images.length > 1 && (
                   <>
                     <button
                       onClick={() => handleImageNav("prev")}
-                      className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 shadow-lg flex items-center justify-center hover:bg-white cursor-pointer transition-colors"
+                      className="absolute cursor-pointer left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow-lg flex items-center justify-center hover:bg-white transition-all"
                     >
-                      <ChevronLeft className="text-gray-700" size={18} />
+                      <ChevronLeft className="text-gray-700" size={20} />
                     </button>
                     <button
                       onClick={() => handleImageNav("next")}
-                      className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white/90 shadow-lg flex items-center justify-center hover:bg-white cursor-pointer transition-colors"
+                      className="absolute cursor-pointer right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-white/90 shadow-lg flex items-center justify-center hover:bg-white transition-all"
                     >
-                      <ChevronRight className="text-gray-700" size={18} />
+                      <ChevronRight className="text-gray-700" size={20} />
                     </button>
                   </>
                 )}
-                <div className="absolute top-2 sm:top-3 left-2 sm:left-3 bg-black/60 text-white text-[10px] sm:text-xs px-2 sm:px-3 py-0.5 sm:py-1 rounded-full z-20">
+                <div className="absolute top-3 left-3 bg-black/60 text-white text-xs px-3 py-1 rounded-full z-20">
                   {currentImage + 1} of {equipment.images.length}
                 </div>
+                <div className="absolute top-3 right-3 flex gap-2 z-20">
+                  <button
+                    onClick={handleWishlistClick}
+                    className="w-10 h-10 cursor-pointer bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all"
+                  >
+                    <Heart
+                      size={18}
+                      className={
+                        isInWishlist(Number(id))
+                          ? "fill-green-500 text-green-500"
+                          : "text-gray-500"
+                      }
+                    />
+                  </button>
+                  <button className="w-10 h-10 cursor-pointer bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all">
+                    <Share2 size={18} className="text-gray-500" />
+                  </button>
+                </div>
+                <div className="absolute bottom-3 left-3">
+                  <span
+                    className={`text-white text-xs font-bold px-3 py-1 rounded-full ${
+                      equipment.status === "ACTIVE"
+                        ? "bg-green-600"
+                        : "bg-gray-600"
+                    }`}
+                  >
+                    {equipment.status || "ACTIVE"}
+                  </span>
+                </div>
               </div>
-
-              {/* Thumbnails */}
-              <div className="flex gap-1.5 sm:gap-2 p-2 sm:p-3 overflow-x-auto">
+              <div className="flex gap-2 p-3 overflow-x-auto">
                 {equipment.images.map((img, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentImage(index)}
-                    className={`w-14 h-12 sm:w-20 sm:h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${
+                    className={`w-20 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${
                       currentImage === index
                         ? "border-green-500 shadow-md"
                         : "border-gray-200 hover:border-gray-400"
@@ -479,148 +1112,100 @@ const EquipmentDetails = () => {
             </div>
           </div>
 
-          {/* RIGHT - Product Info */}
-          <div className="lg:col-span-6">
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8 sticky top-20 sm:top-24">
-              {/* Stock & Warranty Badges */}
-              <div className="flex items-center gap-1.5 sm:gap-2 mb-3 sm:mb-4 flex-wrap">
-                <span
-                  className={`inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-sm font-semibold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full ${
-                    equipment.stockStatus === "In Stock"
-                      ? "bg-green-50 text-green-700 border border-green-200"
-                      : "bg-red-50 text-red-600 border border-red-200"
-                  }`}
-                >
-                  {equipment.stockStatus === "In Stock" ? (
-                    <CheckCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-                  ) : (
-                    <XCircle className="w-3 h-3 sm:w-4 sm:h-4" />
-                  )}
-                  {equipment.stockStatus}
+          {/* CENTER - Price/Specs */}
+          <div className="lg:col-span-4">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+              <div className="flex items-center gap-2 mb-3 flex-wrap">
+                <span className="inline-block bg-green-600 text-white text-xs font-semibold px-3 py-1 rounded-full">
+                  {equipment.equipmentType || equipment.category || "Equipment"}
                 </span>
-                {equipment.warranty && (
-                  <span className="inline-flex items-center gap-1 sm:gap-1.5 text-[10px] sm:text-sm font-semibold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
-                    <Shield className="w-3 h-3 sm:w-4 sm:h-4" />
-                    <span className="hidden xs:inline">
-                      {equipment.warranty}
-                    </span>
-                    <span className="xs:hidden">Warranty</span>
+                {hasValidValue(equipment.equipmentCondition) && (
+                  <span
+                    className={`text-xs font-semibold px-3 py-1 rounded-full border ${
+                      equipment.equipmentCondition === "new"
+                        ? "bg-green-50 text-green-700 border-green-200"
+                        : "bg-blue-50 text-blue-700 border-blue-200"
+                    }`}
+                  >
+                    {equipment.equipmentCondition === "new" ? "New" : "Used"}
+                  </span>
+                )}
+                {equipment.status === "ACTIVE" && (
+                  <span className="text-xs font-semibold px-3 py-1 rounded-full border bg-green-50 text-green-700 border-green-200">
+                    Available
                   </span>
                 )}
               </div>
-
-              {/* Title */}
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 sm:mb-3 leading-tight">
+              <h1 className="text-2xl font-bold text-gray-900 mb-2">
                 {equipment.name}
               </h1>
+              <p className="text-3xl font-black text-gray-900 mb-1">
+                {equipment.price}
+              </p>
+              <p className="text-sm text-gray-500 mb-4">
+                {equipment.negotiable === "yes" ? "Negotiable" : "Fixed Price"}{" "}
+                •
+                {equipment.financeAvailable === "yes"
+                  ? " Finance Available"
+                  : " No Finance"}
+              </p>
 
-              {/* Brand & Category */}
-              <div className="flex flex-wrap items-center gap-1 sm:gap-2 mb-2 sm:mb-3">
-                <span className="text-xs sm:text-sm text-gray-500">by</span>
-                <span className="text-xs sm:text-sm font-semibold text-green-700">
-                  {equipment.brand}
-                </span>
-                <span className="text-gray-300">|</span>
-                <span className="text-xs sm:text-sm bg-gray-100 text-gray-700 px-1.5 sm:px-2 py-0.5 rounded">
-                  {equipment.category}
-                </span>
-              </div>
+              <button
+                onClick={() => setShowEnquiryModal(true)}
+                className="w-full py-3 cursor-pointer rounded-xl bg-green-600 hover:shadow-lg text-white font-semibold text-lg mb-6 transition-all flex items-center justify-center gap-2"
+              >
+                <MessagesSquare className="w-4 h-4" />
+                Get Best Price
+              </button>
 
-              {/* Price */}
-              <div className="mb-3 sm:mb-4">
-                <p className="text-2xl sm:text-3xl font-black text-green-700">
-                  ₹{equipment.price.toLocaleString()}
-                </p>
-                <p className="text-[10px] sm:text-sm text-gray-500">
-                  Inclusive of all taxes
-                </p>
-              </div>
-
-              {/* Quick Specs Grid */}
-              <div className="grid grid-cols-3 gap-2 sm:gap-3 mb-3 sm:mb-4">
-                {equipment.hp && (
-                  <div className="bg-gray-50 rounded-xl p-2 sm:p-3 flex flex-col items-center justify-center border border-gray-100">
-                    <Gauge className="text-gray-600 mb-0.5 sm:mb-1" size={16} />
-                    <p className="text-[10px] sm:text-xs font-semibold text-gray-900">
+              {/* Quick spec pills */}
+              <div className="grid grid-cols-3 gap-3 mb-6">
+                {hasValidValue(equipment.hp) && (
+                  <div className="bg-gray-50 rounded-xl p-3 flex flex-col items-center justify-center border border-gray-100">
+                    <Gauge className="text-gray-600 mb-1" size={20} />
+                    <p className="text-xs font-semibold text-gray-900">
                       {equipment.hp}
                     </p>
-                    <p className="text-[8px] sm:text-[10px] text-gray-500">
-                      Power
-                    </p>
+                    <p className="text-[10px] text-gray-500">Power</p>
                   </div>
                 )}
-                {equipment.year && (
-                  <div className="bg-gray-50 rounded-xl p-2 sm:p-3 flex flex-col items-center justify-center border border-gray-100">
-                    <Calendar
-                      className="text-gray-600 mb-0.5 sm:mb-1"
-                      size={16}
-                    />
-                    <p className="text-[10px] sm:text-xs font-semibold text-gray-900">
+                {hasValidValue(equipment.year) && (
+                  <div className="bg-gray-50 rounded-xl p-3 flex flex-col items-center justify-center border border-gray-100">
+                    <Calendar className="text-gray-600 mb-1" size={20} />
+                    <p className="text-xs font-semibold text-gray-900">
                       {equipment.year}
                     </p>
-                    <p className="text-[8px] sm:text-[10px] text-gray-500">
-                      Year
-                    </p>
+                    <p className="text-[10px] text-gray-500">Year</p>
                   </div>
                 )}
-                {equipment.location && (
-                  <div className="bg-gray-50 rounded-xl p-2 sm:p-3 flex flex-col items-center justify-center border border-gray-100">
-                    <MapPin
-                      className="text-gray-600 mb-0.5 sm:mb-1"
-                      size={16}
-                    />
-                    <p className="text-[10px] sm:text-xs font-semibold text-gray-900 truncate max-w-[40px] sm:max-w-[60px]">
+                {hasValidValue(equipment.location) && (
+                  <div className="bg-gray-50 rounded-xl p-3 flex flex-col items-center justify-center border border-gray-100">
+                    <MapPin className="text-gray-600 mb-1" size={20} />
+                    <p className="text-xs font-semibold text-gray-900 truncate max-w-[60px]">
                       {equipment.location}
                     </p>
-                    <p className="text-[8px] sm:text-[10px] text-gray-500">
-                      Location
-                    </p>
+                    <p className="text-[10px] text-gray-500">Location</p>
                   </div>
                 )}
               </div>
 
-              {/* Seller Info */}
-              {equipment.sellerName && (
-                <div className="bg-gray-50 rounded-xl p-3 sm:p-4 mb-3 sm:mb-4 border border-gray-200">
-                  <div className="flex flex-wrap items-center justify-between gap-2">
-                    <div className="flex items-center gap-2 sm:gap-3">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
-                        <Building2 className="w-5 h-5 sm:w-6 sm:h-6 text-green-700" />
-                      </div>
-                      <div>
-                        <p className="text-sm sm:text-base font-semibold text-gray-900">
-                          {equipment.sellerName}
-                        </p>
-                        <div className="flex flex-wrap items-center gap-1 sm:gap-2">
-                          <span className="text-xs sm:text-sm text-gray-500">
-                            {equipment.sellerType}
-                          </span>
-                          {equipment.sellerSince && (
-                            <span className="text-[10px] sm:text-xs text-gray-400">
-                              Since {equipment.sellerSince}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="flex items-center gap-0.5 sm:gap-1">
-                        <StarRating rating={equipment.sellerRating || 4.5} />
-                        <span className="text-xs sm:text-sm font-semibold text-gray-700">
-                          {equipment.sellerRating || 4.5}
-                        </span>
-                      </div>
-                      <p className="text-[10px] sm:text-xs text-gray-500">
-                        {equipment.sellerReviews || 0} Reviews
-                      </p>
-                    </div>
+              {/* Available Colors */}
+              {availableColors.length > 0 && (
+                <div className="mt-4 pt-4 border-t border-gray-100">
+                  <p className="text-sm font-semibold text-gray-700 mb-3">
+                    Available Colors
+                  </p>
+                  <div className="flex flex-wrap gap-3">
+                    {availableColors.map((c, index) => (
+                      <ColorDot key={index} color={c} />
+                    ))}
                   </div>
                 </div>
               )}
 
               {/* Delivery Info */}
               {equipment.delivery && (
-                <div className="flex items-center gap-2 text-xs sm:text-sm text-gray-600 mb-3 sm:mb-4">
+                <div className="mt-4 flex items-center gap-2 text-xs sm:text-sm text-gray-600">
                   <Truck className="w-4 h-4 text-green-600 flex-shrink-0" />
                   <span>{equipment.delivery}</span>
                 </div>
@@ -629,177 +1214,334 @@ const EquipmentDetails = () => {
               {/* Pincode Checker */}
               <PincodeChecker equipmentId={id} />
 
-              {/* Action Buttons */}
-              <div className="flex flex-row gap-2 sm:gap-3 mt-3 sm:mt-4">
-                <button
-                  onClick={() => setShowEnquiryModal(true)}
-                  className="flex-1 min-w-0 bg-green-700 hover:bg-green-800 text-white font-semibold py-3 sm:py-3.5 rounded-xl cursor-pointer transition-colors shadow-lg shadow-green-700/20 hover:shadow-green-700/30 flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-base px-2"
-                >
-                  <MessagesSquare className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                  <span className="hidden xs:inline">Get Best Price</span>
-                  <span className="xs:hidden">Enquire</span>
-                </button>
-                <button
-                  onClick={() => setIsWishlisted(!isWishlisted)}
-                  className={`flex-1 min-w-0 py-3 sm:py-3.5 rounded-xl font-semibold border-2 cursor-pointer transition-colors flex items-center justify-center gap-1.5 sm:gap-2 text-xs sm:text-base px-2 ${
-                    isWishlisted
-                      ? "bg-red-50 border-red-500 text-red-600"
-                      : "bg-white border-gray-300 text-gray-700 hover:border-green-500 hover:text-green-600"
-                  }`}
-                >
-                  <Heart
-                    className={`w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0 ${
-                      isWishlisted ? "fill-red-500" : ""
-                    }`}
-                  />
-                  <span className="hidden xs:inline">
-                    {isWishlisted ? "Added to Wishlist" : "Add to Wishlist"}
-                  </span>
-                  <span className="xs:hidden">
-                    {isWishlisted ? "Wishlisted" : "Wishlist"}
-                  </span>
-                </button>
+              {/* Share Button */}
+              <button className="mt-4 w-full border-2 border-gray-200 rounded-xl px-5 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-all flex items-center justify-center gap-2">
+                <Share2 size={16} />
+                Share
+              </button>
+            </div>
+          </div>
+
+          {/* RIGHT - Sidebar */}
+          <div className="lg:col-span-3">
+            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-6">
+              <h3 className="text-2xl font-bold text-gray-900 mb-5">
+                Need Help?
+              </h3>
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-full bg-green-600 flex items-center justify-center">
+                  <Phone className="text-white" size={20} />
+                </div>
+                <div>
+                  <p className="text-gray-500 text-sm">Call us:</p>
+                  <p className="font-semibold text-gray-900">
+                    {equipment.sellerPhone}
+                  </p>
+                </div>
               </div>
-              {/* Tags */}
-              {equipment.tags && equipment.tags.length > 0 && (
-                <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">
-                  <span className="text-xs sm:text-sm font-medium text-gray-600">
-                    Tags:
-                  </span>
-                  {equipment.tags.map((tag) => (
+              <div className="mt-4 pt-4 border-t border-gray-100">
+                <p className="text-xs text-gray-500">Enquiries</p>
+                <p className="font-semibold text-gray-900">
+                  {equipment.enquiryCount} enquiries
+                </p>
+              </div>
+            </div>
+
+            {/* Similar products */}
+            {similarProducts.length > 0 && (
+              <div>
+                <h3 className="text-2xl font-bold text-gray-900 mb-5">
+                  Similar <span className="text-green-800">Products</span>
+                </h3>
+                <div className="space-y-4">
+                  {similarProducts.slice(0, 3).map((item) => (
                     <Link
-                      key={tag}
-                      to={`/equipment?tag=${encodeURIComponent(tag)}`}
-                      className="text-[10px] sm:text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full transition-colors"
+                      key={item.id}
+                      to={`/equipment/${item.id}`}
+                      className="block"
                     >
-                      #{tag}
+                      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-3 flex gap-3 hover:shadow-lg transition-all">
+                        <div className="w-[92px] h-[92px] rounded-xl overflow-hidden bg-gray-100 flex-shrink-0">
+                          <img
+                            src={apiHelper.image(item.frontView) || "/mah.png"}
+                            alt={
+                              item.displayName || item.productName || item.name
+                            }
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="flex flex-col justify-between">
+                          <div>
+                            <h4 className="font-semibold text-gray-900 leading-snug text-sm">
+                              {item.displayName ||
+                                item.productName ||
+                                item.name}
+                            </h4>
+                            <p className="text-xs text-gray-400 mt-1">
+                              {item.brand || "Unknown"}
+                            </p>
+                          </div>
+                          <p className="font-bold text-gray-900 text-sm">
+                            ₹
+                            {Number(item.expectedPrice || 0).toLocaleString(
+                              "en-IN",
+                            )}
+                          </p>
+                        </div>
+                      </div>
                     </Link>
                   ))}
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* ── Tabs Section ── */}
-        <div className="mt-6 sm:mt-8">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-            {/* Tab Headers */}
-            <div className="border-b border-gray-200 overflow-x-auto">
-              <div className="flex min-w-max">
-                {[
-                  { id: "description", label: "Description", icon: FileText },
-                  {
-                    id: "specifications",
-                    label: "Specifications",
-                    icon: Settings,
-                  },
-                  { id: "seller", label: "Seller Details", icon: Building2 },
-                ].map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`px-3 sm:px-4 lg:px-6 py-3 sm:py-4 text-xs sm:text-sm font-semibold transition-colors cursor-pointer border-b-2 flex items-center gap-1.5 sm:gap-2 whitespace-nowrap ${
-                      activeTab === tab.id
-                        ? "border-green-600 text-green-700 bg-green-50/50"
-                        : "border-transparent text-gray-600 hover:text-gray-900 hover:bg-gray-50"
-                    }`}
-                  >
-                    <tab.icon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    <span className="hidden xs:inline">{tab.label}</span>
-                    <span className="xs:hidden">
-                      {tab.id === "description"
-                        ? "Desc"
-                        : tab.id === "specifications"
-                        ? "Specs"
-                        : "Seller"}
-                    </span>
-                  </button>
-                ))}
               </div>
-            </div>
-
-            {/* Tab Content */}
-            <div className="p-3 sm:p-4 lg:p-6">{renderTabContent()}</div>
+            )}
           </div>
         </div>
 
-        {/* ── Related Products ── */}
+        {/* ── TABS SECTION ── */}
+        <div className="mt-10">
+          <div className="flex gap-6 border-b border-gray-200 overflow-x-auto hide-scrollbar pb-0">
+            {TABS.map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id)}
+                className={`pb-4 pt-2 font-semibold whitespace-nowrap transition-all text-sm ${
+                  activeTab === tab.id
+                    ? "border-b-2 border-green-500 text-green-600"
+                    : "text-gray-500 hover:text-gray-700"
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="mt-6">{renderTabContent()}</div>
+        </div>
+
+        {/* ── Related Products Slider ── */}
         {relatedProducts.length > 0 && (
-          <div className="mt-8 sm:mt-12 mb-10">
-            <div className="flex flex-wrap items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
-              <div className="h-1 w-6 sm:w-10 bg-green-600 rounded-full"></div>
-              <h2 className="text-lg sm:text-2xl font-bold text-gray-900">
+          <div className="mt-16">
+            <div className="flex items-center gap-4 mb-2">
+              <div className="h-1 w-10 bg-green-600 rounded-full"></div>
+              <h2 className="text-2xl font-bold text-gray-900">
                 Related <span className="text-green-600">Equipment</span>
               </h2>
-              <div className="flex-1 h-px bg-gray-200 hidden sm:block"></div>
+              <div className="flex-1 h-px bg-gray-200"></div>
               <Link
                 to="/equipment"
-                className="text-xs sm:text-sm font-semibold text-green-600 hover:text-green-700 flex items-center gap-1 transition-colors ml-auto sm:ml-0"
+                className="text-sm font-semibold text-green-600 hover:text-green-700 flex items-center gap-1 transition-colors whitespace-nowrap"
               >
                 View All
-                <ChevronRight className="w-3 h-3 sm:w-4 sm:h-4" />
+                <ChevronRight className="w-4 h-4" />
               </Link>
             </div>
+            <p className="text-gray-500 text-sm mb-6 ml-14">
+              Discover more equipment that might interest you
+            </p>
 
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
-              {relatedProducts.map((product) => (
-                <Link
-                  key={product.id}
-                  to={`/equipment/${product.id}`}
-                  className="group bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm hover:shadow-xl hover:border-green-300 transition-all duration-300"
-                >
-                  <div className="relative aspect-square bg-gray-100 overflow-hidden">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/20">
-                      <span className="bg-white/90 backdrop-blur-sm text-gray-900 font-semibold px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg shadow-lg hover:bg-white transition-all transform group-hover:scale-105 flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-sm">
-                        <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
-                        Quick View
-                      </span>
+            {/* Mobile View */}
+            <div className="sm:hidden relative">
+              <button
+                onClick={() => scrollRelated("left")}
+                className={`cursor-pointer absolute left-0 top-1/2 -translate-y-1/2 -ml-1 z-20 flex items-center justify-center w-9 h-9 bg-white border-2 border-green-200 text-green-700 rounded-full shadow-lg hover:bg-green-50 hover:border-green-400 transition-all duration-300 ${
+                  isScrollingRelated
+                    ? "opacity-100 translate-x-0"
+                    : "opacity-0 -translate-x-2"
+                }`}
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <div
+                ref={relatedScrollRef}
+                className="flex overflow-x-auto gap-4 pb-4 px-1 snap-x snap-mandatory scroll-smooth"
+                style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+              >
+                {relatedProducts.map((product) => (
+                  <Link
+                    key={product.id}
+                    to={`/equipment/${product.id}`}
+                    className="snap-start w-[75vw] flex-shrink-0"
+                  >
+                    <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-green-300 transition-all duration-300">
+                      <div className="relative bg-gray-100 h-44 overflow-hidden">
+                        <img
+                          src={apiHelper.image(product.frontView) || "/mah.png"}
+                          alt={
+                            product.displayName ||
+                            product.productName ||
+                            product.name
+                          }
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+                        <span className="absolute top-3 left-3 bg-green-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md">
+                          Equipment
+                        </span>
+                      </div>
+                      <div className="p-4">
+                        <h4 className="text-sm font-semibold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2 mb-1.5">
+                          {product.displayName ||
+                            product.productName ||
+                            product.name}
+                        </h4>
+                        <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                          <MapPin className="h-3 w-3 flex-shrink-0" />
+                          <span>
+                            {[product.district, product.state]
+                              .filter(Boolean)
+                              .join(", ") || "Location not specified"}
+                          </span>
+                        </div>
+                        <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                          <p className="text-base font-bold text-gray-900">
+                            ₹
+                            {Number(product.expectedPrice || 0).toLocaleString(
+                              "en-IN",
+                            )}
+                          </p>
+                          <button
+                            className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition-all duration-200 flex items-center gap-1 shadow-md hover:shadow-lg"
+                            onClick={(e) => {
+                              e.preventDefault();
+                              e.stopPropagation();
+                            }}
+                          >
+                            <ShoppingCart className="w-3 h-3" />
+                            Add
+                          </button>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                  <div className="p-2 sm:p-4">
-                    <h4 className="text-xs sm:text-sm font-semibold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2 mb-1 sm:mb-1.5">
-                      {product.name}
-                    </h4>
-                    <div className="flex items-center gap-0.5 sm:gap-1 text-[10px] sm:text-xs text-gray-500 mb-1 sm:mb-2">
-                      <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 flex-shrink-0" />
-                      <span className="truncate">{product.location}</span>
-                    </div>
-                    <div className="flex items-center justify-between pt-1.5 sm:pt-2 border-t border-gray-100">
-                      <p className="text-xs sm:text-base font-bold text-gray-900">
-                        ₹{product.price.toLocaleString()}
-                      </p>
-                      <button
-                        className="bg-green-600 hover:bg-green-700 text-white text-[10px] sm:text-xs font-semibold px-2 sm:px-4 py-1 sm:py-2 rounded-lg transition-all duration-200 flex items-center gap-1 sm:gap-1.5 shadow-md hover:shadow-lg transform hover:scale-105"
-                        onClick={(e) => {
-                          e.preventDefault();
-                          e.stopPropagation();
-                        }}
+                  </Link>
+                ))}
+              </div>
+              <button
+                onClick={() => scrollRelated("right")}
+                className={`cursor-pointer absolute right-0 top-1/2 -translate-y-1/2 -mr-1 z-20 flex items-center justify-center w-9 h-9 bg-white border-2 border-green-200 text-green-700 rounded-full shadow-lg hover:bg-green-50 hover:border-green-400 transition-all duration-300 ${
+                  isScrollingRelated
+                    ? "opacity-100 translate-x-0"
+                    : "opacity-0 translate-x-2"
+                }`}
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+
+            {/* Desktop View */}
+            <div className="hidden sm:block relative px-8 sm:px-10 lg:px-12">
+              <button
+                onClick={() => slideRelated("prev")}
+                className="absolute left-0 sm:left-1 lg:left-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 bg-white border-2 border-gray-200 cursor-pointer rounded-full shadow-md flex items-center justify-center hover:bg-green-50 hover:border-green-400 transition-all duration-300 hover:scale-110"
+              >
+                <ChevronLeft className="h-5 w-5 text-gray-700" />
+              </button>
+              <div className="overflow-hidden">
+                <div className="flex gap-4 sm:gap-5 transition-transform duration-500 ease-in-out">
+                  {getVisibleRelated()
+                    .filter(Boolean)
+                    .map((product, idx) => (
+                      <Link
+                        key={`${product.id}-${relatedIndex}-${idx}`}
+                        to={`/equipment/${product.id}`}
+                        className="flex-shrink-0 group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-green-300 transition-all duration-300 w-full sm:w-[calc(50%-6px)] lg:w-[calc(25%-12px)]"
                       >
-                        <ShoppingCart className="w-2.5 h-2.5 sm:w-3.5 sm:h-3.5" />
-                        <span className="hidden xs:inline">Add</span>
-                      </button>
-                    </div>
-                  </div>
-                </Link>
-              ))}
+                        <div className="relative bg-gray-100 h-48 overflow-hidden">
+                          <img
+                            src={
+                              apiHelper.image(product.frontView) || "/mah.png"
+                            }
+                            alt={
+                              product.displayName ||
+                              product.productName ||
+                              product.name
+                            }
+                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
+                          <span className="absolute top-3 left-3 bg-gradient-to-r from-green-600 to-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md">
+                            Equipment
+                          </span>
+                          <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 bg-black/20">
+                            <span className="bg-white/90 backdrop-blur-sm text-gray-900 font-semibold px-4 py-2 rounded-lg shadow-lg hover:bg-white transition-all transform group-hover:scale-105 flex items-center gap-2 text-sm">
+                              <Eye className="w-4 h-4" />
+                              Quick View
+                            </span>
+                          </div>
+                        </div>
+                        <div className="p-4">
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs bg-green-50 text-green-700 font-semibold px-3 py-1 rounded-full border border-green-200">
+                              {product.equipmentType ||
+                                product.category?.categoryName ||
+                                "Equipment"}
+                            </span>
+                            <div className="flex items-center gap-1">
+                              <div className="flex gap-0.5">
+                                {[...Array(5)].map((_, i) => (
+                                  <Star
+                                    key={i}
+                                    className={`w-3.5 h-3.5 ${
+                                      i < 4
+                                        ? "fill-yellow-400 text-yellow-400"
+                                        : "text-gray-300 fill-gray-300"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                          <h4 className="text-sm font-semibold text-gray-900 group-hover:text-green-600 transition-colors line-clamp-2 mb-1.5">
+                            {product.displayName ||
+                              product.productName ||
+                              product.name}
+                          </h4>
+                          <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
+                            <MapPin className="h-3 w-3 flex-shrink-0" />
+                            <span>
+                              {[product.district, product.state]
+                                .filter(Boolean)
+                                .join(", ") || "Location not specified"}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                            <p className="text-base font-bold text-gray-900">
+                              ₹
+                              {Number(
+                                product.expectedPrice || 0,
+                              ).toLocaleString("en-IN")}
+                            </p>
+                            <button
+                              className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-4 py-2 rounded-lg transition-all duration-200 flex items-center gap-1.5 shadow-md hover:shadow-lg transform hover:scale-105"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                              }}
+                            >
+                              <ShoppingCart className="w-3.5 h-3.5" />
+                              Add
+                            </button>
+                          </div>
+                        </div>
+                      </Link>
+                    ))}
+                </div>
+              </div>
+              <button
+                onClick={() => slideRelated("next")}
+                className="absolute right-0 sm:right-1 lg:right-0 top-1/2 -translate-y-1/2 z-10 w-10 h-10 cursor-pointer bg-white border-2 border-gray-200 rounded-full shadow-md flex items-center justify-center hover:bg-green-50 hover:border-green-400 transition-all duration-300 hover:scale-110"
+              >
+                <ChevronRight className="h-5 w-5 text-gray-700" />
+              </button>
             </div>
           </div>
         )}
       </div>
 
-      {/* Enquiry Modal */}
+      {/* Enquiry Modal - Custom for Equipment */}
       <EnquiryModal
         isOpen={showEnquiryModal}
-        enquiryMode="new"
-        websiteVariantId={id}
         onClose={() => setShowEnquiryModal(false)}
+        equipment={equipment}
       />
     </div>
   );
@@ -808,18 +1550,18 @@ const EquipmentDetails = () => {
 // ─── Tab Components ──────────────────────────────────────────────────────
 
 // 1. Description Tab
-const DescriptionTab = ({ equipment }) => (
-  <div className="grid grid-cols-1 gap-3 sm:gap-4">
+const DescriptionTab = ({ equipment, keyHighlights }) => (
+  <div className="grid grid-cols-1 gap-4">
     <SectionCard title="Description" icon={Info}>
       <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
-        {equipment.description}
+        {equipment.description || "No description available."}
       </p>
     </SectionCard>
 
-    {equipment.keyHighlights && equipment.keyHighlights.length > 0 && (
+    {keyHighlights.length > 0 && (
       <SectionCard title="Key Highlights" icon={Award}>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3">
-          {equipment.keyHighlights.map((highlight, index) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {keyHighlights.map((highlight, index) => (
             <div key={index} className="flex items-start gap-2">
               <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
               <span className="text-sm text-gray-700">{highlight}</span>
@@ -831,27 +1573,249 @@ const DescriptionTab = ({ equipment }) => (
   </div>
 );
 
-// 2. Specifications Tab
-const SpecificationsTab = ({ equipment }) => (
-  <SectionCard title="Specifications" icon={Settings}>
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-4">
-      {Object.entries(equipment.specifications || {}).map(
-        ([key, value], index, arr) => (
+// 2. Basic Info Tab - WITHOUT Category ID, Brand ID, Model ID, Variant ID
+const BasicInfoTab = ({ equipment }) => {
+  const basicInfoItems = [
+    { label: "Display Name", value: equipment.displayName },
+    { label: "Product Name", value: equipment.productName },
+    { label: "Equipment Type", value: equipment.equipmentType },
+    { label: "Brand", value: equipment.brand },
+    { label: "Model", value: equipment.model },
+    { label: "Variant", value: equipment.variant },
+    { label: "Condition", value: equipment.equipmentCondition },
+    { label: "Manufacturing Year", value: equipment.manufacturingYear },
+    { label: "Purchase Year", value: equipment.purchaseYear },
+    { label: "Serial Number", value: equipment.serialNumber },
+    { label: "Product Code", value: equipment.productCode },
+    { label: "Color", value: equipment.color },
+    { label: "Status", value: equipment.status },
+    { label: "Current Step", value: equipment.currentStep },
+    { label: "Agreed", value: equipment.agreed ? "Yes" : "No" },
+    // { label: "Enquiry Count", value: equipment.enquiryCount },
+  ];
+
+  const validItems = basicInfoItems.filter((item) => hasValidValue(item.value));
+
+  if (validItems.length === 0) return null;
+
+  return (
+    <SectionCard title="Basic Information" icon={Package}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+        {validItems.map((item, index, arr) => (
           <DetailRow
-            key={key}
-            label={key}
-            value={value}
+            key={item.label}
+            label={item.label}
+            value={item.value}
+            // last={index === arr.length - 1}
+          />
+        ))}
+      </div>
+    </SectionCard>
+  );
+};
+
+// 3. Specifications Tab
+const SpecificationsTab = ({ equipment }) => {
+  const specItems = [
+    { label: "Power Source", value: equipment.powerSource },
+    { label: "PTO Requirement", value: equipment.ptoRequirement },
+    { label: "Required Tractor HP", value: equipment.requiredTractorHp },
+    { label: "Working Width", value: equipment.workingWidth },
+    { label: "Working Capacity", value: equipment.workingCapacity },
+    { label: "Working Speed", value: equipment.workingSpeed },
+    { label: "Weight", value: equipment.weight },
+    { label: "Length", value: equipment.length },
+    { label: "Width", value: equipment.width },
+    { label: "Height", value: equipment.height },
+    { label: "Production Capacity", value: equipment.productionCapacity },
+    { label: "Fuel Consumption", value: equipment.fuelConsumption },
+    { label: "RPM", value: equipment.rpm },
+    { label: "Number of Blades", value: equipment.numberOfBlades },
+    { label: "Number of Rows", value: equipment.numberOfRows },
+    { label: "Tank Capacity", value: equipment.tankCapacity },
+    { label: "Working Depth", value: equipment.workingDepth },
+    { label: "Threshing Capacity", value: equipment.threshingCapacity },
+    { label: "Crop Type", value: equipment.cropType },
+    { label: "Drum Size", value: equipment.drumSize },
+    { label: "Fan Type", value: equipment.fanType },
+    { label: "Cleaning System", value: equipment.cleaningSystem },
+    { label: "Rotor RPM", value: equipment.rotorRpm },
+    { label: "Spray Width", value: equipment.sprayWidth },
+    { label: "Pump Type", value: equipment.pumpType },
+    { label: "Nozzle Count", value: equipment.nozzleCount },
+    { label: "Pressure", value: equipment.pressure },
+  ];
+
+  const validItems = specItems.filter((item) => hasValidValue(item.value));
+
+  if (validItems.length === 0) return null;
+
+  return (
+    <SectionCard title="Specifications" icon={Settings}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+        {validItems.map((item, index, arr) => (
+          <DetailRow
+            key={item.label}
+            label={item.label}
+            value={item.value}
             last={index === arr.length - 1}
           />
-        ),
-      )}
-    </div>
-  </SectionCard>
-);
+        ))}
+      </div>
+    </SectionCard>
+  );
+};
 
-// 3. Seller Tab
+// 4. Mechanical Tab
+const MechanicalTab = ({ equipment }) => {
+  const mechanicalItems = [
+    { label: "Overall Condition", value: equipment.overallCondition },
+    { label: "Oil Leakage", value: equipment.oilLeakage },
+    { label: "Working Condition", value: equipment.workingCondition },
+    {
+      label: "Main Machine",
+      value: equipment.mechanical?.mainMachineCondition,
+    },
+    { label: "Drive System", value: equipment.mechanical?.driveSystem },
+    { label: "Belt/Chain", value: equipment.mechanical?.beltChainCondition },
+    { label: "Bearings", value: equipment.mechanical?.bearingCondition },
+    { label: "Gearbox", value: equipment.mechanical?.gearboxCondition },
+  ];
+
+  const validItems = mechanicalItems.filter((item) =>
+    hasValidValue(item.value),
+  );
+
+  if (validItems.length === 0) return null;
+
+  return (
+    <SectionCard title="Mechanical Condition" icon={Wrench}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+        {validItems.map((item, index, arr) => (
+          <DetailRow
+            key={item.label}
+            label={item.label}
+            value={item.value}
+            // last={index === arr.length - 1}
+          />
+        ))}
+      </div>
+    </SectionCard>
+  );
+};
+
+// 5. Electrical Tab
+const ElectricalTab = ({ equipment }) => {
+  const electricalItems = [
+    { label: "Wiring", value: equipment.electrical?.wiring },
+    { label: "Motor/Starter", value: equipment.electrical?.motorStarter },
+    { label: "Battery", value: equipment.electrical?.battery },
+    { label: "Lights", value: equipment.electrical?.lights },
+    { label: "Control Panel", value: equipment.electrical?.controlPanel },
+  ];
+
+  const validItems = electricalItems.filter((item) =>
+    hasValidValue(item.value),
+  );
+
+  if (validItems.length === 0) return null;
+
+  return (
+    <SectionCard title="Electrical Condition" icon={Zap}>
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+        {validItems.map((item, index, arr) => (
+          <DetailRow
+            key={item.label}
+            label={item.label}
+            value={item.value}
+            last={index === arr.length - 1}
+          />
+        ))}
+      </div>
+    </SectionCard>
+  );
+};
+
+// 6. Parts & Attachments Tab
+const PartsAttachmentsTab = ({ equipment }) => {
+  const partsItems = [
+    { label: "Blades", value: equipment.partsCondition?.blades },
+    { label: "Belts", value: equipment.partsCondition?.belts },
+    { label: "Bearings", value: equipment.partsCondition?.bearings },
+    { label: "Chains", value: equipment.partsCondition?.chains },
+    { label: "Gears", value: equipment.partsCondition?.gears },
+    { label: "Rollers", value: equipment.partsCondition?.rollers },
+    { label: "Nozzles", value: equipment.partsCondition?.nozzles },
+  ];
+
+  const validParts = partsItems.filter((item) => hasValidValue(item.value));
+
+  return (
+    <div className="grid grid-cols-1 gap-4">
+      {validParts.length > 0 && (
+        <SectionCard title="Parts Condition" icon={Wrench}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8">
+            {validParts.map((item, index, arr) => (
+              <DetailRow
+                key={item.label}
+                label={item.label}
+                value={item.value}
+                last={index === arr.length - 1}
+              />
+            ))}
+          </div>
+        </SectionCard>
+      )}
+
+      {equipment.attachmentList.length > 0 && (
+        <SectionCard title="Attachments" icon={Settings}>
+          <div className="flex flex-wrap gap-2">
+            {equipment.attachmentList.map((attachment) => (
+              <span
+                key={attachment}
+                className="bg-blue-50 text-blue-700 border border-blue-200 text-xs font-medium px-3 py-1.5 rounded-full"
+              >
+                {attachment.replace(/([A-Z])/g, " $1").trim()}
+              </span>
+            ))}
+            {equipment.otherAttachmentName && (
+              <span className="bg-purple-50 text-purple-700 border border-purple-200 text-xs font-medium px-3 py-1.5 rounded-full">
+                Other: {equipment.otherAttachmentName}
+              </span>
+            )}
+          </div>
+        </SectionCard>
+      )}
+
+      <SectionCard title="Service History" icon={Calendar}>
+        <DetailRow
+          label="Last Service Date"
+          value={equipment.lastServiceDate}
+        />
+        <DetailRow label="Major Repair" value={equipment.majorRepair} />
+        <DetailRow label="Accident Damage" value={equipment.accidentDamage} />
+        <DetailRow label="Flood Damage" value={equipment.floodDamage} />
+        <DetailRow
+          label="Belt/Chain Changed"
+          value={equipment.partsReplaced?.beltChainChanged}
+        />
+        <DetailRow
+          label="Bearings Changed"
+          value={equipment.partsReplaced?.bearingChanged}
+        />
+        <DetailRow
+          label="Gearbox Repaired"
+          value={equipment.partsReplaced?.gearboxRepaired}
+          last
+        />
+      </SectionCard>
+    </div>
+  );
+};
+
+// 7. Seller Tab
 const SellerTab = ({ equipment }) => (
-  <div className="grid grid-cols-1 gap-3 sm:gap-4">
+  <div className="grid grid-cols-1 gap-4">
     <SectionCard title="Seller Information" icon={Building2}>
       <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 mb-4 sm:mb-6">
         <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
@@ -862,39 +1826,40 @@ const SellerTab = ({ equipment }) => (
             {equipment.sellerName}
           </h3>
           <p className="text-xs sm:text-sm text-gray-500">
-            {equipment.sellerType}
+            {equipment.sellerTypeDisplay}{" "}
+            {equipment.sellerSince && `• Since ${equipment.sellerSince}`}
           </p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4 mb-3 sm:mb-4">
-        {equipment.sellerSince && (
-          <div className="bg-gray-50 rounded-xl p-3 sm:p-4 border border-gray-200">
-            <p className="text-xs sm:text-sm text-gray-500">Since</p>
-            <p className="font-semibold text-gray-900">
-              {equipment.sellerSince}
-            </p>
-          </div>
-        )}
-        {equipment.sellerRating && (
-          <div className="bg-gray-50 rounded-xl p-3 sm:p-4 border border-gray-200">
-            <p className="text-xs sm:text-sm text-gray-500">Rating</p>
-            <div className="flex items-center gap-2">
-              <StarRating rating={equipment.sellerRating} />
-              <span className="font-semibold text-gray-900">
-                {equipment.sellerRating}
-              </span>
-            </div>
-          </div>
-        )}
-        {equipment.sellerReviews && (
-          <div className="bg-gray-50 rounded-xl p-3 sm:p-4 border border-gray-200">
-            <p className="text-xs sm:text-sm text-gray-500">Reviews</p>
-            <p className="font-semibold text-gray-900">
-              {equipment.sellerReviews}
-            </p>
-          </div>
-        )}
+        <div className="bg-gray-50 rounded-xl p-3 sm:p-4 border border-gray-200">
+          <p className="text-xs sm:text-sm text-gray-500">Seller Type</p>
+          <p className="font-semibold text-gray-900 capitalize">
+            {equipment.sellerType}
+          </p>
+        </div>
+        <div className="bg-gray-50 rounded-xl p-3 sm:p-4 border border-gray-200">
+          <p className="text-xs sm:text-sm text-gray-500">Owner Type</p>
+          <p className="font-semibold text-gray-900 capitalize">
+            {equipment.ownerType}
+          </p>
+        </div>
+        <div className="bg-gray-50 rounded-xl p-3 sm:p-4 border border-gray-200">
+          <p className="text-xs sm:text-sm text-gray-500">Usage</p>
+          <p className="font-semibold text-gray-900 capitalize">
+            {equipment.usage}
+          </p>
+        </div>
+      </div>
+
+      <div className="bg-gray-50 rounded-xl p-3 sm:p-4 border border-gray-200 mb-4">
+        <p className="text-xs sm:text-sm text-gray-500">
+          Ownership Proof Available
+        </p>
+        <p className="font-semibold text-gray-900">
+          {equipment.ownershipProofAvailable ? "Yes" : "No"}
+        </p>
       </div>
 
       {(equipment.sellerPhone || equipment.sellerEmail) && (
@@ -917,7 +1882,162 @@ const SellerTab = ({ equipment }) => (
         </div>
       )}
     </SectionCard>
+
+    <SectionCard title="Location Details" icon={MapPin}>
+      <DetailRow label="Country" value={equipment.country} />
+      <DetailRow label="State" value={equipment.state} />
+      <DetailRow label="District" value={equipment.district} />
+      <DetailRow label="Taluka" value={equipment.taluka} />
+      <DetailRow label="Village" value={equipment.village} />
+      <DetailRow label="Pincode" value={equipment.pincode} />
+      <DetailRow label="Landmark" value={equipment.landmark} />
+      <DetailRow label="Latitude" value={equipment.latitude} />
+      <DetailRow label="Longitude" value={equipment.longitude} last />
+    </SectionCard>
   </div>
 );
+
+// 8. Media & Documents Tab
+const MediaDocumentsTab = ({ equipment }) => {
+  const mediaItems = [
+    { label: "Front View", value: equipment.frontView },
+    { label: "Left View", value: equipment.leftView },
+    { label: "Right View", value: equipment.rightView },
+    { label: "Rear View", value: equipment.rearView },
+    { label: "Main Equipment", value: equipment.mainEquipment },
+    { label: "Working Mechanism", value: equipment.workingMechanism },
+    { label: "Control Panel", value: equipment.controlPanel },
+    { label: "Serial Number Image", value: equipment.serialNumberImage },
+    { label: "Attachments Image", value: equipment.attachmentsImage },
+    { label: "Tyres/Wheels", value: equipment.tyresWheels },
+  ];
+
+  const validMedia = mediaItems.filter((item) => hasValidValue(item.value));
+
+  const videoItems = [
+    { label: "Walkaround Video", value: equipment.walkaroundVideo },
+    { label: "Working Video", value: equipment.workingVideo },
+    { label: "Machine Start Video", value: equipment.machineStartVideo },
+    { label: "PTO Working Video", value: equipment.ptoWorkingVideo },
+    {
+      label: "Hydraulic Working Video",
+      value: equipment.hydraulicWorkingVideo,
+    },
+  ];
+
+  const validVideos = videoItems.filter((item) => hasValidValue(item.value));
+
+  const documentItems = [
+    { label: "Purchase Invoice", value: equipment.purchaseInvoice },
+    { label: "Ownership Proof", value: equipment.ownershipProof },
+    { label: "Warranty Document", value: equipment.warrantyDocument },
+    { label: "Insurance", value: equipment.insurance },
+    { label: "Service Records", value: equipment.serviceRecords },
+    { label: "Other Documents", value: equipment.otherDocuments },
+  ];
+
+  const validDocuments = documentItems.filter((item) =>
+    hasValidValue(item.value),
+  );
+
+  if (
+    validMedia.length === 0 &&
+    validVideos.length === 0 &&
+    validDocuments.length === 0
+  ) {
+    return (
+      <SectionCard title="Media & Documents" icon={FileText}>
+        <p className="text-gray-500 text-center py-4">
+          No media or documents available.
+        </p>
+      </SectionCard>
+    );
+  }
+
+  return (
+    <div className="grid grid-cols-1 gap-4">
+      {validMedia.length > 0 && (
+        <SectionCard title="Equipment Images" icon={FileText}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            {validMedia.map((item) => (
+              <div
+                key={item.label}
+                className="border border-gray-200 rounded-lg overflow-hidden"
+              >
+                <img
+                  src={apiHelper.image(item.value)}
+                  alt={item.label}
+                  className="w-full h-32 object-cover"
+                  onError={(e) => {
+                    e.target.src = "/mah.png";
+                  }}
+                />
+                <p className="text-xs text-center text-gray-500 py-1">
+                  {item.label}
+                </p>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+      )}
+
+      {validVideos.length > 0 && (
+        <SectionCard title="Videos" icon={Play}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {validVideos.map((item) => (
+              <div
+                key={item.label}
+                className="bg-gray-50 rounded-lg p-3 border border-gray-200"
+              >
+                <p className="font-semibold text-gray-700 text-sm">
+                  {item.label}
+                </p>
+                <a
+                  href={apiHelper.image(item.value)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-green-600 hover:text-green-700 text-sm flex items-center gap-2"
+                >
+                  <Play className="w-4 h-4" />
+                  View Video
+                </a>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+      )}
+
+      {validDocuments.length > 0 && (
+        <SectionCard title="Documents" icon={FileText}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {validDocuments.map((item) => (
+              <div
+                key={item.label}
+                className="bg-gray-50 rounded-lg p-3 border border-gray-200 flex items-center justify-between"
+              >
+                <div>
+                  <p className="font-semibold text-gray-700 text-sm">
+                    {item.label}
+                  </p>
+                  <p className="text-xs text-gray-500 truncate max-w-[150px]">
+                    {item.value.split("/").pop()}
+                  </p>
+                </div>
+                <a
+                  href={apiHelper.image(item.value)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1.5 rounded-lg transition-colors"
+                >
+                  View
+                </a>
+              </div>
+            ))}
+          </div>
+        </SectionCard>
+      )}
+    </div>
+  );
+};
 
 export default EquipmentDetails;

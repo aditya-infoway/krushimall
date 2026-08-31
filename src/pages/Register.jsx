@@ -7,7 +7,7 @@ import {
   Lock,
   User,
   Phone,
-  ArrowRight,
+  // ArrowRight,
   Shield,
   Truck,
   RotateCcw,
@@ -469,7 +469,7 @@ const Register = () => {
 
   return (
     <div className="bg-gray-50 pb-8 min-h-screen">
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
         <div className="grid lg:grid-cols-2 gap-12 lg:gap-16 items-start">
           {/* Left Side - Form */}
           <div className="max-w-md mx-auto lg:mx-0 w-full order-1">
@@ -880,7 +880,7 @@ const Register = () => {
                     </button>
                     <button
                       type="submit"
-                      className="cursor-pointer flex-[2] bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 group shadow-lg shadow-green-700/20 hover:shadow-green-700/40"
+                      className="cursor-pointer flex-2 bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 group shadow-lg shadow-green-700/20 hover:shadow-green-700/40"
                     >
                       Continue
                       <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
@@ -1032,7 +1032,7 @@ const Register = () => {
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="cursor-pointer flex-[2] bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 group shadow-lg shadow-green-700/20 hover:shadow-green-700/40 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="cursor-pointer flex-2 bg-linear-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 group shadow-lg shadow-green-700/20 hover:shadow-green-700/40 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       {isLoading ? (
                         <>
@@ -1164,7 +1164,7 @@ const Register = () => {
 
           {/* Right Side - Benefits */}
           <div className="hidden lg:block order-2 sticky top-24">
-            <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-8 md:p-12 text-white">
+            <div className="bg-linear-to-br from-gray-900 to-gray-800 rounded-2xl p-8 md:p-12 text-white">
               <h2 className="text-2xl md:text-3xl font-bold mb-6">
                 Join KrushiMall Today
               </h2>
@@ -1203,7 +1203,7 @@ const Register = () => {
                 </div>
                 <div className="w-full h-2 bg-gray-700 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full transition-all duration-500"
+                    className="h-full bg-linear-to-r from-green-500 to-green-400 rounded-full transition-all duration-500"
                     style={{ width: `${(step / TOTAL_STEPS) * 100}%` }}
                   />
                 </div>

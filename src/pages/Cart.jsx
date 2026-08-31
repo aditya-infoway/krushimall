@@ -154,11 +154,11 @@ const Cart = () => {
                   >
                     {/* Product Image */}
                     <div className="w-20 h-20 bg-gray-100 rounded-lg flex-shrink-0 overflow-hidden mx-auto sm:mx-0">
-                    <img
-  src={apiHelper.getImageUrl(item.image)}
-  alt={item.name}
-  className="w-full h-full object-contain p-2"
-/>
+                      <img
+                        src={apiHelper.getImageUrl(item.image)}
+                        alt={item.name}
+                        className="w-full h-full object-contain p-2"
+                      />
                     </div>
 
                     {/* Product Info */}
@@ -291,7 +291,9 @@ const Cart = () => {
                         </button>
                       </div>
                       {couponError && (
-                        <p className="text-xs text-red-600 mt-1">{couponError}</p>
+                        <p className="text-xs text-red-600 mt-1">
+                          {couponError}
+                        </p>
                       )}
                     </div>
                   ) : (
@@ -372,7 +374,9 @@ const Cart = () => {
                   </span>
                 </div>
 
-                <p className="text-xs text-gray-400 mt-1">Inclusive of all taxes</p>
+                <p className="text-xs text-gray-400 mt-1">
+                  Inclusive of all taxes
+                </p>
 
                 {discountAmount > 0 && (
                   <p className="text-xs text-green-600 mt-1">

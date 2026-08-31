@@ -1535,7 +1535,7 @@ const NewTractors = () => {
       </h3>
       <Link
         to="/all-brands"
-        className="flex items-center gap-2 text-green-600 hover:text-green-700 font-semibold text-sm transition-colors"
+        className="flex items-center gap-2 text-green-600 hover:text-green-700 font-semibold text-sm transition-colors whitespace-nowrap"
       >
         View All Brands
         <ArrowRight className="h-4 w-4" />
