@@ -458,7 +458,7 @@ export default function VendorFollowup() {
   return (
     <div className="min-h-screen bg-white p-6">
       {/* Header */}
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between mt-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900">Follow-up</h1>
         </div>
