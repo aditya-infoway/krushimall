@@ -86,7 +86,7 @@ const Equipments = () => {
     try {
       setLoading(true);
 
-      const res = await apiHelper.get("/vendor-web/equipmentvariant");
+      const res = await apiHelper.get("/vendor-web/equipmentvariant/public");
 
       const data = res.data?.data || res.data || [];
 
@@ -103,7 +103,7 @@ const Equipments = () => {
         model: item.model || "",
       }));
 
-      console.log("Mapped equipments:", mappedData);
+      // console.log("Mapped equipments:", mappedData);
 
       setEquipments(mappedData);
       setFilteredProducts(mappedData);
@@ -256,7 +256,7 @@ const submitEnquiry = async (e) => {
       pincode: enquiryForm.pincode,
     };
 
-    console.log("Enquiry payload:", payload);
+    // console.log("Enquiry payload:", payload);
 
     const res = await apiHelper.post(
       "/vendor-web/equipmentenquiry",

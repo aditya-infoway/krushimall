@@ -67,6 +67,20 @@ const hasValidValue = (value) => {
   );
 };
 
+const formatDate = (value) => {
+  if (!hasValidValue(value)) return null;
+
+  const date = new Date(value);
+
+  if (isNaN(date.getTime())) return value;
+
+  return date.toLocaleDateString("en-IN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  });
+};
+
 const DetailRow = ({ label, value, last = false }) => {
   if (!hasValidValue(value)) return null;
 
@@ -570,7 +584,7 @@ const EnquiryModal = ({ isOpen, onClose, equipment }) => {
 
 // ─── Tabs Configuration ────────────────────────────────────────────────────
 const TABS = [
-  { id: "description", label: "Description" },
+  // { id: "description", label: "Description" },
   { id: "basic-info", label: "Basic Information" },
   { id: "specifications", label: "Specifications" },
   { id: "mechanical", label: "Mechanical" },
@@ -586,7 +600,7 @@ const EquipmentDetails = () => {
   const navigate = useNavigate();
   const [currentImage, setCurrentImage] = useState(0);
   const [showEnquiryModal, setShowEnquiryModal] = useState(false);
-  const [activeTab, setActiveTab] = useState("description");
+  const [activeTab, setActiveTab] = useState("basic-info");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [equipmentData, setEquipmentData] = useState(null);
@@ -609,7 +623,7 @@ const EquipmentDetails = () => {
         setLoading(true);
         setError(null);
         const response = await apiHelper.get(
-          `/vendor-web/equipmentvariant/${id}`,
+          `/vendor-web/equipmentvariant/public/${id}`,
         );
 
         const data = response.data;
@@ -916,10 +930,10 @@ const EquipmentDetails = () => {
   // ─── Tab Content ──────────────────────────────────────────────────────────
   const renderTabContent = () => {
     switch (activeTab) {
-      case "description":
-        return (
-          <DescriptionTab equipment={equipment} keyHighlights={keyHighlights} />
-        );
+      // case "description":
+      //   return (
+      //     <DescriptionTab equipment={equipment} keyHighlights={keyHighlights} />
+      //   );
       case "basic-info":
         return <BasicInfoTab equipment={equipment} />;
       case "specifications":
@@ -936,12 +950,10 @@ const EquipmentDetails = () => {
         return <MediaDocumentsTab equipment={equipment} />;
       default:
         return (
-          <DescriptionTab equipment={equipment} keyHighlights={keyHighlights} />
+          <BasicInfoTab equipment={equipment} keyHighlights={keyHighlights} />
         );
     }
   };
-
-  
 
   // ─── Loading State ──────────────────────────────────────────────────────
   if (loading) {
@@ -1790,7 +1802,7 @@ const PartsAttachmentsTab = ({ equipment }) => {
       <SectionCard title="Service History" icon={Calendar}>
         <DetailRow
           label="Last Service Date"
-          value={equipment.lastServiceDate}
+          value={formatDate(equipment.lastServiceDate)}
         />
         <DetailRow label="Major Repair" value={equipment.majorRepair} />
         <DetailRow label="Accident Damage" value={equipment.accidentDamage} />

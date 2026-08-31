@@ -242,8 +242,7 @@ const VendorProfile = () => {
     currentPage * itemsPerPage,
   );
 
-
-   const equipmentTotalPages = Math.ceil(
+  const equipmentTotalPages = Math.ceil(
     (equipmentProducts?.length || 0) / itemsPerPage,
   );
 
@@ -395,12 +394,11 @@ const VendorProfile = () => {
     }
   };
 
-
   const loadEquipmentProducts = async () => {
     try {
       setLoadingEquipmentProducts(true);
-       const res = await apiHelper.get("/vendor-web/equipmentvariant");
-     setEquipmentProducts(res.data || []);
+      const res = await apiHelper.get("/vendor-web/equipmentvariant");
+      setEquipmentProducts(res.data || []);
     } catch (err) {
       console.log(err);
       showErrorToast("Unable to load equipment products");
@@ -440,7 +438,7 @@ const VendorProfile = () => {
     }
   };
 
-   const handleDeleteEquipment = async (id) => {
+  const handleDeleteEquipment = async (id) => {
     if (!window.confirm("Delete this equipment?")) return;
 
     try {
@@ -499,69 +497,69 @@ const VendorProfile = () => {
     { id: "enquiries", label: "Enquiry Register", icon: MessageSquare },
     { id: "todayFollowup", label: "Today Follow up", icon: Clock },
   ];
-  
-const fetchEnquiries = async () => {
-  try {
-    setLoadingEnquiries(true);
 
-    const isEquipmentVendor = vendorData.vendorType === "equipment";
-    const endpoint = isEquipmentVendor
-      ? "/vendor-web/equipmentenquiry" // match your actual mount path
-      : "/vendor-web/website-enquiry";
+  const fetchEnquiries = async () => {
+    try {
+      setLoadingEnquiries(true);
 
-    const res = await apiHelper.get(endpoint);
-    const raw = Array.isArray(res) ? res : res?.data || [];
+      const isEquipmentVendor = vendorData.vendorType === "equipment";
+      const endpoint = isEquipmentVendor
+        ? "/vendor-web/equipmentenquiry" // match your actual mount path
+        : "/vendor-web/website-enquiry";
 
-    // equipment_enquiry has a different shape: mobile (not mobileNumber),
-    // status (not followupStage), equipment.model (not websiteVariant.productName)
-    const normalized = isEquipmentVendor
-      ? raw.map((e) => ({
-          ...e,
-          mobileNumber: e.mobile,
-          followupStage: e.status || "NEW",
-          websiteVariant: e.equipment
-            ? { productName: e.equipment.model }
-            : null,
-        }))
-      : raw;
+      const res = await apiHelper.get(endpoint);
+      const raw = Array.isArray(res) ? res : res?.data || [];
 
-    setEnquiries(normalized);
-  } catch (err) {
-    console.log(err);
-  } finally {
-    setLoadingEnquiries(false);
-  }
-};
+      // equipment_enquiry has a different shape: mobile (not mobileNumber),
+      // status (not followupStage), equipment.model (not websiteVariant.productName)
+      const normalized = isEquipmentVendor
+        ? raw.map((e) => ({
+            ...e,
+            mobileNumber: e.mobile,
+            followupStage: e.status || "NEW",
+            websiteVariant: e.equipment
+              ? { productName: e.equipment.model }
+              : null,
+          }))
+        : raw;
 
- const fetchTodayFollowups = async () => {
-  try {
-    setLoadingTodayFollowups(true);
+      setEnquiries(normalized);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoadingEnquiries(false);
+    }
+  };
 
-    const isEquipmentVendor = vendorData.vendorType === "equipment";
-    const endpoint = isEquipmentVendor
-      ? "/vendor-web/equipmentenquiryfollowup/today"
-      : "/vendor-web/website-enquiry-followup/today";
+  const fetchTodayFollowups = async () => {
+    try {
+      setLoadingTodayFollowups(true);
 
-    const res = await apiHelper.get(endpoint);
-    const raw = res?.data || [];
+      const isEquipmentVendor = vendorData.vendorType === "equipment";
+      const endpoint = isEquipmentVendor
+        ? "/vendor-web/equipmentenquiryfollowup/today"
+        : "/vendor-web/website-enquiry-followup/today";
 
-    // equipment followups nest the enquiry (fullName, mobile) under `enquiry`,
-    // and the enquiry's own id is `enquiryId`, not the followup's `id`
-    const normalized = isEquipmentVendor
-      ? raw.map((f) => ({
-          ...f,
-          fullName: f.enquiry?.fullName,
-          mobileNumber: f.enquiry?.mobile,
-        }))
-      : raw;
+      const res = await apiHelper.get(endpoint);
+      const raw = res?.data || [];
 
-    setTodayFollowups(normalized);
-  } catch (err) {
-    console.log(err);
-  } finally {
-    setLoadingTodayFollowups(false);
-  }
-};
+      // equipment followups nest the enquiry (fullName, mobile) under `enquiry`,
+      // and the enquiry's own id is `enquiryId`, not the followup's `id`
+      const normalized = isEquipmentVendor
+        ? raw.map((f) => ({
+            ...f,
+            fullName: f.enquiry?.fullName,
+            mobileNumber: f.enquiry?.mobile,
+          }))
+        : raw;
+
+      setTodayFollowups(normalized);
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setLoadingTodayFollowups(false);
+    }
+  };
 
   useEffect(() => {
     setCurrentPage(1);
@@ -753,7 +751,7 @@ const fetchEnquiries = async () => {
 
       {/* Breadcrumb */}
       <div className="bg-white">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-6 sm:pt-12 md:pt-16 lg:pt-20">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-6 sm:pt-12 md:pt-16 lg:pt-20">
           <nav className="flex items-center gap-2 text-xs sm:text-sm overflow-x-auto whitespace-nowrap">
             <Link
               to="/"
@@ -767,13 +765,13 @@ const fetchEnquiries = async () => {
         </div>
       </div>
 
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-4 sm:py-6">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-3 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-4 sm:py-6">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 sm:gap-8">
           {/* Left Sidebar */}
           <div className="lg:col-span-1 space-y-4 sm:space-y-6">
             {/* Profile Card */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 text-center relative overflow-hidden">
-              <div className="absolute top-0 left-0 right-0 h-16 sm:h-20 bg-gradient-to-r from-green-600 to-green-700"></div>
+              <div className="absolute top-0 left-0 right-0 h-16 sm:h-20 bg-linear-to-r from-green-600 to-green-700"></div>
               <div className="relative z-10">
                 <div className="relative w-20 h-20 sm:w-24 sm:h-24 mx-auto mb-3">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full border-4 border-white bg-green-100 overflow-hidden shadow-md">
@@ -1687,9 +1685,7 @@ const fetchEnquiries = async () => {
                               <td className="px-4 py-3 capitalize">
                                 {item.equipmentType || "-"}
                               </td>
-                              <td className="px-4 py-3">
-                                {item.brand || "-"}
-                              </td>
+                              <td className="px-4 py-3">{item.brand || "-"}</td>
                               <td className="px-4 py-3 capitalize">
                                 {item.equipmentCondition || "-"}
                               </td>
@@ -1884,13 +1880,13 @@ const fetchEnquiries = async () => {
                               <td className="px-4 py-3">
                                 <div className="flex justify-center">
                                   <button
-                                   onClick={() =>
-  navigate(
-    vendorData.vendorType === "equipment"
-      ? `/vendor/followup/${item.id}?type=equipment`
-      : `/vendor/followup/${item.id}`,
-  )
-}
+                                    onClick={() =>
+                                      navigate(
+                                        vendorData.vendorType === "equipment"
+                                          ? `/vendor/followup/${item.id}?type=equipment`
+                                          : `/vendor/followup/${item.id}`,
+                                      )
+                                    }
                                     className="px-3 py-1 cursor-pointer bg-green-600 hover:bg-green-700 text-white rounded-lg"
                                   >
                                     Follow Up
@@ -2058,13 +2054,17 @@ const fetchEnquiries = async () => {
                               <td className="px-4 py-3">
                                 <div className="flex justify-center">
                                   <button
-                                   onClick={() =>
-  navigate(
-    vendorData.vendorType === "equipment"
-      ? `/vendor/followup/${item.enquiryId || item.id}?type=equipment`
-      : `/vendor/followup/${item.enquiryId || item.id}`,
-  )
-}
+                                    onClick={() =>
+                                      navigate(
+                                        vendorData.vendorType === "equipment"
+                                          ? `/vendor/followup/${
+                                              item.enquiryId || item.id
+                                            }?type=equipment`
+                                          : `/vendor/followup/${
+                                              item.enquiryId || item.id
+                                            }`,
+                                      )
+                                    }
                                     className="px-3 py-1 cursor-pointer bg-green-600 hover:bg-green-700 text-white rounded-lg"
                                   >
                                     Follow Up
