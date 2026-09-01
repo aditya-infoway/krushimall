@@ -12,6 +12,8 @@ import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 
 import { BasicInformationSchema } from "./schema";
 import apiHelper from "../../utils/apiHelper";
+import { Combobox } from "@headlessui/react";
+
 
 const tractorStatusOptions = [
   { label: "Available", value: "available" },
@@ -194,6 +196,7 @@ const Button = ({
 };
 
 // Custom Listbox Component using Headless UI - matches vendor profile theme
+// Custom Listbox Component using Headless UI - matches vendor profile theme (with search)
 const CustomListbox = ({
   data,
   value,
@@ -202,8 +205,19 @@ const CustomListbox = ({
   placeholder,
   label,
   error,
-  icon: Icon,
 }) => {
+  const [query, setQuery] = useState("");
+  const buttonRef = useRef(null);
+
+  const filteredData =
+    query === ""
+      ? data
+      : data?.filter((item) =>
+          (item[displayField] || item.label || "")
+            .toLowerCase()
+            .includes(query.toLowerCase()),
+        );
+
   return (
     <div>
       {label && (
@@ -211,58 +225,78 @@ const CustomListbox = ({
           {label}
         </label>
       )}
-      <Listbox value={value} onChange={onChange}>
+      <Combobox
+        value={value}
+        onChange={(option) => {
+          onChange(option);
+          setQuery("");
+        }}
+      >
         <div className="relative">
-          <Listbox.Button className="relative w-full cursor-default rounded-xl border border-gray-200 bg-white py-3 pl-4 pr-10 text-left text-sm text-gray-900 outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600">
-            <span className="block truncate">
-              {value ? value[displayField] : placeholder}
-            </span>
-            <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
+          <div className="relative">
+            <Combobox.Input
+              className={`w-full cursor-default rounded-xl border bg-white py-3 pl-4 pr-10 text-left text-sm text-gray-900 outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+                error ? "border-red-300 bg-red-50" : "border-gray-200"
+              }`}
+              displayValue={(item) => (item ? item[displayField] : "")}
+              placeholder={placeholder}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => buttonRef.current?.click()}
+            />
+            <Combobox.Button ref={buttonRef} className="absolute inset-y-0 right-0 flex items-center pr-3">
               <ChevronUpDownIcon
                 className="h-5 w-5 text-gray-400"
                 aria-hidden="true"
               />
-            </span>
-          </Listbox.Button>
+            </Combobox.Button>
+          </div>
+
           <Transition
             as={Fragment}
             leave="transition ease-in duration-100"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
+            afterLeave={() => setQuery("")}
           >
-            <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-              {data?.map((item) => (
-                <Listbox.Option
-                  key={item.id || item.value}
-                  className={({ active }) =>
-                    `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                      active ? "bg-green-100 text-green-900" : "text-gray-900"
-                    }`
-                  }
-                  value={item}
-                >
-                  {({ selected }) => (
-                    <>
-                      <span
-                        className={`block truncate ${
-                          selected ? "font-medium" : "font-normal"
-                        }`}
-                      >
-                        {item[displayField] || item.label}
-                      </span>
-                      {selected && (
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-green-600">
-                          <CheckIcon className="h-4 w-4" aria-hidden="true" />
+            <Combobox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+              {filteredData?.length ? (
+                filteredData.map((item) => (
+                  <Combobox.Option
+                    key={item.id || item.value}
+                    className={({ active }) =>
+                      `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                        active ? "bg-green-100 text-green-900" : "text-gray-900"
+                      }`
+                    }
+                    value={item}
+                  >
+                    {({ selected }) => (
+                      <>
+                        <span
+                          className={`block truncate ${
+                            selected ? "font-medium" : "font-normal"
+                          }`}
+                        >
+                          {item[displayField] || item.label}
                         </span>
-                      )}
-                    </>
-                  )}
-                </Listbox.Option>
-              ))}
-            </Listbox.Options>
+                        {selected && (
+                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-green-600">
+                            <CheckIcon className="h-4 w-4" aria-hidden="true" />
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </Combobox.Option>
+                ))
+              ) : (
+                <div className="px-4 py-2 text-sm text-gray-400">
+                  No results found
+                </div>
+              )}
+            </Combobox.Options>
           </Transition>
         </div>
-      </Listbox>
+      </Combobox>
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
@@ -495,11 +529,11 @@ export default function BasicInformation({
     try {
       const [categoryRes, brandRes, modelRes, modelYearRes, variantRes] =
         await Promise.all([
-          apiHelper.get("/category"),
-          apiHelper.get("/brand"),
-          apiHelper.get("/model"),
-          apiHelper.get("/model-year"),
-          apiHelper.get("/variant"),
+          apiHelper.get("/web/categories"),
+          apiHelper.get("/web/brands"),
+          apiHelper.get("/web/models"),
+          apiHelper.get("/web/model-years"),
+          apiHelper.get("/web/variants"),
         ]);
 
       setCategories(categoryRes.data || categoryRes);
