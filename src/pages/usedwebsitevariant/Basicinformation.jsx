@@ -560,11 +560,11 @@ const watchAvailableStates = useMemo(
     try {
       const [categoryRes, brandRes, modelRes, modelYearRes, variantRes] =
         await Promise.all([
-          apiHelper.get("/category"),
-          apiHelper.get("/brand"),
-          apiHelper.get("/model"),
-          apiHelper.get("/model-year"),
-          apiHelper.get("/variant"),
+         apiHelper.get("/web/categories"),
+          apiHelper.get("/web/brands"),
+          apiHelper.get("/web/models"),
+          apiHelper.get("/web/model-years"),
+          apiHelper.get("/web/variants"),
         ]);
 
       setCategories(categoryRes.data || categoryRes);
