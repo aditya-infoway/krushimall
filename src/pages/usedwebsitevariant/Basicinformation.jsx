@@ -4,15 +4,15 @@ import Select from "react-select";
 import { Country, State, City } from "country-state-city";
 import toast from "react-hot-toast";
 import { Listbox, Transition } from "@headlessui/react";
-import { ChevronUpDownIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
-
+import { Combobox } from "@headlessui/react";
 import { BasicInformationSchema } from "./schema";
 import apiHelper from "../../utils/apiHelper";
-import { useMemo } from "react"; 
+import { useMemo } from "react";
 const tractorStatusOptions = [
   { label: "Available", value: "available" },
   { label: "Sold", value: "sold" },
@@ -110,8 +110,8 @@ const selectStyles = {
     backgroundColor: state.isSelected
       ? "#16a34a"
       : state.isFocused
-        ? "#f0fdf4"
-        : "white",
+      ? "#f0fdf4"
+      : "white",
     color: state.isSelected ? "white" : "#111827",
     cursor: "pointer",
     "&:active": {
@@ -161,7 +161,9 @@ const Input = ({
         )}
         <input
           {...props}
-          className={`w-full ${Icon ? "pl-10" : "px-4"} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+          className={`w-full ${
+            Icon ? "pl-10" : "px-4"
+          } pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
             error ? "border-red-300 bg-red-50" : "border-gray-200"
           } ${props.disabled ? "bg-gray-50 cursor-not-allowed" : ""}`}
         />
@@ -195,15 +197,15 @@ const Textarea = ({
         {Icon && (
           <Icon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
         )}
-       <textarea
-  {...props}
-  rows={4}
-  className={`w-180  resize-none ${
-    Icon ? "pl-10" : "px-4"
-  } pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
-    error ? "border-red-300 bg-red-50" : "border-gray-200"
-  } ${props.disabled ? "bg-gray-50 cursor-not-allowed" : ""}`}
-/>
+        <textarea
+          {...props}
+          rows={4}
+          className={`w-180  resize-none ${
+            Icon ? "pl-10" : "px-4"
+          } pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+            error ? "border-red-300 bg-red-50" : "border-gray-200"
+          } ${props.disabled ? "bg-gray-50 cursor-not-allowed" : ""}`}
+        />
       </div>
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
       {description && !error && (
@@ -231,7 +233,9 @@ const Button = ({
   return (
     <button
       type={type}
-      className={`${baseStyles} ${variants[variant] || variants.primary} ${className}`}
+      className={`${baseStyles} ${
+        variants[variant] || variants.primary
+      } ${className}`}
       {...props}
     >
       {children}
@@ -248,68 +252,101 @@ const CustomListbox = ({
   placeholder,
   label,
   error,
-  required,
-  icon: Icon,
 }) => {
+  const [query, setQuery] = useState("");
+  const buttonRef = useRef(null);
+
+  const filteredData =
+    query === ""
+      ? data
+      : data?.filter((item) =>
+          (item[displayField] || item.label || "")
+            .toLowerCase()
+            .includes(query.toLowerCase()),
+        );
+
   return (
     <div>
       {label && (
         <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-          {label} {required && <span className="text-red-500">*</span>}
+          {label}
         </label>
       )}
-      <Listbox value={value} onChange={onChange}>
+      <Combobox
+        value={value}
+        onChange={(option) => {
+          onChange(option);
+          setQuery("");
+        }}
+      >
         <div className="relative">
-          <Listbox.Button className="relative w-full cursor-default rounded-xl border border-gray-200 bg-white py-3 pl-4 pr-10 text-left text-sm text-gray-900 outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600">
-            <span className="block truncate">
-              {value ? value[displayField] : placeholder}
-            </span>
-            <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-              <ChevronUpDownIcon
-                className="h-5 w-5 text-gray-400"
+          <div className="relative">
+            <Combobox.Input
+              className={`w-full cursor-default rounded-xl border bg-white py-3 pl-10 pr-4 text-left text-sm text-gray-900 outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+                error ? "border-red-300 bg-red-50" : "border-gray-200"
+              }`}
+              displayValue={(item) => (item ? item[displayField] : "")}
+              placeholder={placeholder}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => buttonRef.current?.click()}
+            />
+            <Combobox.Button
+              ref={buttonRef}
+              className="absolute inset-y-0 left-0 flex items-center pl-3"
+            >
+              <MagnifyingGlassIcon
+                className="h-4 w-4 text-gray-400"
                 aria-hidden="true"
               />
-            </span>
-          </Listbox.Button>
+            </Combobox.Button>
+          </div>
+
           <Transition
             as={Fragment}
             leave="transition ease-in duration-100"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
+            afterLeave={() => setQuery("")}
           >
-            <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-              {data?.map((item) => (
-                <Listbox.Option
-                  key={item.id || item.value}
-                  className={({ active }) =>
-                    `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                      active ? "bg-green-100 text-green-900" : "text-gray-900"
-                    }`
-                  }
-                  value={item}
-                >
-                  {({ selected }) => (
-                    <>
-                      <span
-                        className={`block truncate ${
-                          selected ? "font-medium" : "font-normal"
-                        }`}
-                      >
-                        {item[displayField] || item.label}
-                      </span>
-                      {selected && (
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-green-600">
-                          <CheckIcon className="h-4 w-4" aria-hidden="true" />
+            <Combobox.Options className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+              {filteredData?.length ? (
+                filteredData.map((item) => (
+                  <Combobox.Option
+                    key={item.id || item.value}
+                    className={({ active }) =>
+                      `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                        active ? "bg-green-100 text-green-900" : "text-gray-900"
+                      }`
+                    }
+                    value={item}
+                  >
+                    {({ selected }) => (
+                      <>
+                        <span
+                          className={`block truncate ${
+                            selected ? "font-medium" : "font-normal"
+                          }`}
+                        >
+                          {item[displayField] || item.label}
                         </span>
-                      )}
-                    </>
-                  )}
-                </Listbox.Option>
-              ))}
-            </Listbox.Options>
+                        {selected && (
+                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-green-600">
+                            <CheckIcon className="h-4 w-4" aria-hidden="true" />
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </Combobox.Option>
+                ))
+              ) : (
+                <div className="px-4 py-2 text-sm text-gray-400">
+                  No results found
+                </div>
+              )}
+            </Combobox.Options>
           </Transition>
         </div>
-      </Listbox>
+      </Combobox>
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
@@ -456,8 +493,8 @@ const DatePicker = ({
                       !d
                         ? "invisible"
                         : selected
-                          ? "bg-green-600 text-white font-medium"
-                          : "text-gray-700 hover:bg-green-50 hover:text-green-700"
+                        ? "bg-green-600 text-white font-medium"
+                        : "text-gray-700 hover:bg-green-50 hover:text-green-700"
                     }`}
                   >
                     {d}
@@ -489,6 +526,7 @@ export default function BasicInformation({
   setCurrentStep,
   step,
   onComplete,
+  onProductSaved,
   productData,
   isEdit,
 }) {
@@ -522,11 +560,11 @@ export default function BasicInformation({
   const modelId = watch("modelId");
   const modelYearId = watch("modelYearId");
   const watchCountry = watch("country");
-const rawAvailableStates = watch("availableStates");
-const watchAvailableStates = useMemo(
-  () => rawAvailableStates || [],
-  [rawAvailableStates],
-);
+  const rawAvailableStates = watch("availableStates");
+  const watchAvailableStates = useMemo(
+    () => rawAvailableStates || [],
+    [rawAvailableStates],
+  );
 
   // Update state when watch values change
   useEffect(() => {
@@ -560,7 +598,7 @@ const watchAvailableStates = useMemo(
     try {
       const [categoryRes, brandRes, modelRes, modelYearRes, variantRes] =
         await Promise.all([
-         apiHelper.get("/web/categories"),
+          apiHelper.get("/web/categories"),
           apiHelper.get("/web/brands"),
           apiHelper.get("/web/models"),
           apiHelper.get("/web/model-years"),
@@ -578,7 +616,7 @@ const watchAvailableStates = useMemo(
   };
 
   useEffect(() => {
-    if (!isEdit || !productData) return;
+    if (!productData) return;
 
     setCountry(productData.country || "");
     setSelectedStates(productData.availableStates || []);
@@ -593,7 +631,7 @@ const watchAvailableStates = useMemo(
 
     reset({
       // Product Classification
-       productName: productData.productName,
+      productName: productData.productName,
       categoryId: productData.categoryId,
       brandId: productData.brandId,
       modelId: productData.modelId,
@@ -614,7 +652,7 @@ const watchAvailableStates = useMemo(
       tractorCategory: productData.tractorCategory,
       fuelType: productData.fuelType,
       driveType: productData.driveType,
- description: productData.description,
+      description: productData.description,
       // Colors
       colors: {
         red: productData.redColor,
@@ -626,13 +664,13 @@ const watchAvailableStates = useMemo(
         custom: productData.customColor,
       },
       // Highlights
-     highlights: {
-    highlight1: productData.highlight1,
-    highlight2: productData.highlight2,
-    highlight3: productData.highlight3,
-    highlight4: productData.highlight4,
-    highlight5: productData.highlight5,
-  },
+      highlights: {
+        highlight1: productData.highlight1,
+        highlight2: productData.highlight2,
+        highlight3: productData.highlight3,
+        highlight4: productData.highlight4,
+        highlight5: productData.highlight5,
+      },
       customColorName: productData.customColorName,
       customColorCode: productData.customColorCode,
 
@@ -664,7 +702,7 @@ const watchAvailableStates = useMemo(
     });
 
     setValue("showCustomColor", productData.customColor);
-  }, [productData, isEdit, reset, setValue]);
+  }, [productData, reset, setValue]);
 
   const showCustomColorInput = watch("showCustomColor");
 
@@ -690,7 +728,6 @@ const watchAvailableStates = useMemo(
   }));
 
   const onSubmit = async (data) => {
-    
     try {
       const selectedBrand = filteredBrands.find(
         (item) => Number(item.id) === Number(data.brandId),
@@ -706,7 +743,7 @@ const watchAvailableStates = useMemo(
 
       const payload = {
         // Product Classification
-           productName: data.productName || "",
+        productName: data.productName || "",
         categoryId: data.categoryId ? Number(data.categoryId) : null,
         brandId: data.brandId ? Number(data.brandId) : null,
         modelId: data.modelId ? Number(data.modelId) : null,
@@ -727,7 +764,7 @@ const watchAvailableStates = useMemo(
         tractorCategory: data.tractorCategory || "",
         fuelType: data.fuelType || "",
         driveType: data.driveType || "",
-  description: data.description || "",
+        description: data.description || "",
         // Colors
         redColor: Boolean(data.colors?.red),
         blueColor: Boolean(data.colors?.blue),
@@ -739,11 +776,11 @@ const watchAvailableStates = useMemo(
         customColorName: data.customColorName || "",
         customColorCode: data.customColorCode || "",
         // Highlights
-       highlight1: data.highlights?.highlight1 || "",
-highlight2: data.highlights?.highlight2 || "",
-highlight3: data.highlights?.highlight3 || "",
-highlight4: data.highlights?.highlight4 || "",
-highlight5: data.highlights?.highlight5 || "",
+        highlight1: data.highlights?.highlight1 || "",
+        highlight2: data.highlights?.highlight2 || "",
+        highlight3: data.highlights?.highlight3 || "",
+        highlight4: data.highlights?.highlight4 || "",
+        highlight5: data.highlights?.highlight5 || "",
         // Location
         country: data.country || "",
         availableStates: data.availableStates || [],
@@ -775,21 +812,40 @@ highlight5: data.highlights?.highlight5 || "",
 
         currentStep: 0,
       };
-
       let res;
+      const existingProductId = productData?.id
+        ? productData.id
+        : localStorage.getItem("vendorProductId");
 
-      if (isEdit) {
-        res = await apiHelper.put(
-          `/vendor-web/used-website-variant/${productData.id}`,
-          payload,
-        );
+      if (existingProductId) {
+        try {
+          res = await apiHelper.put(
+            `/vendor-web/used-website-variant/${existingProductId}`,
+            payload,
+          );
+        } catch (err) {
+          // Stale/deleted record — fall back to creating a fresh one
+          if (err?.response?.status === 404) {
+            res = await apiHelper.post(
+              "/vendor-web/used-website-variant",
+              payload,
+            );
+            localStorage.setItem("vendorProductId", res.data.id.toString());
+          } else {
+            throw err;
+          }
+        }
       } else {
         res = await apiHelper.post("/vendor-web/used-website-variant", payload);
-
         localStorage.setItem("vendorProductId", res.data.id.toString());
       }
 
       toast.success("Basic information saved!");
+
+      onProductSaved?.({
+        ...payload,
+        id: res?.data?.id || existingProductId,
+      });
 
       if (onComplete) {
         onComplete(step);
@@ -818,7 +874,7 @@ highlight5: data.highlights?.highlight5 || "",
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden ">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-visible  ">
           <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
             <div className="p-6 md:p-8 lg:p-10 space-y-10">
               {/* Product Classification */}
@@ -959,13 +1015,13 @@ highlight5: data.highlights?.highlight5 || "",
                       />
                     )}
                   />
-  <Input
-    {...register("productName")}
-    label="Website Display Product Name"
-    placeholder="Mahindra Arjun Novo 605 DI 57 HP"
-    required
-    error={errors?.productName?.message}
-  />
+                  <Input
+                    {...register("productName")}
+                    label="Website Display Product Name"
+                    placeholder="Mahindra Arjun Novo 605 DI 57 HP"
+                    required
+                    error={errors?.productName?.message}
+                  />
                   <Input
                     {...register("hp")}
                     label="HP"
@@ -1055,13 +1111,13 @@ highlight5: data.highlights?.highlight5 || "",
                     )}
                   />
                   <Textarea
-  {...register("description")}
-  label="Description"
-  placeholder="Enter product description"
-  rows={5}
-  error={errors?.description?.message}
-  className=" w-full"
-/>
+                    {...register("description")}
+                    label="Description"
+                    placeholder="Enter product description"
+                    rows={5}
+                    error={errors?.description?.message}
+                    className=" w-full"
+                  />
                 </div>
               </div>
 
@@ -1579,7 +1635,7 @@ highlight5: data.highlights?.highlight5 || "",
                   Previous
                 </Button> */}
                 <Button type="submit" className="min-w-28 cursor-pointer">
-                 {isEdit ? "Update & Next" : "Save & Next"}
+                  {isEdit ? "Update & Next" : "Save & Next"}
                 </Button>
               </div>
             </div>

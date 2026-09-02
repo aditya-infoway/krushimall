@@ -3,27 +3,13 @@ import { Controller, useForm } from "react-hook-form";
 import { useState, useEffect, useRef } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import {
-  Wrench,
-  Settings,
-  GitBranch,
-  CheckCircle,
-  Joystick,
-  Calendar,
-  ChevronLeft,
-  ChevronRight,
-  AlertCircle,
-  Shield,
-  Car,
-  Droplets,
-  Gauge,
-  Cog,
-  Filter,
-  RotateCcw,
-} from "lucide-react";
+import { Droplets, Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { EquipmentPartsServiceSchema } from "./schema";
 import apiHelper from "../../utils/apiHelper";
-
+import { Combobox } from "@headlessui/react";
+import { MagnifyingGlassIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { Fragment } from "react";
+import { Transition } from "@headlessui/react";
 // Options for Parts Condition
 const partsConditionOptions = [
   { label: "Excellent", value: "excellent" },
@@ -58,7 +44,6 @@ const floodDamageOptions = [
   { label: "Yes", value: "yes" },
   { label: "No", value: "no" },
 ];
-
 
 // Custom DatePicker Component
 const DatePicker = ({
@@ -200,8 +185,8 @@ const DatePicker = ({
                       !d
                         ? "invisible"
                         : selected
-                          ? "bg-green-600 text-white font-medium"
-                          : "text-gray-700 hover:bg-green-50 hover:text-green-700"
+                        ? "bg-green-600 text-white font-medium"
+                        : "text-gray-700 hover:bg-green-50 hover:text-green-700"
                     }`}
                   >
                     {d}
@@ -304,6 +289,18 @@ const CustomListbox = ({
   label,
   error,
 }) => {
+  const [query, setQuery] = useState("");
+  const buttonRef = useRef(null);
+
+  const filteredData =
+    query === ""
+      ? data
+      : data?.filter((item) =>
+          (item[displayField] || item.label || "")
+            .toLowerCase()
+            .includes(query.toLowerCase()),
+        );
+
   return (
     <div>
       {label && (
@@ -311,23 +308,81 @@ const CustomListbox = ({
           {label}
         </label>
       )}
-      <select
-        value={value?.value || ""}
-        onChange={(e) => {
-          const selected = data.find((item) => item.value === e.target.value);
-          onChange(selected);
+      <Combobox
+        value={value}
+        onChange={(option) => {
+          onChange(option);
+          setQuery("");
         }}
-        className={`w-full px-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
-          error ? "border-red-300 bg-red-50" : "border-gray-200"
-        }`}
       >
-        <option value="">{placeholder}</option>
-        {data?.map((item) => (
-          <option key={item.value} value={item.value}>
-            {item[displayField] || item.label}
-          </option>
-        ))}
-      </select>
+        <div className="relative">
+          <div className="relative">
+            <Combobox.Input
+              className={`w-full cursor-default rounded-xl border bg-white py-3 pl-10 pr-4 text-left text-sm text-gray-900 outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+                error ? "border-red-300 bg-red-50" : "border-gray-200"
+              }`}
+              displayValue={(item) => (item ? item[displayField] : "")}
+              placeholder={placeholder}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => buttonRef.current?.click()}
+            />
+            <Combobox.Button
+              ref={buttonRef}
+              className="absolute inset-y-0 left-0 flex items-center pl-3"
+            >
+              <MagnifyingGlassIcon
+                className="h-4 w-4 text-gray-400"
+                aria-hidden="true"
+              />
+            </Combobox.Button>
+          </div>
+
+          <Transition
+            as={Fragment}
+            leave="transition ease-in duration-100"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+            afterLeave={() => setQuery("")}
+          >
+            <Combobox.Options className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+              {filteredData?.length ? (
+                filteredData.map((item) => (
+                  <Combobox.Option
+                    key={item.id || item.value}
+                    className={({ active }) =>
+                      `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                        active ? "bg-green-100 text-green-900" : "text-gray-900"
+                      }`
+                    }
+                    value={item}
+                  >
+                    {({ selected }) => (
+                      <>
+                        <span
+                          className={`block truncate ${
+                            selected ? "font-medium" : "font-normal"
+                          }`}
+                        >
+                          {item[displayField] || item.label}
+                        </span>
+                        {selected && (
+                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-green-600">
+                            <CheckIcon className="h-4 w-4" aria-hidden="true" />
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </Combobox.Option>
+                ))
+              ) : (
+                <div className="px-4 py-2 text-sm text-gray-400">
+                  No results found
+                </div>
+              )}
+            </Combobox.Options>
+          </Transition>
+        </div>
+      </Combobox>
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
@@ -338,6 +393,7 @@ export default function EquipmentPartsService({
   step,
   onComplete,
   productData,
+  onProductSaved,
   isEdit,
 }) {
   const navigate = useNavigate();
@@ -362,7 +418,7 @@ export default function EquipmentPartsService({
   const watchOtherAttachment = watch("attachments.other");
 
   useEffect(() => {
-    if (!isEdit || !productData) return;
+    if (!productData) return;
 
     reset({
       partsCondition: {
@@ -397,19 +453,18 @@ export default function EquipmentPartsService({
       accidentDamage: productData.accidentDamage || "",
       floodDamage: productData.floodDamage || "",
     });
-  }, [productData, isEdit, reset]);
-
+  }, [productData, reset]);
 
   const formatLocalDate = (date) => {
-  if (!date) return "";
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-};
+    if (!date) return "";
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, "0");
+    const d = String(date.getDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+  };
 
-const parseLocalDate = (dateStr) =>
-  dateStr ? new Date(dateStr + "T00:00:00") : undefined;
+  const parseLocalDate = (dateStr) =>
+    dateStr ? new Date(dateStr + "T00:00:00") : undefined;
 
   const onSubmit = async (data) => {
     try {
@@ -445,7 +500,9 @@ const parseLocalDate = (dateStr) =>
           loader: data.attachments.loader || false,
           other: data.attachments.other || false,
         },
-        otherAttachmentName: data.attachments.other ? data.otherAttachmentName : null,
+        otherAttachmentName: data.attachments.other
+          ? data.otherAttachmentName
+          : null,
         lastServiceDate: data.lastServiceDate || null,
         majorRepair: data.majorRepair || null,
         partsReplaced: {
@@ -460,10 +517,15 @@ const parseLocalDate = (dateStr) =>
 
       await apiHelper.put(
         `/vendor-web/equipmentvariant/${productId}/save-step`,
-        payload
+        payload,
       );
 
       toast.success("Parts & service details saved!");
+
+      onProductSaved?.({
+        ...payload,
+        id: productId,
+      });
 
       if (onComplete) {
         onComplete(step);
@@ -475,7 +537,8 @@ const parseLocalDate = (dateStr) =>
     } catch (error) {
       console.error(error);
       toast.error(
-        error.response?.data?.message || "Failed to save parts & service details."
+        error.response?.data?.message ||
+          "Failed to save parts & service details.",
       );
     } finally {
       setLoading(false);
@@ -497,7 +560,8 @@ const parseLocalDate = (dateStr) =>
             Parts, Attachments & Service
           </h1>
           <p className="text-sm text-gray-500 mt-1">
-            Provide details about parts condition, attachments, and service history
+            Provide details about parts condition, attachments, and service
+            history
           </p>
         </div>
 
@@ -517,9 +581,11 @@ const parseLocalDate = (dateStr) =>
                     render={({ field }) => (
                       <CustomListbox
                         data={partsConditionOptions}
-                        value={partsConditionOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          partsConditionOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Condition"
@@ -534,9 +600,11 @@ const parseLocalDate = (dateStr) =>
                     render={({ field }) => (
                       <CustomListbox
                         data={partsConditionOptions}
-                        value={partsConditionOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          partsConditionOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Condition"
@@ -551,9 +619,11 @@ const parseLocalDate = (dateStr) =>
                     render={({ field }) => (
                       <CustomListbox
                         data={partsConditionOptions}
-                        value={partsConditionOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          partsConditionOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Condition"
@@ -568,9 +638,11 @@ const parseLocalDate = (dateStr) =>
                     render={({ field }) => (
                       <CustomListbox
                         data={partsConditionOptions}
-                        value={partsConditionOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          partsConditionOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Condition"
@@ -585,9 +657,11 @@ const parseLocalDate = (dateStr) =>
                     render={({ field }) => (
                       <CustomListbox
                         data={partsConditionOptions}
-                        value={partsConditionOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          partsConditionOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Condition"
@@ -602,9 +676,11 @@ const parseLocalDate = (dateStr) =>
                     render={({ field }) => (
                       <CustomListbox
                         data={partsConditionOptions}
-                        value={partsConditionOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          partsConditionOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Condition"
@@ -619,9 +695,11 @@ const parseLocalDate = (dateStr) =>
                     render={({ field }) => (
                       <CustomListbox
                         data={partsConditionOptions}
-                        value={partsConditionOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          partsConditionOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Condition"
@@ -675,7 +753,7 @@ const parseLocalDate = (dateStr) =>
                       label="Please specify other attachment"
                       placeholder="Enter attachment name"
                       error={errors?.otherAttachmentName?.message}
-                      icon={Tool}
+                      icon={Droplets}
                     />
                   </div>
                 )}
@@ -688,27 +766,33 @@ const parseLocalDate = (dateStr) =>
                 </h3>
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <Controller
-  name="lastServiceDate"
-  control={control}
-  render={({ field }) => (
-    <DatePicker
-      value={field.value ? parseLocalDate(field.value) : undefined}
-      onChange={(date) => field.onChange(date ? formatLocalDate(date) : null)}
-      label="Last Service Date"
-      error={errors?.lastServiceDate?.message}
-      placeholder="Select date..."
-    />
-  )}
-/>
+                    name="lastServiceDate"
+                    control={control}
+                    render={({ field }) => (
+                      <DatePicker
+                        value={
+                          field.value ? parseLocalDate(field.value) : undefined
+                        }
+                        onChange={(date) =>
+                          field.onChange(date ? formatLocalDate(date) : null)
+                        }
+                        label="Last Service Date"
+                        error={errors?.lastServiceDate?.message}
+                        placeholder="Select date..."
+                      />
+                    )}
+                  />
                   <Controller
                     name="majorRepair"
                     control={control}
                     render={({ field }) => (
                       <CustomListbox
                         data={majorRepairOptions}
-                        value={majorRepairOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          majorRepairOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Repair Type"
@@ -732,9 +816,10 @@ const parseLocalDate = (dateStr) =>
                     render={({ field }) => (
                       <CustomListbox
                         data={yesNoOptions}
-                        value={yesNoOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          yesNoOptions.find((o) => o.value === field.value) ||
+                          null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select"
@@ -749,9 +834,10 @@ const parseLocalDate = (dateStr) =>
                     render={({ field }) => (
                       <CustomListbox
                         data={yesNoOptions}
-                        value={yesNoOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          yesNoOptions.find((o) => o.value === field.value) ||
+                          null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select"
@@ -766,9 +852,10 @@ const parseLocalDate = (dateStr) =>
                     render={({ field }) => (
                       <CustomListbox
                         data={yesNoOptions}
-                        value={yesNoOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          yesNoOptions.find((o) => o.value === field.value) ||
+                          null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select"
@@ -792,9 +879,11 @@ const parseLocalDate = (dateStr) =>
                     render={({ field }) => (
                       <CustomListbox
                         data={accidentDamageOptions}
-                        value={accidentDamageOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          accidentDamageOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Accident History"
@@ -809,9 +898,11 @@ const parseLocalDate = (dateStr) =>
                     render={({ field }) => (
                       <CustomListbox
                         data={floodDamageOptions}
-                        value={floodDamageOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          floodDamageOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Flood History"
@@ -848,7 +939,11 @@ const parseLocalDate = (dateStr) =>
                   className="min-w-28 cursor-pointer"
                   disabled={loading}
                 >
-                  {loading ? "Saving..." : isEdit ? "Update & Next" : "Save & Next"}
+                  {loading
+                    ? "Saving..."
+                    : isEdit
+                    ? "Update & Next"
+                    : "Save & Next"}
                 </Button>
               </div>
             </div>

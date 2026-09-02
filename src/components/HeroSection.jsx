@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { Fragment, useState, useEffect, useCallback,useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
@@ -23,6 +23,8 @@ import {
 } from "lucide-react";
 import { Listbox } from "@headlessui/react";
 import apiHelper from "../utils/apiHelper";
+import { Combobox, Transition } from "@headlessui/react";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 const HeroSection = () => {
   const navigate = useNavigate();
@@ -222,76 +224,70 @@ const HeroSection = () => {
   }, [vehicle.make]);
 
   // Fetch years from API
- // Fetch years when model is selected
-// Fetch years only when model is selected
-useEffect(() => {
-  if (!vehicle.make || !vehicle.model) {
-    setYears([]);
-
-    setVehicle((prev) => ({
-      ...prev,
-      year: "",
-    }));
-
-    return;
-  }
-
-  const fetchYears = async () => {
-    setLoading((prev) => ({
-      ...prev,
-      years: true,
-    }));
-
-    try {
-      const response = await apiHelper.get(
-        `/web/model-years?brand=${encodeURIComponent(
-          vehicle.make
-        )}&model=${encodeURIComponent(vehicle.model)}`
-      );
-
-      let yearsData = [];
-
-      if (response?.data && Array.isArray(response.data)) {
-        yearsData = response.data;
-      } else if (Array.isArray(response)) {
-        yearsData = response;
-      }
-
-      const yearList = yearsData
-        .map((item) => {
-          if (typeof item === "string") {
-            return item;
-          }
-
-          return (
-            item.year ||
-            item.modelYear ||
-            item.manufacturingYear
-          );
-        })
-        .filter(
-          (year) =>
-            year !== null &&
-            year !== undefined &&
-            !isNaN(Number(year))
-        )
-        .map((year) => String(year))
-        .sort((a, b) => Number(b) - Number(a));
-
-      setYears([...new Set(yearList)]);
-    } catch (error) {
-      console.error("Failed to fetch years:", error);
+  // Fetch years when model is selected
+  // Fetch years only when model is selected
+  useEffect(() => {
+    if (!vehicle.make || !vehicle.model) {
       setYears([]);
-    } finally {
+
+      setVehicle((prev) => ({
+        ...prev,
+        year: "",
+      }));
+
+      return;
+    }
+
+    const fetchYears = async () => {
       setLoading((prev) => ({
         ...prev,
-        years: false,
+        years: true,
       }));
-    }
-  };
 
-  fetchYears();
-}, [vehicle.make, vehicle.model]);
+      try {
+        const response = await apiHelper.get(
+          `/web/model-years?brand=${encodeURIComponent(
+            vehicle.make,
+          )}&model=${encodeURIComponent(vehicle.model)}`,
+        );
+
+        let yearsData = [];
+
+        if (response?.data && Array.isArray(response.data)) {
+          yearsData = response.data;
+        } else if (Array.isArray(response)) {
+          yearsData = response;
+        }
+
+        const yearList = yearsData
+          .map((item) => {
+            if (typeof item === "string") {
+              return item;
+            }
+
+            return item.year || item.modelYear || item.manufacturingYear;
+          })
+          .filter(
+            (year) =>
+              year !== null && year !== undefined && !isNaN(Number(year)),
+          )
+          .map((year) => String(year))
+          .sort((a, b) => Number(b) - Number(a));
+
+        setYears([...new Set(yearList)]);
+      } catch (error) {
+        console.error("Failed to fetch years:", error);
+        setYears([]);
+      } finally {
+        setLoading((prev) => ({
+          ...prev,
+          years: false,
+        }));
+      }
+    };
+
+    fetchYears();
+  }, [vehicle.make, vehicle.model]);
 
   // Handle search button click
   const handleSearch = () => {
@@ -440,10 +436,10 @@ useEffect(() => {
                             year: vehicle.year,
                           })
                         }
-                        options={brands} // Changed from makes to brands
+                        options={brands} 
                         placeholder="Select Brand"
                         icon={<Tractor className="h-4 w-4" />}
-                        loading={loading.brands} // Add loading prop
+                        loading={loading.brands}
                       />
                     </div>
                     <div>
@@ -452,13 +448,13 @@ useEffect(() => {
                       </label>
                       <CustomSelect
                         value={vehicle.model}
-                       onChange={(value) =>
-  setVehicle({
-    ...vehicle,
-    model: value,
-    year: "",
-  })
-}
+                        onChange={(value) =>
+                          setVehicle({
+                            ...vehicle,
+                            model: value,
+                            year: "",
+                          })
+                        }
                         options={models} // Changed from models variable to models state
                         placeholder={
                           vehicle.make ? "Select Model" : "Select brand first"
@@ -472,23 +468,23 @@ useEffect(() => {
                       <label className="block text-xs font-semibold text-gray-500 mb-1.5 uppercase tracking-wider">
                         Year
                       </label>
-                     <CustomSelect
-  value={vehicle.year}
-  onChange={(value) =>
-    setVehicle({ ...vehicle, year: value })
-  }
-  options={years}
-  placeholder={
-    !vehicle.make
-      ? "Select brand first"
-      : !vehicle.model
-      ? "Select model first"
-      : "Select Year"
-  }
-  disabled={!vehicle.model}
-  icon={<Clock className="h-4 w-4" />}
-  loading={loading.years}
-/>
+                      <CustomSelect
+                        value={vehicle.year}
+                        onChange={(value) =>
+                          setVehicle({ ...vehicle, year: value })
+                        }
+                        options={years}
+                        placeholder={
+                          !vehicle.make
+                            ? "Select brand first"
+                            : !vehicle.model
+                            ? "Select model first"
+                            : "Select Year"
+                        }
+                        disabled={!vehicle.model}
+                        icon={<Clock className="h-4 w-4" />}
+                        loading={loading.years}
+                      />
                     </div>
                   </div>
 
@@ -551,51 +547,87 @@ const CustomSelect = ({
   icon,
   loading = false,
 }) => {
+  const [query, setQuery] = useState("");
+  const buttonRef = useRef(null);
+
+  const filteredOptions =
+    query === ""
+      ? options
+      : options.filter((option) =>
+          option.toLowerCase().includes(query.toLowerCase()),
+        );
+
   return (
-    <Listbox value={value} onChange={onChange} disabled={disabled}>
+    <Combobox
+      value={value}
+      onChange={(val) => {
+        onChange(val);
+        setQuery("");
+      }}
+      disabled={disabled}
+    >
       <div className="relative">
-        <Listbox.Button
-          className={`relative w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-3.5 text-left text-sm focus:outline-none focus:ring-2 focus:ring-green-600 focus:border-transparent transition-all ${
-            disabled
-              ? "opacity-50 cursor-not-allowed"
-              : "hover:border-gray-300 cursor-pointer"
-          }`}
-        >
-          <div className="flex items-center gap-3">
-            {icon && <span className="text-gray-400">{icon}</span>}
-            <span
-              className={value ? "text-gray-900 font-medium" : "text-gray-400"}
-            >
-              {value || placeholder}
+        <div className="relative">
+          {icon && (
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10">
+              {icon}
             </span>
-          </div>
-          <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-        </Listbox.Button>
-        <Listbox.Options className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden max-h-60 overflow-y-auto">
-          {options.length > 0 ? (
-            options.map((option) => (
-              <Listbox.Option
-                key={option}
-                value={option}
-                className={({ active }) =>
-                  `cursor-pointer px-4 py-3 text-sm transition-colors ${
-                    active
-                      ? "bg-green-50 text-green-600 font-medium"
-                      : "text-gray-700 hover:bg-gray-50"
-                  }`
-                }
-              >
-                {option}
-              </Listbox.Option>
-            ))
-          ) : (
-            <div className="px-4 py-3 text-sm text-gray-400 text-center">
-              {disabled ? "Select brand first" : "No options available"}
-            </div>
           )}
-        </Listbox.Options>
+          <Combobox.Input
+            className={`w-full bg-gray-50 border border-gray-200 rounded-xl ${
+              icon ? "pl-11" : "pl-4"
+            } pr-10 py-3.5 text-left text-sm text-gray-900 outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-transparent ${
+              disabled
+                ? "opacity-50 cursor-not-allowed"
+                : "hover:border-gray-300 cursor-pointer"
+            }`}
+            displayValue={(val) => val || ""}
+            placeholder={loading ? "Loading..." : placeholder}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => buttonRef.current?.click()}   // ✅ click/focus par bhi options khulenge
+            disabled={disabled || loading}
+          />
+          <Combobox.Button
+            ref={buttonRef}
+            className="absolute inset-y-0 right-0 flex items-center pr-4"
+          >
+            <MagnifyingGlassIcon className="h-4 w-4 text-gray-400" />
+          </Combobox.Button>
+        </div>
+
+        <Transition
+          as={Fragment}
+          leave="transition ease-in duration-100"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+          afterLeave={() => setQuery("")}
+        >
+          <Combobox.Options className="absolute z-50 mt-2 w-full bg-white border border-gray-200 rounded-xl shadow-xl overflow-hidden max-h-60 overflow-y-auto">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((option) => (
+                <Combobox.Option
+                  key={option}
+                  value={option}
+                  className={({ active }) =>
+                    `cursor-pointer px-4 py-3 text-sm transition-colors ${
+                      active
+                        ? "bg-green-50 text-green-600 font-medium"
+                        : "text-gray-700 hover:bg-gray-50"
+                    }`
+                  }
+                >
+                  {option}
+                </Combobox.Option>
+              ))
+            ) : (
+              <div className="px-4 py-3 text-sm text-gray-400 text-center">
+                {disabled ? "Select brand first" : "No options found"}
+              </div>
+            )}
+          </Combobox.Options>
+        </Transition>
       </div>
-    </Listbox>
+    </Combobox>
   );
 };
 

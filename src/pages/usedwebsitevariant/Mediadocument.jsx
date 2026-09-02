@@ -69,6 +69,7 @@ export default function MediaDocument({
   setCurrentStep,
   step,
   completedSteps,
+  onProductSaved,
   onComplete,
   productData,
   isEdit,
@@ -91,7 +92,7 @@ export default function MediaDocument({
   });
 
   useEffect(() => {
-    if (!isEdit || !productData) return;
+     if (!productData) return;
 
     const newPreviews = {};
     const newDocs = {};
@@ -116,7 +117,7 @@ export default function MediaDocument({
     setPreviews(newPreviews);
     setUploadedDocs(newDocs);
 
-  }, [productData, isEdit, setValue, getValues]);
+  }, [productData, setValue, getValues]); 
 
   useEffect(() => {
     register("frontView");
@@ -155,45 +156,54 @@ export default function MediaDocument({
     setValue(key, null);
   };
 
-  const onSubmit = async (data) => {
-    try {
-      setLoading(true);
-      const productId = isEdit
-        ? productData?.id
-        : localStorage.getItem("vendorProductId");
+const onSubmit = async (data) => {
+  try {
+    setLoading(true);
+    const productId = productData?.id
+      ? productData.id
+      : localStorage.getItem("vendorProductId");
 
-      if (!productId) {
-        toast("Please save basic information first.");
-        return;
-      }
-
-      const formData = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        if (value instanceof File) formData.append(key, value);
-      });
-
-      await apiHelper.put(
-        `/vendor-web/used-website-variant/${productId}/save-step`,
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        },
-      );
-
-      toast.success("Media and documents saved!");
-
-      if (onComplete) onComplete(step);
-      if (setCurrentStep) setCurrentStep(step + 1);
-    } catch (error) {
-      console.error(error);
-      toast.error(
-        error.response?.data?.message || "Failed to save media and documents.",
-      );
-    } finally {
-      setLoading(false);
+    if (!productId) {
+      toast("Please save basic information first.");
+      return;
     }
-  };
 
+    const formData = new FormData();
+    Object.entries(data).forEach(([key, value]) => {
+      if (value instanceof File) formData.append(key, value);
+    });
+
+    const res = await apiHelper.put(
+      `/vendor-web/used-website-variant/${productId}/save-step`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      },
+    );
+
+    toast.success("Media and documents saved!");
+
+    // ✅ Backend jo updated record wapas deta hai (file paths ke
+    // saath) wahi parent ko do — sirf id nahi. Warna Previous
+    // dabane par ye step khaali dikhega.
+    const updated = res?.data?.data || res?.data;
+    if (updated) {
+      onProductSaved?.({ ...updated, id: productId });
+    } else {
+      onProductSaved?.({ id: productId });
+    }
+
+    if (onComplete) onComplete(step);
+    if (setCurrentStep) setCurrentStep(step + 1);
+  } catch (error) {
+    console.error(error);
+    toast.error(
+      error.response?.data?.message || "Failed to save media and documents.",
+    );
+  } finally {
+    setLoading(false);
+  }
+};
   const handleSaveDraft = () => {
     const formData = watch();
     toast.success("Draft saved!");

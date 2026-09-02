@@ -2,19 +2,25 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { Controller, useForm } from "react-hook-form";
 import { useEffect } from "react";
 import toast from "react-hot-toast";
-
+import { MagnifyingGlassIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
-
+import { Transition } from "@headlessui/react";
 import { EquipmentConditionSchema } from "./schema";
 import apiHelper from "../../utils/apiHelper";
-
+import { Combobox } from "@headlessui/react";
+import { useState, useRef } from "react";
 // Options for Overall Condition
 const overallConditionOptions = [
   { label: "Excellent", value: "excellent", description: "Like new condition" },
   { label: "Very Good", value: "very_good", description: "Well maintained" },
   { label: "Good", value: "good", description: "Normal condition" },
   { label: "Average", value: "average", description: "Average condition" },
-  { label: "Needs Repair", value: "needs_repair", description: "Requires attention" },
+  {
+    label: "Needs Repair",
+    value: "needs_repair",
+    description: "Requires attention",
+  },
 ];
 
 // Options for Mechanical Condition
@@ -22,7 +28,11 @@ const mechanicalConditionOptions = [
   { label: "Excellent", value: "excellent", description: "Perfect working" },
   { label: "Good", value: "good", description: "Good working" },
   { label: "Average", value: "average", description: "Average working" },
-  { label: "Needs Repair", value: "needs_repair", description: "Requires repair" },
+  {
+    label: "Needs Repair",
+    value: "needs_repair",
+    description: "Requires repair",
+  },
 ];
 
 // Options for Oil Leakage
@@ -33,10 +43,26 @@ const oilLeakageOptions = [
 
 // Options for Working Condition
 const workingConditionOptions = [
-  { label: "Fully Working", value: "fully_working", description: "All functions working" },
-  { label: "Partially Working", value: "partially_working", description: "Some functions working" },
-  { label: "Not Working", value: "not_working", description: "Not in working condition" },
-  { label: "Needs Repair", value: "needs_repair", description: "Requires repair" },
+  {
+    label: "Fully Working",
+    value: "fully_working",
+    description: "All functions working",
+  },
+  {
+    label: "Partially Working",
+    value: "partially_working",
+    description: "Some functions working",
+  },
+  {
+    label: "Not Working",
+    value: "not_working",
+    description: "Not in working condition",
+  },
+  {
+    label: "Needs Repair",
+    value: "needs_repair",
+    description: "Requires repair",
+  },
 ];
 
 // Options for Electrical Components
@@ -123,6 +149,18 @@ const CustomListbox = ({
   label,
   error,
 }) => {
+  const [query, setQuery] = useState("");
+  const buttonRef = useRef(null);
+
+  const filteredData =
+    query === ""
+      ? data
+      : data?.filter((item) =>
+          (item[displayField] || item.label || "")
+            .toLowerCase()
+            .includes(query.toLowerCase()),
+        );
+
   return (
     <div>
       {label && (
@@ -130,23 +168,81 @@ const CustomListbox = ({
           {label}
         </label>
       )}
-      <select
-        value={value?.value || ""}
-        onChange={(e) => {
-          const selected = data.find((item) => item.value === e.target.value);
-          onChange(selected);
+      <Combobox
+        value={value}
+        onChange={(option) => {
+          onChange(option);
+          setQuery("");
         }}
-        className={`w-full px-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
-          error ? "border-red-300 bg-red-50" : "border-gray-200"
-        }`}
       >
-        <option value="">{placeholder}</option>
-        {data?.map((item) => (
-          <option key={item.value} value={item.value}>
-            {item[displayField] || item.label}
-          </option>
-        ))}
-      </select>
+        <div className="relative">
+          <div className="relative">
+            <Combobox.Input
+              className={`w-full cursor-default rounded-xl border bg-white py-3 pl-10 pr-4 text-left text-sm text-gray-900 outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+                error ? "border-red-300 bg-red-50" : "border-gray-200"
+              }`}
+              displayValue={(item) => (item ? item[displayField] : "")}
+              placeholder={placeholder}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => buttonRef.current?.click()}
+            />
+            <Combobox.Button
+              ref={buttonRef}
+              className="absolute inset-y-0 left-0 flex items-center pl-3"
+            >
+              <MagnifyingGlassIcon
+                className="h-4 w-4 text-gray-400"
+                aria-hidden="true"
+              />
+            </Combobox.Button>
+          </div>
+
+          <Transition
+            as={Fragment}
+            leave="transition ease-in duration-100"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+            afterLeave={() => setQuery("")}
+          >
+            <Combobox.Options className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+              {filteredData?.length ? (
+                filteredData.map((item) => (
+                  <Combobox.Option
+                    key={item.id || item.value}
+                    className={({ active }) =>
+                      `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                        active ? "bg-green-100 text-green-900" : "text-gray-900"
+                      }`
+                    }
+                    value={item}
+                  >
+                    {({ selected }) => (
+                      <>
+                        <span
+                          className={`block truncate ${
+                            selected ? "font-medium" : "font-normal"
+                          }`}
+                        >
+                          {item[displayField] || item.label}
+                        </span>
+                        {selected && (
+                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-green-600">
+                            <CheckIcon className="h-4 w-4" aria-hidden="true" />
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </Combobox.Option>
+                ))
+              ) : (
+                <div className="px-4 py-2 text-sm text-gray-400">
+                  No results found
+                </div>
+              )}
+            </Combobox.Options>
+          </Transition>
+        </div>
+      </Combobox>
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
@@ -156,6 +252,8 @@ export default function EquipmentCondition({
   setCurrentStep,
   step,
   onComplete,
+  
+  onProductSaved,
   productData,
   isEdit,
 }) {
@@ -177,28 +275,50 @@ export default function EquipmentCondition({
   });
 
   useEffect(() => {
-    if (!isEdit || !productData) return;
+    if (!productData) return;
 
     setValue("overallCondition", productData.overallCondition || "");
-    setValue("mechanical.mainMachineCondition", productData.mechanical?.mainMachineCondition || "");
-    setValue("mechanical.driveSystem", productData.mechanical?.driveSystem || "");
-    setValue("mechanical.beltChainCondition", productData.mechanical?.beltChainCondition || "");
-    setValue("mechanical.bearingCondition", productData.mechanical?.bearingCondition || "");
-    setValue("mechanical.gearboxCondition", productData.mechanical?.gearboxCondition || "");
+    setValue(
+      "mechanical.mainMachineCondition",
+      productData.mechanical?.mainMachineCondition || "",
+    );
+    setValue(
+      "mechanical.driveSystem",
+      productData.mechanical?.driveSystem || "",
+    );
+    setValue(
+      "mechanical.beltChainCondition",
+      productData.mechanical?.beltChainCondition || "",
+    );
+    setValue(
+      "mechanical.bearingCondition",
+      productData.mechanical?.bearingCondition || "",
+    );
+    setValue(
+      "mechanical.gearboxCondition",
+      productData.mechanical?.gearboxCondition || "",
+    );
     setValue("oilLeakage", productData.oilLeakage || "");
     setValue("workingCondition", productData.workingCondition || "");
     setValue("electrical.wiring", productData.electrical?.wiring || "");
-    setValue("electrical.motorStarter", productData.electrical?.motorStarter || "");
+    setValue(
+      "electrical.motorStarter",
+      productData.electrical?.motorStarter || "",
+    );
     setValue("electrical.battery", productData.electrical?.battery || "");
     setValue("electrical.lights", productData.electrical?.lights || "");
-    setValue("electrical.controlPanel", productData.electrical?.controlPanel || "");
-  }, [isEdit, productData, setValue]);
+    setValue(
+      "electrical.controlPanel",
+      productData.electrical?.controlPanel || "",
+    );
+  }, [productData, setValue]);
 
   const onSubmit = async (data) => {
     try {
-      const productId = isEdit
-        ? productData?.id
+      const productId = productData?.id
+        ? productData.id
         : localStorage.getItem("vendorEquipmentId");
+
       if (!productId) {
         toast("Please save basic information first.");
         return;
@@ -224,13 +344,14 @@ export default function EquipmentCondition({
         },
         currentStep: 2,
       };
-
       await apiHelper.put(
         `/vendor-web/equipmentvariant/${productId}/save-step`,
-        payload
+        payload,
       );
 
       toast.success("Equipment condition saved!");
+
+      onProductSaved?.({ ...payload, id: productId }); // add this
 
       if (onComplete) {
         onComplete(step);
@@ -240,7 +361,7 @@ export default function EquipmentCondition({
     } catch (error) {
       console.error(error);
       toast.error(
-        error.response?.data?.message || "Failed to save equipment condition."
+        error.response?.data?.message || "Failed to save equipment condition.",
       );
     }
   };
@@ -263,7 +384,7 @@ export default function EquipmentCondition({
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-visible">
           <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
             <div className="p-6 md:p-8 lg:p-10 space-y-10">
               {/* Overall Condition */}
@@ -322,14 +443,18 @@ export default function EquipmentCondition({
                     render={({ field }) => (
                       <CustomListbox
                         data={mechanicalConditionOptions}
-                        value={mechanicalConditionOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          mechanicalConditionOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Condition"
                         label="Main Machine Condition"
-                        error={errors?.mechanical?.mainMachineCondition?.message}
+                        error={
+                          errors?.mechanical?.mainMachineCondition?.message
+                        }
                       />
                     )}
                   />
@@ -339,9 +464,11 @@ export default function EquipmentCondition({
                     render={({ field }) => (
                       <CustomListbox
                         data={mechanicalConditionOptions}
-                        value={mechanicalConditionOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          mechanicalConditionOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Condition"
@@ -356,9 +483,11 @@ export default function EquipmentCondition({
                     render={({ field }) => (
                       <CustomListbox
                         data={mechanicalConditionOptions}
-                        value={mechanicalConditionOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          mechanicalConditionOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Condition"
@@ -373,9 +502,11 @@ export default function EquipmentCondition({
                     render={({ field }) => (
                       <CustomListbox
                         data={mechanicalConditionOptions}
-                        value={mechanicalConditionOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          mechanicalConditionOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Condition"
@@ -390,9 +521,11 @@ export default function EquipmentCondition({
                     render={({ field }) => (
                       <CustomListbox
                         data={mechanicalConditionOptions}
-                        value={mechanicalConditionOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          mechanicalConditionOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Condition"
@@ -497,9 +630,11 @@ export default function EquipmentCondition({
                     render={({ field }) => (
                       <CustomListbox
                         data={electricalOptions}
-                        value={electricalOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          electricalOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Condition"
@@ -514,9 +649,11 @@ export default function EquipmentCondition({
                     render={({ field }) => (
                       <CustomListbox
                         data={electricalOptions}
-                        value={electricalOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          electricalOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Condition"
@@ -531,9 +668,11 @@ export default function EquipmentCondition({
                     render={({ field }) => (
                       <CustomListbox
                         data={electricalOptions}
-                        value={electricalOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          electricalOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Condition"
@@ -548,9 +687,11 @@ export default function EquipmentCondition({
                     render={({ field }) => (
                       <CustomListbox
                         data={electricalOptions}
-                        value={electricalOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          electricalOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Condition"
@@ -565,9 +706,11 @@ export default function EquipmentCondition({
                     render={({ field }) => (
                       <CustomListbox
                         data={electricalOptions}
-                        value={electricalOptions.find(
-                          (o) => o.value === field.value
-                        ) || null}
+                        value={
+                          electricalOptions.find(
+                            (o) => o.value === field.value,
+                          ) || null
+                        }
                         onChange={(o) => field.onChange(o?.value)}
                         displayField="label"
                         placeholder="Select Condition"

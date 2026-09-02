@@ -4,28 +4,26 @@ import { useEffect } from "react";
 import toast from "react-hot-toast";
 import {
   Droplets,
-  Filter,
-  Cog,
-  CheckCircle,
-  Thermometer,
+ 
   Gauge,
   Ruler,
   Weight,
   Clock,
-  Zap,
+  
   Fuel,
   Settings,
   RotateCcw,
   Layers,
-  Wind,
-  SprayCan,
-  Tractor,
+  
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-
+import { Combobox } from "@headlessui/react";
 import { EquipmentSpecificationsSchema } from "./schema";
 import apiHelper from "../../utils/apiHelper";
-
+import { MagnifyingGlassIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { useState,  useRef } from "react"
+import {  Transition } from "@headlessui/react";
+import { Fragment } from "react";
 // Options for Equipment Type
 const equipmentTypeOptions = [
   { label: "Thresher", value: "thresher" },
@@ -207,6 +205,18 @@ const CustomListbox = ({
   label,
   error,
 }) => {
+  const [query, setQuery] = useState("");
+  const buttonRef = useRef(null);
+
+  const filteredData =
+    query === ""
+      ? data
+      : data?.filter((item) =>
+          (item[displayField] || item.label || "")
+            .toLowerCase()
+            .includes(query.toLowerCase()),
+        );
+
   return (
     <div>
       {label && (
@@ -214,23 +224,81 @@ const CustomListbox = ({
           {label}
         </label>
       )}
-      <select
-        value={value?.value || ""}
-        onChange={(e) => {
-          const selected = data.find((item) => item.value === e.target.value);
-          onChange(selected);
+      <Combobox
+        value={value}
+        onChange={(option) => {
+          onChange(option);
+          setQuery("");
         }}
-        className={`w-full px-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
-          error ? "border-red-300 bg-red-50" : "border-gray-200"
-        }`}
       >
-        <option value="">{placeholder}</option>
-        {data?.map((item) => (
-          <option key={item.value} value={item.value}>
-            {item[displayField] || item.label}
-          </option>
-        ))}
-      </select>
+        <div className="relative">
+          <div className="relative">
+            <Combobox.Input
+              className={`w-full cursor-default rounded-xl border bg-white py-3 pl-10 pr-4 text-left text-sm text-gray-900 outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+                error ? "border-red-300 bg-red-50" : "border-gray-200"
+              }`}
+              displayValue={(item) => (item ? item[displayField] : "")}
+              placeholder={placeholder}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => buttonRef.current?.click()}
+            />
+            <Combobox.Button
+              ref={buttonRef}
+              className="absolute inset-y-0 left-0 flex items-center pl-3"
+            >
+              <MagnifyingGlassIcon
+                className="h-4 w-4 text-gray-400"
+                aria-hidden="true"
+              />
+            </Combobox.Button>
+          </div>
+
+          <Transition
+            as={Fragment}
+            leave="transition ease-in duration-100"
+            leaveFrom="opacity-100"
+            leaveTo="opacity-0"
+            afterLeave={() => setQuery("")}
+          >
+            <Combobox.Options className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+              {filteredData?.length ? (
+                filteredData.map((item) => (
+                  <Combobox.Option
+                    key={item.id || item.value}
+                    className={({ active }) =>
+                      `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                        active ? "bg-green-100 text-green-900" : "text-gray-900"
+                      }`
+                    }
+                    value={item}
+                  >
+                    {({ selected }) => (
+                      <>
+                        <span
+                          className={`block truncate ${
+                            selected ? "font-medium" : "font-normal"
+                          }`}
+                        >
+                          {item[displayField] || item.label}
+                        </span>
+                        {selected && (
+                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-green-600">
+                            <CheckIcon className="h-4 w-4" aria-hidden="true" />
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </Combobox.Option>
+                ))
+              ) : (
+                <div className="px-4 py-2 text-sm text-gray-400">
+                  No results found
+                </div>
+              )}
+            </Combobox.Options>
+          </Transition>
+        </div>
+      </Combobox>
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
@@ -241,6 +309,7 @@ export default function EquipmentSpecifications({
   step,
   onComplete,
   productData,
+    onProductSaved,
   isEdit,
 }) {
   const navigate = useNavigate();
@@ -260,7 +329,7 @@ export default function EquipmentSpecifications({
   const watchEquipmentType = watch("equipmentType");
 
   useEffect(() => {
-    if (!isEdit || !productData) return;
+    if ( !productData) return;
 
     // Common fields
     setValue("equipmentType", productData.equipmentType || "");
@@ -297,7 +366,7 @@ export default function EquipmentSpecifications({
     setValue("pumpType", productData.pumpType || "");
     setValue("nozzleCount", productData.nozzleCount || "");
     setValue("pressure", productData.pressure || "");
-  }, [isEdit, productData, setValue]);
+  }, [ productData, setValue]);
 
 const onSubmit = async (data) => {
   try {
@@ -312,125 +381,134 @@ const onSubmit = async (data) => {
 
     const payload = {
       ...data,
-     requiredTractorHp: data.requiredTractorHp
-    ? Number(data.requiredTractorHp)
-    : null,
 
-  workingWidth: data.workingWidth
-    ? String(data.workingWidth)
-    : null,
+      requiredTractorHp: data.requiredTractorHp
+        ? Number(data.requiredTractorHp)
+        : null,
 
-  workingCapacity: data.workingCapacity
-    ? String(data.workingCapacity)
-    : null,
+      workingWidth: data.workingWidth
+        ? String(data.workingWidth)
+        : null,
 
-  workingSpeed: data.workingSpeed
-    ? String(data.workingSpeed)
-    : null,
+      workingCapacity: data.workingCapacity
+        ? String(data.workingCapacity)
+        : null,
 
-  workingDepth: data.workingDepth
-    ? String(data.workingDepth)
-    : null,
+      workingSpeed: data.workingSpeed
+        ? String(data.workingSpeed)
+        : null,
 
-  weight: data.weight
-    ? Number(data.weight)
-    : null,
+      workingDepth: data.workingDepth
+        ? String(data.workingDepth)
+        : null,
 
-  length: data.length
-    ? Number(data.length)
-    : null,
+      weight: data.weight
+        ? Number(data.weight)
+        : null,
 
-  width: data.width
-    ? Number(data.width)
-    : null,
+      length: data.length
+        ? Number(data.length)
+        : null,
 
-  height: data.height
-    ? Number(data.height)
-    : null,
+      width: data.width
+        ? Number(data.width)
+        : null,
 
-  productionCapacity: data.productionCapacity
-    ? String(data.productionCapacity)
-    : null,
+      height: data.height
+        ? Number(data.height)
+        : null,
 
-  fuelConsumption: data.fuelConsumption
-    ? String(data.fuelConsumption)
-    : null,
+      productionCapacity: data.productionCapacity
+        ? String(data.productionCapacity)
+        : null,
 
-  rpm: data.rpm
-    ? Number(data.rpm)
-    : null,
+      fuelConsumption: data.fuelConsumption
+        ? String(data.fuelConsumption)
+        : null,
 
-  numberOfBlades: data.numberOfBlades
-    ? Number(data.numberOfBlades)
-    : null,
+      rpm: data.rpm
+        ? Number(data.rpm)
+        : null,
 
-  numberOfRows: data.numberOfRows
-    ? Number(data.numberOfRows)
-    : null,
+      numberOfBlades: data.numberOfBlades
+        ? Number(data.numberOfBlades)
+        : null,
 
-  tankCapacity: data.tankCapacity
-    ? Number(data.tankCapacity)
-    : null,
+      numberOfRows: data.numberOfRows
+        ? Number(data.numberOfRows)
+        : null,
 
-  threshingCapacity: data.threshingCapacity
-    ? String(data.threshingCapacity)
-    : null,
+      tankCapacity: data.tankCapacity
+        ? Number(data.tankCapacity)
+        : null,
 
-  cropType: data.cropType || null,
+      threshingCapacity: data.threshingCapacity
+        ? String(data.threshingCapacity)
+        : null,
 
-  drumSize: data.drumSize
-    ? String(data.drumSize)
-    : null,
+      cropType: data.cropType || null,
 
-  fanType: data.fanType || null,
+      drumSize: data.drumSize
+        ? String(data.drumSize)
+        : null,
 
-  cleaningSystem: data.cleaningSystem || null,
+      fanType: data.fanType || null,
 
-  rotorRpm: data.rotorRpm
-    ? Number(data.rotorRpm)
-    : null,
+      cleaningSystem: data.cleaningSystem || null,
 
-  sprayWidth: data.sprayWidth
-    ? String(data.sprayWidth)
-    : null,
+      rotorRpm: data.rotorRpm
+        ? Number(data.rotorRpm)
+        : null,
 
-  pumpType: data.pumpType || null,
+      sprayWidth: data.sprayWidth
+        ? String(data.sprayWidth)
+        : null,
 
-  nozzleCount: data.nozzleCount
-    ? Number(data.nozzleCount)
-    : null,
+      pumpType: data.pumpType || null,
 
-  pressure: data.pressure
-    ? String(data.pressure)
-    : null,
+      nozzleCount: data.nozzleCount
+        ? Number(data.nozzleCount)
+        : null,
 
-  currentStep: 2,
-};
+      pressure: data.pressure
+        ? String(data.pressure)
+        : null,
+
+      currentStep: 2,
+    };
 
     console.log("STEP 2 PRODUCT ID:", productId);
-console.log("STEP 2 PAYLOAD:", payload);
+    console.log("STEP 2 PAYLOAD:", payload);
 
-   await apiHelper.put(
-  `/vendor-web/EquipmentVariant/${productId}/save-step`,
-  payload
-);
+    await apiHelper.put(
+      `/vendor-web/EquipmentVariant/${productId}/save-step`,
+      payload
+    );
 
-// Get the complete/latest record
-const latestRes = await apiHelper.get(
-  `/vendor-web/equipmentvariant/${productId}`
-);
+    // Get latest complete product data
+    const latestRes = await apiHelper.get(
+      `/vendor-web/equipmentvariant/${productId}`
+    );
 
-const latestData = latestRes.data;
+    const latestData = latestRes.data;
 
-toast.success("Equipment specifications saved!");
+    toast.success("Equipment specifications saved!");
 
-if (onComplete) {
-  onComplete(step, latestData);
-}
+    // IMPORTANT:
+    // Update parent state just like Condition page
+    onProductSaved?.({
+      ...latestData,
+      id: productId,
+    });
 
-setCurrentStep(step + 1);
+    if (onComplete) {
+      onComplete(step, latestData);
+    }
+
+    setCurrentStep(step + 1);
   } catch (error) {
     console.error(error);
+
     toast.error(
       error.response?.data?.message ||
         "Failed to save equipment specifications."
@@ -461,7 +539,7 @@ setCurrentStep(step + 1);
         </div>
 
         {/* Form Card */}
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-visible">
           <form onSubmit={handleSubmit(onSubmit)} autoComplete="off">
             <div className="p-6 md:p-8 lg:p-10 space-y-10">
               {/* Basic Equipment Details */}

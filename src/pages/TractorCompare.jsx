@@ -1,6 +1,7 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, Fragment } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Listbox } from "@headlessui/react";
+import { Listbox, Combobox, Transition } from "@headlessui/react";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import {
   Tractor,
   Search,
@@ -54,7 +55,83 @@ const SUGGESTED_COMPARISONS = [
     buttonText: "Compare Now",
   },
 ];
+const SlotCombobox = ({ value, onChange, options, getLabel, placeholder }) => {
+  const [query, setQuery] = useState("");
+  const buttonRef = useRef(null);
 
+  const selectedOption = options.find((opt) => opt.id === value);
+
+  const filteredOptions =
+    query === ""
+      ? options
+      : options.filter((opt) =>
+          getLabel(opt).toLowerCase().includes(query.toLowerCase()),
+        );
+
+  return (
+    <Combobox
+      value={selectedOption || null}
+      onChange={(opt) => {
+        onChange(opt ? opt.id : "");
+        setQuery("");
+      }}
+    >
+      <div className="relative">
+        <div className="relative">
+          <Combobox.Input
+            className="w-full p-2 bg-white border border-gray-300 rounded text-xs sm:text-sm text-left focus:border-green-500 outline-none transition pr-7"
+            displayValue={(opt) => (opt ? getLabel(opt) : "")}
+            placeholder={placeholder}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => buttonRef.current?.click()}
+          />
+          <Combobox.Button
+            ref={buttonRef}
+            className="absolute right-2 top-1/2 -translate-y-1/2"
+          >
+            <MagnifyingGlassIcon className="h-3.5 w-3.5 text-gray-400" />
+          </Combobox.Button>
+        </div>
+        <Transition
+          as={Fragment}
+          leave="transition ease-in duration-100"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+          afterLeave={() => setQuery("")}
+        >
+          <Combobox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-auto py-1 text-xs sm:text-sm">
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt) => (
+                <Combobox.Option
+                  key={opt.id}
+                  value={opt}
+                  className={({ active, selected }) =>
+                    `cursor-pointer px-3 py-2 flex items-center justify-between ${
+                      active ? "bg-green-50 text-green-700" : "text-gray-700"
+                    } ${selected ? "bg-green-100 font-medium" : ""}`
+                  }
+                >
+                  {({ selected }) => (
+                    <>
+                      <span>{getLabel(opt)}</span>
+                      {selected && (
+                        <Check className="h-3.5 w-3.5 text-green-600" />
+                      )}
+                    </>
+                  )}
+                </Combobox.Option>
+              ))
+            ) : (
+              <div className="px-3 py-2 text-xs text-gray-400 text-center">
+                No results found
+              </div>
+            )}
+          </Combobox.Options>
+        </Transition>
+      </div>
+    </Combobox>
+  );
+};
 // ========== NEW TRACTOR COMPARISON TABLE ==========
 const NewTractorComparisonTable = ({ activeTractors }) => {
   const renderValue = (value) => {
@@ -79,7 +156,10 @@ const NewTractorComparisonTable = ({ activeTractors }) => {
                 Core Parameters
               </th>
               {activeTractors.map((item, index) => (
-                <th key={index} className="p-4 text-sm font-bold text-gray-900 border-l">
+                <th
+                  key={index}
+                  className="p-4 text-sm font-bold text-gray-900 border-l"
+                >
                   <div className="flex flex-col items-center text-center">
                     <img
                       src={apiHelper.getImageUrl(item.frontView)}
@@ -143,7 +223,8 @@ const NewTractorComparisonTable = ({ activeTractors }) => {
               <td className="p-4 font-bold bg-gray-50">Gearbox</td>
               {activeTractors.map((item, idx) => (
                 <td key={idx} className="p-4 text-center border-l">
-                  {renderValue(item.forwardGears)}F + {renderValue(item.reverseGears)}R
+                  {renderValue(item.forwardGears)}F +{" "}
+                  {renderValue(item.reverseGears)}R
                 </td>
               ))}
             </tr>
@@ -166,7 +247,10 @@ const NewTractorComparisonTable = ({ activeTractors }) => {
             <tr>
               <td className="p-4 font-bold bg-gray-50">Price</td>
               {activeTractors.map((item, idx) => (
-                <td key={idx} className="p-4 text-center border-l font-semibold text-green-700">
+                <td
+                  key={idx}
+                  className="p-4 text-center border-l font-semibold text-green-700"
+                >
                   ₹ {renderValue(item.exShowroomPrice)}
                 </td>
               ))}
@@ -202,14 +286,18 @@ const UsedTractorComparisonTable = ({ activeTractors }) => {
                 Core Parameters
               </th>
               {activeTractors.map((item, index) => (
-                <th key={index} className="p-4 text-sm font-bold text-gray-900 border-l">
+                <th
+                  key={index}
+                  className="p-4 text-sm font-bold text-gray-900 border-l"
+                >
                   <div className="flex flex-col items-center text-center">
                     <img
                       src={apiHelper.getImageUrl(item.frontView)}
                       alt={item.productName}
                       className="h-24 object-contain mb-3 bg-white p-1 rounded border border-gray-100"
                       onError={(e) => {
-                        e.target.src = "https://via.placeholder.com/200x150?text=No+Image";
+                        e.target.src =
+                          "https://via.placeholder.com/200x150?text=No+Image";
                       }}
                     />
                     <span className="block text-green-700 text-base font-bold truncate max-w-full">
@@ -229,94 +317,91 @@ const UsedTractorComparisonTable = ({ activeTractors }) => {
             </tr>
           </thead>
 
-       <tbody className="divide-y divide-gray-300 text-sm">
-  <tr>
-    <td className="p-4 font-bold bg-gray-50">Horse Power</td>
-    {activeTractors.map((item, idx) => (
-      <td key={idx} className="p-4 text-center border-l">
-        {renderValue(item.hp)} HP
-      </td>
-    ))}
-  </tr>
+          <tbody className="divide-y divide-gray-300 text-sm">
+            <tr>
+              <td className="p-4 font-bold bg-gray-50">Horse Power</td>
+              {activeTractors.map((item, idx) => (
+                <td key={idx} className="p-4 text-center border-l">
+                  {renderValue(item.hp)} HP
+                </td>
+              ))}
+            </tr>
 
-  <tr>
-    <td className="p-4 font-bold bg-gray-50">Fuel Type</td>
-    {activeTractors.map((item, idx) => (
-      <td key={idx} className="p-4 text-center border-l">
-        {renderValue(item.fuelType)}
-      </td>
-    ))}
-  </tr>
+            <tr>
+              <td className="p-4 font-bold bg-gray-50">Fuel Type</td>
+              {activeTractors.map((item, idx) => (
+                <td key={idx} className="p-4 text-center border-l">
+                  {renderValue(item.fuelType)}
+                </td>
+              ))}
+            </tr>
 
+            <tr>
+              <td className="p-4 font-bold bg-gray-50">Drive Type</td>
+              {activeTractors.map((item, idx) => (
+                <td key={idx} className="p-4 text-center border-l">
+                  {renderValue(item.driveType)}
+                </td>
+              ))}
+            </tr>
 
+            <tr>
+              <td className="p-4 font-bold bg-gray-50">Expected Price</td>
+              {activeTractors.map((item, idx) => (
+                <td
+                  key={idx}
+                  className="p-4 text-center border-l font-semibold text-green-700"
+                >
+                  ₹ {renderValue(item.expectedPrice)}
+                </td>
+              ))}
+            </tr>
 
-  <tr>
-    <td className="p-4 font-bold bg-gray-50">Drive Type</td>
-    {activeTractors.map((item, idx) => (
-      <td key={idx} className="p-4 text-center border-l">
-        {renderValue(item.driveType)}
-      </td>
-    ))}
-  </tr>
+            <tr>
+              <td className="p-4 font-bold bg-gray-50">Manufacturing Year</td>
+              {activeTractors.map((item, idx) => (
+                <td key={idx} className="p-4 text-center border-l">
+                  {renderValue(item.manufacturingYear)}
+                </td>
+              ))}
+            </tr>
 
-  <tr>
-    <td className="p-4 font-bold bg-gray-50">Expected Price</td>
-    {activeTractors.map((item, idx) => (
-      <td key={idx} className="p-4 text-center border-l font-semibold text-green-700">
-        ₹ {renderValue(item.expectedPrice)}
-      </td>
-    ))}
-  </tr>
+            <tr>
+              <td className="p-4 font-bold bg-gray-50">Purchase Year</td>
+              {activeTractors.map((item, idx) => (
+                <td key={idx} className="p-4 text-center border-l">
+                  {renderValue(item.purchaseYear)}
+                </td>
+              ))}
+            </tr>
 
-  <tr>
-    <td className="p-4 font-bold bg-gray-50">Manufacturing Year</td>
-    {activeTractors.map((item, idx) => (
-      <td key={idx} className="p-4 text-center border-l">
-        {renderValue(item.manufacturingYear)}
-      </td>
-    ))}
-  </tr>
+            <tr>
+              <td className="p-4 font-bold bg-gray-50">Hours Meter Reading</td>
+              {activeTractors.map((item, idx) => (
+                <td key={idx} className="p-4 text-center border-l">
+                  {renderValue(item.hoursMeterReading)}
+                </td>
+              ))}
+            </tr>
 
-  <tr>
-    <td className="p-4 font-bold bg-gray-50">Purchase Year</td>
-    {activeTractors.map((item, idx) => (
-      <td key={idx} className="p-4 text-center border-l">
-        {renderValue(item.purchaseYear)}
-      </td>
-    ))}
-  </tr>
+            <tr>
+              <td className="p-4 font-bold bg-gray-50">Owner Type</td>
+              {activeTractors.map((item, idx) => (
+                <td key={idx} className="p-4 text-center border-l">
+                  {renderValue(item.ownerType)}
+                </td>
+              ))}
+            </tr>
 
-  <tr>
-    <td className="p-4 font-bold bg-gray-50">Hours Meter Reading</td>
-    {activeTractors.map((item, idx) => (
-      <td key={idx} className="p-4 text-center border-l">
-        {renderValue(item.hoursMeterReading)}
-      </td>
-    ))}
-  </tr>
-
-  
-  <tr>
-    <td className="p-4 font-bold bg-gray-50">Owner Type</td>
-    {activeTractors.map((item, idx) => (
-      <td key={idx} className="p-4 text-center border-l">
-        {renderValue(item.ownerType)}
-      </td>
-    ))}
-  </tr>
-
- 
- 
-
-  <tr>
-    <td className="p-4 font-bold bg-gray-50">Location</td>
-    {activeTractors.map((item, idx) => (
-      <td key={idx} className="p-4 text-center border-l">
-        {renderValue(item.city)}, {renderValue(item.state)}
-      </td>
-    ))}
-  </tr>
-</tbody>
+            <tr>
+              <td className="p-4 font-bold bg-gray-50">Location</td>
+              {activeTractors.map((item, idx) => (
+                <td key={idx} className="p-4 text-center border-l">
+                  {renderValue(item.city)}, {renderValue(item.state)}
+                </td>
+              ))}
+            </tr>
+          </tbody>
         </table>
       </div>
     </section>
@@ -394,12 +479,16 @@ export default function TractorCompare() {
           }
 
           const [modelsRes, variantsRes] = await Promise.all([
-            brandId ? apiHelper.get(`/compare-tractor/brands/${brandId}/models`) : Promise.resolve({ data: [] }),
-            modelId ? apiHelper.get(
-              isUsed
-                ? `/compare-tractor/models/${modelId}/used-variants`
-                : `/compare-tractor/models/${modelId}/variants`,
-            ) : Promise.resolve({ data: [] }),
+            brandId
+              ? apiHelper.get(`/compare-tractor/brands/${brandId}/models`)
+              : Promise.resolve({ data: [] }),
+            modelId
+              ? apiHelper.get(
+                  isUsed
+                    ? `/compare-tractor/models/${modelId}/used-variants`
+                    : `/compare-tractor/models/${modelId}/variants`,
+                )
+              : Promise.resolve({ data: [] }),
           ]);
 
           updated[i] = {
@@ -521,52 +610,52 @@ export default function TractorCompare() {
     .filter((s) => s.details)
     .map((s) => {
       const details = s.details;
-      
+
       if (isUsed) {
         // Return mapped Used Tractor data
-      return {
-  id: details.id,
-  productName: details.productName || "Unknown Tractor",
-  frontView: details.frontView || "",
+        return {
+          id: details.id,
+          productName: details.productName || "Unknown Tractor",
+          frontView: details.frontView || "",
 
-  // Basic Information
-  hp: details.hp || "N/A",
-  fuelType: details.fuelType || "N/A",
-  tractorCategory: details.tractorCategory || "N/A",
-  driveType: details.driveType || "N/A",
+          // Basic Information
+          hp: details.hp || "N/A",
+          fuelType: details.fuelType || "N/A",
+          tractorCategory: details.tractorCategory || "N/A",
+          driveType: details.driveType || "N/A",
 
-  // Price
-  expectedPrice: details.expectedPrice || "N/A",
+          // Price
+          expectedPrice: details.expectedPrice || "N/A",
 
-  // Manufacturing & Usage
-  manufacturingYear: details.manufacturingYear || "N/A",
-  purchaseYear: details.purchaseYear || "N/A",
-  hoursMeterReading: details.hoursMeterReading || "N/A",
+          // Manufacturing & Usage
+          manufacturingYear: details.manufacturingYear || "N/A",
+          purchaseYear: details.purchaseYear || "N/A",
+          hoursMeterReading: details.hoursMeterReading || "N/A",
 
-  // Ownership
-  ownership: details.ownership || "N/A",
-  ownerType: details.ownerType || "N/A",
-  sellerType: details.sellerType || "N/A",
+          // Ownership
+          ownership: details.ownership || "N/A",
+          ownerType: details.ownerType || "N/A",
+          sellerType: details.sellerType || "N/A",
 
-  // Registration
-  rcRegistrationNumber: details.rcRegistrationNumber || "N/A",
-  engineNumber: details.engineNumber || "N/A",
-  chassisNumber: details.chassisNumber || "N/A",
+          // Registration
+          rcRegistrationNumber: details.rcRegistrationNumber || "N/A",
+          engineNumber: details.engineNumber || "N/A",
+          chassisNumber: details.chassisNumber || "N/A",
 
-  // Location
-  city: details.city || "N/A",
-  state: details.state || "N/A",
+          // Location
+          city: details.city || "N/A",
+          state: details.state || "N/A",
 
-  // Other
-  purpose: details.purpose || "N/A",
-  finance: details.finance || "N/A",
-  insurance: details.insurance || "N/A",
+          // Other
+          purpose: details.purpose || "N/A",
+          finance: details.finance || "N/A",
+          insurance: details.insurance || "N/A",
 
-  // Names
-  brandName: details.brand || details.brandRef?.brandName || "Unknown",
-  modelName: details.model || details.modelRef?.modelName || "Unknown",
-  variantName: details.variant || details.variantRef?.variantName || "",
-};
+          // Names
+          brandName: details.brand || details.brandRef?.brandName || "Unknown",
+          modelName: details.model || details.modelRef?.modelName || "Unknown",
+          variantName: details.variant || details.variantRef?.variantName || "",
+        };
       } else {
         // Return mapped New Tractor data
         return {
@@ -583,9 +672,11 @@ export default function TractorCompare() {
           ptoHp: details.ptoHp || "N/A",
           liftingCapacity: details.liftingCapacity || "N/A",
           exShowroomPrice: details.exShowroomPrice || "N/A",
-          brandName: brands.find((b) => b.id === s.brand)?.brandName || "Unknown",
+          brandName:
+            brands.find((b) => b.id === s.brand)?.brandName || "Unknown",
           modelName: s.models.find((m) => m.id === s.model)?.modelName,
-          variantName: s.variants.find((v) => v.id === s.variant)?.variant?.variantName,
+          variantName: s.variants.find((v) => v.id === s.variant)?.variant
+            ?.variantName,
         };
       }
     });
@@ -664,48 +755,13 @@ export default function TractorCompare() {
                       <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
                         Brand
                       </label>
-                      <Listbox
+                      <SlotCombobox
                         value={slot.brand}
                         onChange={(value) => handleBrandChange(index, value)}
-                      >
-                        <div className="relative">
-                          <Listbox.Button className="w-full p-2 bg-white border border-gray-300 rounded text-xs sm:text-sm text-left flex items-center justify-between">
-                            <span
-                              className={
-                                slot.brand ? "text-gray-800" : "text-gray-400"
-                              }
-                            >
-                              {brands.find((b) => b.id === slot.brand)
-                                ?.brandName || "Select Brand"}
-                            </span>
-                            <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
-                          </Listbox.Button>
-                          <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-auto py-1 text-xs sm:text-sm">
-                            {brands.map((brand) => (
-                              <Listbox.Option
-                                key={brand.id}
-                                value={brand.id}
-                                className={({ active, selected }) =>
-                                  `cursor-pointer px-3 py-2 flex items-center justify-between ${
-                                    active
-                                      ? "bg-green-50 text-green-700"
-                                      : "text-gray-700"
-                                  } ${selected ? "bg-green-100 font-medium" : ""}`
-                                }
-                              >
-                                {({ selected }) => (
-                                  <>
-                                    <span> {brand.brandName}</span>
-                                    {selected && (
-                                      <Check className="h-3.5 w-3.5 text-green-600" />
-                                    )}
-                                  </>
-                                )}
-                              </Listbox.Option>
-                            ))}
-                          </Listbox.Options>
-                        </div>
-                      </Listbox>
+                        options={brands}
+                        getLabel={(b) => b.brandName}
+                        placeholder="Select Brand"
+                      />
                     </div>
 
                     {/* Model Select */}
@@ -713,48 +769,13 @@ export default function TractorCompare() {
                       <label className="block text-[10px] font-bold uppercase tracking-wider text-gray-400 mb-1">
                         Tractor Model
                       </label>
-                      <Listbox
+                      <SlotCombobox
                         value={slot.model}
                         onChange={(value) => handleModelChange(index, value)}
-                      >
-                        <div className="relative">
-                          <Listbox.Button className="w-full p-2 bg-white border border-gray-300 rounded text-xs sm:text-sm text-left focus:border-green-500 outline-none transition flex items-center justify-between">
-                            <span
-                              className={
-                                slot.model ? "text-gray-800" : "text-gray-400"
-                              }
-                            >
-                              {slot.models.find((m) => m.id === slot.model)
-                                ?.modelName || "+ Add Tractor"}
-                            </span>
-                            <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
-                          </Listbox.Button>
-                          <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-auto py-1 text-xs sm:text-sm">
-                            {slot.models.map((model) => (
-                              <Listbox.Option
-                                key={model.id}
-                                value={model.id}
-                                className={({ active, selected }) =>
-                                  `cursor-pointer px-3 py-2 flex items-center justify-between ${
-                                    active
-                                      ? "bg-green-50 text-green-700"
-                                      : "text-gray-700"
-                                  } ${selected ? "bg-green-100 font-medium" : ""}`
-                                }
-                              >
-                                {({ selected }) => (
-                                  <>
-                                    <span>{model.modelName}</span>
-                                    {selected && (
-                                      <Check className="h-3.5 w-3.5 text-green-600" />
-                                    )}
-                                  </>
-                                )}
-                              </Listbox.Option>
-                            ))}
-                          </Listbox.Options>
-                        </div>
-                      </Listbox>
+                        options={slot.models}
+                        getLabel={(m) => m.modelName}
+                        placeholder="+ Add Tractor"
+                      />
                     </div>
 
                     {/* Variant Select */}
@@ -763,57 +784,21 @@ export default function TractorCompare() {
                         <label className="block text-[10px] font-bold uppercase tracking-wider text-green-700 mb-1">
                           Select Variant *
                         </label>
-                        <Listbox
+                        <SlotCombobox
                           value={slot.variant}
                           onChange={(value) =>
                             handleVariantChange(index, value)
                           }
-                        >
-                          <div className="relative">
-                            <Listbox.Button className="w-full p-2 bg-white border border-green-300 rounded text-xs sm:text-sm text-left focus:border-green-500 outline-none transition font-semibold flex items-center justify-between">
-                              <span
-                                className={slot.variant ? "text-gray-800" : "text-gray-400"}
-                              >
-                                {slot.variants.find((v) => v.id === slot.variant)?.productName || "-- Variant --"}
-                              </span>
-                              <ChevronDown className="h-3.5 w-3.5 text-gray-400" />
-                            </Listbox.Button>
-                            <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-auto py-1 text-xs sm:text-sm">
-                              {slot.variants.map((variant) => (
-                                <Listbox.Option
-                                  key={variant.id}
-                                  value={variant.id}
-                                  className={({ active, selected }) =>
-                                    `cursor-pointer px-3 py-2 flex items-center justify-between ${
-                                      active
-                                        ? "bg-green-50 text-green-700"
-                                        : "text-gray-700"
-                                    } ${selected ? "bg-green-100 font-medium" : ""}`
-                                  }
-                                >
-                                  {({ selected }) => (
-                                    <>
-                                      <span>
-                                        {variant.productName}
-                                        {variant.variant?.variantName && (
-                                          <span className="text-gray-400">
-                                            ({variant.variant.variantName})
-                                          </span>
-                                        )}
-                                        {isUsed && variant.hp && (
-                                          <span className="text-gray-400 ml-1">
-                                            - {variant.hp} HP
-                                          </span>
-                                        )}
-                                      </span>
-                                      {selected && <Check className="h-3.5 w-3.5 text-green-600" />}
-                                    </>
-                                  )}
-                                </Listbox.Option>
-                              ))}
-                            </Listbox.Options>
-                          </div>
-                        </Listbox>
+                          options={slot.variants}
+                          getLabel={(v) => {
+                            let label = v.productName || "";
+                            if (v.variant?.variantName)
+                              label += ` (${v.variant.variantName})`;
+                            if (isUsed && v.hp) label += ` - ${v.hp} HP`;
+                            return label;
+                          }}
+                          placeholder="-- Variant --"
+                        />
                       </div>
                     )}
                   </div>
@@ -822,11 +807,14 @@ export default function TractorCompare() {
                     {tractorDetails ? (
                       <div className="w-full text-center">
                         <img
-                          src={apiHelper.getImageUrl(tractorDetails.frontView || tractorDetails.image)}
+                          src={apiHelper.getImageUrl(
+                            tractorDetails.frontView || tractorDetails.image,
+                          )}
                           className="h-20 object-contain mx-auto"
                           alt={tractorDetails.productName}
                           onError={(e) => {
-                            e.target.src = "https://via.placeholder.com/200x150?text=No+Image";
+                            e.target.src =
+                              "https://via.placeholder.com/200x150?text=No+Image";
                           }}
                         />
                         <p className="text-xs mt-2 font-semibold">
@@ -844,7 +832,9 @@ export default function TractorCompare() {
                         )}
                       </div>
                     ) : (
-                      <div className="text-center text-gray-400">Empty Slot</div>
+                      <div className="text-center text-gray-400">
+                        Empty Slot
+                      </div>
                     )}
                   </div>
                 </div>
@@ -901,11 +891,14 @@ export default function TractorCompare() {
                 <div>
                   <div className="relative bg-gray-50 rounded-lg sm:rounded-xl mb-3 flex items-center justify-center overflow-hidden aspect-[4/3] sm:aspect-square lg:aspect-[4/3]">
                     <img
-                      src={apiHelper.getImageUrl(tractor.frontView || tractor.image)}
+                      src={apiHelper.getImageUrl(
+                        tractor.frontView || tractor.image,
+                      )}
                       alt={tractor.productName}
                       className="w-full h-full object-contain p-2 sm:p-3 lg:p-4 group-hover:scale-105 transition-transform duration-500"
                       onError={(e) => {
-                        e.target.src = "https://via.placeholder.com/200x150?text=No+Image";
+                        e.target.src =
+                          "https://via.placeholder.com/200x150?text=No+Image";
                       }}
                     />
                   </div>
@@ -915,7 +908,7 @@ export default function TractorCompare() {
                   </h3>
                   <div className="flex items-center gap-2 mb-2 sm:mb-3 flex-wrap">
                     <span className="text-[9px] sm:text-[10px] lg:text-[11px] font-semibold bg-gray-100 text-gray-600 px-1.5 sm:px-2 py-0.5 rounded-md">
-                      {isUsed ? (tractor.hp || "N/A") : tractor.horsePower} HP
+                      {isUsed ? tractor.hp || "N/A" : tractor.horsePower} HP
                     </span>
                     {isUsed && tractor.year && (
                       <span className="text-[9px] sm:text-[10px] lg:text-[11px] font-semibold bg-gray-100 text-gray-600 px-1.5 sm:px-2 py-0.5 rounded-md">
@@ -931,10 +924,16 @@ export default function TractorCompare() {
                       {isUsed ? "Expected Price" : "Ex-Showroom"}
                     </span>
                     <span className="text-xs sm:text-sm lg:text-base font-bold text-green-700 truncate block">
-                      ₹ {isUsed ? (tractor.expectedPrice || "N/A") : (tractor.exShowroomPrice || "N/A")}
+                      ₹{" "}
+                      {isUsed
+                        ? tractor.expectedPrice || "N/A"
+                        : tractor.exShowroomPrice || "N/A"}
                     </span>
                   </div>
-                  <Link to={`/${isUsed ? "used-tractor" : "tractor"}/${tractor.id}`} className="flex-shrink-0">
+                  <Link
+                    to={`/${isUsed ? "used-tractor" : "tractor"}/${tractor.id}`}
+                    className="flex-shrink-0"
+                  >
                     <button className="bg-green-50 text-green-700 hover:bg-green-700 hover:text-white font-bold text-[10px] sm:text-xs lg:text-sm cursor-pointer py-1.5 sm:py-2 px-2 sm:px-3 lg:px-4 rounded-md sm:rounded-lg transition-all duration-200 hover:shadow-md whitespace-nowrap">
                       View Details
                     </button>

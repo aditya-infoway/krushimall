@@ -5,7 +5,7 @@ import toast from "react-hot-toast";
 import { Droplets, Filter, Cog, CheckCircle, Thermometer } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Combobox, Transition } from "@headlessui/react";
-import { ChevronUpDownIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, CheckIcon } from "@heroicons/react/24/outline";
 
 import { EnginedetailsSchema } from "./schema";
 import apiHelper from "../../utils/apiHelper";
@@ -197,7 +197,7 @@ const CustomListbox = ({
 }) => {
   const [query, setQuery] = useState("");
   const buttonRef = useRef(null);
-
+ 
   const filteredData =
     query === ""
       ? data
@@ -206,7 +206,7 @@ const CustomListbox = ({
             .toLowerCase()
             .includes(query.toLowerCase()),
         );
-
+ 
   return (
     <div>
       {label && (
@@ -224,22 +224,25 @@ const CustomListbox = ({
         <div className="relative">
           <div className="relative">
             <Combobox.Input
-              className={`w-full cursor-default rounded-xl border bg-white py-3 pl-4 pr-10 text-left text-sm text-gray-900 outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+              className={`w-full cursor-default rounded-xl border bg-white py-3 pl-10 pr-4 text-left text-sm text-gray-900 outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
                 error ? "border-red-300 bg-red-50" : "border-gray-200"
               }`}
-              displayValue={(item) => (item ? item[displayField] || item.label : "")}
+              displayValue={(item) => (item ? item[displayField] : "")}
               placeholder={placeholder}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => buttonRef.current?.click()}
             />
-            <Combobox.Button ref={buttonRef} className="absolute inset-y-0 right-0 flex items-center pr-3">
-              <ChevronUpDownIcon
-                className="h-5 w-5 text-gray-400"
+            <Combobox.Button
+              ref={buttonRef}
+              className="absolute inset-y-0 left-0 flex items-center pl-3"
+            >
+              <MagnifyingGlassIcon
+                className="h-4 w-4 text-gray-400"
                 aria-hidden="true"
               />
             </Combobox.Button>
           </div>
-
+ 
           <Transition
             as={Fragment}
             leave="transition ease-in duration-100"
@@ -290,10 +293,12 @@ const CustomListbox = ({
     </div>
   );
 };
+ 
 export default function Enginedetails({
   setCurrentStep,
   step,
   onComplete,
+  onProductSaved,
   productData,
   isEdit,
 }) {
@@ -311,8 +316,13 @@ export default function Enginedetails({
     defaultValues: {},
   });
 
+  // ✅ Fix: pehle sirf isEdit mode me chalta tha. Ab productData jab
+  // bhi available ho (edit mode se ya parent ke onProductSaved se
+  // aane wale updated state se) form us se refill ho jayega — isse
+  // is step par bhi wahi "Previous" ke baad data ghum jaane wala
+  // problem nahi hoga.
   useEffect(() => {
-    if (!isEdit || !productData) return;
+    if (!productData) return;
 
     setValue("engineType", productData.engineType || "");
     setValue("fuelType", productData.fuelType || "");
@@ -328,12 +338,12 @@ export default function Enginedetails({
     setValue("torqueRpm", productData.torqueRpm || "");
     setValue("torqueBackup", productData.torqueBackup || "");
     setValue("engineCondition", productData.engineCondition || "");
-  }, [isEdit, productData, setValue]);
+  }, [productData, setValue]);
 
   const onSubmit = async (data) => {
     try {
-      const productId = isEdit
-        ? productData?.id
+      const productId = productData?.id
+        ? productData.id
         : localStorage.getItem("vendorProductId");
       if (!productId) {
         toast("Please save basic information first.");
@@ -364,6 +374,11 @@ export default function Enginedetails({
       );
 
       toast.success("Engine details saved!");
+
+      // ✅ Parent ka productData state bhi update karo taaki agar
+      // aage koi aur step isi data pe depend karta ho to usko bhi
+      // fresh values milein.
+      onProductSaved?.({ ...payload, id: productId });
 
       if (onComplete) {
         onComplete(step);
