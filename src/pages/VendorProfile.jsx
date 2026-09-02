@@ -5,6 +5,7 @@ import {
   Package,
   Truck,
   User,
+  Search,
   Mail,
   Phone,
   MapPin,
@@ -227,39 +228,119 @@ const VendorProfile = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
+  const [productSearch, setProductSearch] = useState("");
+  const [usedProductSearch, setUsedProductSearch] = useState("");
+  const [equipmentSearch, setEquipmentSearch] = useState("");
+  const [enquirySearch, setEnquirySearch] = useState("");
+  const [followupSearch, setFollowupSearch] = useState("");
+  const filteredProducts = (products || []).filter((item) => {
+    const search = productSearch.toLowerCase();
 
-  const totalPages = Math.ceil((products?.length || 0) / itemsPerPage);
+    return [
+      item.productName,
+      item.brand?.brandName,
+      item.exShowroomPrice,
+      item.status,
+    ]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(search));
+  });
 
-  const paginatedProducts = (products || []).slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
+  const filteredUsedProducts = (products || []).filter((item) => {
+    const search = usedProductSearch.toLowerCase();
 
-  const enquiryTotalPages = Math.ceil((enquiries?.length || 0) / itemsPerPage);
+    return [item.productName, item.brand, item.expectedPrice, item.status]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(search));
+  });
 
-  const paginatedEnquiries = (enquiries || []).slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
+  const filteredEquipmentProducts = (equipmentProducts || []).filter((item) => {
+    const search = equipmentSearch.toLowerCase();
+
+    return [
+      item.model,
+      item.productName,
+      item.equipmentType,
+      item.brand,
+      item.equipmentCondition,
+      item.status,
+    ]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(search));
+  });
+
+  const filteredEnquiries = (enquiries || []).filter((item) => {
+    const search = enquirySearch.toLowerCase();
+
+    return [
+      item.fullName,
+      item.email,
+      item.mobileNumber,
+      item.websiteVariant?.productName,
+      item.usedWebsiteVariant?.productName,
+      item.message,
+      item.followupStage,
+    ]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(search));
+  });
+
+  const filteredTodayFollowups = (todayFollowups || []).filter((item) => {
+    const search = followupSearch.toLowerCase();
+
+    return [
+      item.fullName,
+      item.enquiry?.fullName,
+      item.mobileNumber,
+      item.enquiry?.mobileNumber,
+      item.callResponse,
+      item.nextScheduledDate,
+      item.callTime,
+    ]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(search));
+  });
+
+  const totalPages = Math.ceil(filteredProducts.length / itemsPerPage);
+
+  const usedProductTotalPages = Math.ceil(
+    filteredUsedProducts.length / itemsPerPage,
   );
 
   const equipmentTotalPages = Math.ceil(
-    (equipmentProducts?.length || 0) / itemsPerPage,
+    filteredEquipmentProducts.length / itemsPerPage,
   );
 
-  const paginatedEquipmentProducts = (equipmentProducts || []).slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage,
-  );
+  const enquiryTotalPages = Math.ceil(filteredEnquiries.length / itemsPerPage);
 
   const todayFollowupTotalPages = Math.ceil(
-    (todayFollowups?.length || 0) / itemsPerPage,
+    filteredTodayFollowups.length / itemsPerPage,
   );
 
-  const paginatedTodayFollowups = (todayFollowups || []).slice(
+  const paginatedProducts = filteredProducts.slice(
     (currentPage - 1) * itemsPerPage,
     currentPage * itemsPerPage,
   );
 
+  const paginatedUsedProducts = filteredUsedProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
+  const paginatedEquipmentProducts = filteredEquipmentProducts.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
+  const paginatedEnquiries = filteredEnquiries.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
+
+  const paginatedTodayFollowups = filteredTodayFollowups.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage,
+  );
   useEffect(() => {
     setCurrentPage(1);
   }, [products.length]);
@@ -1358,6 +1439,22 @@ const VendorProfile = () => {
                   </div>
                 ) : (
                   <>
+                    <div className="mb-4">
+                      <div className="relative w-96">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+                        <input
+                          type="text"
+                          value={productSearch}
+                          onChange={(e) => {
+                            setProductSearch(e.target.value);
+                            setCurrentPage(1);
+                          }}
+                          placeholder="Search products..."
+                          className="w-full pl-10 pr-4 py-3 text-sm border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none"
+                        />
+                      </div>
+                    </div>
                     <div className="overflow-x-auto">
                       <table className="min-w-full border border-gray-200 rounded-xl">
                         <thead className="bg-gray-50 whitespace-nowrap">
@@ -1508,6 +1605,22 @@ const VendorProfile = () => {
                   </div>
                 ) : (
                   <>
+                    <div className="mb-4">
+                      <div className="relative w-96">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+                        <input
+                          type="text"
+                          value={usedProductSearch}
+                          onChange={(e) => {
+                            setUsedProductSearch(e.target.value);
+                            setCurrentPage(1);
+                          }}
+                          placeholder="Search used products..."
+                          className="w-full pl-10 pr-4 py-3 text-sm border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none"
+                        />
+                      </div>
+                    </div>
                     <div className="overflow-x-auto">
                       <table className="min-w-full border border-gray-200 rounded-xl">
                         <thead className="bg-gray-50 whitespace-nowrap">
@@ -1522,7 +1635,7 @@ const VendorProfile = () => {
                         </thead>
 
                         <tbody>
-                          {paginatedProducts.map((item, index) => (
+                          {paginatedUsedProducts.map((item, index) => (
                             <tr
                               key={item.id}
                               className="border-t whitespace-nowrap "
@@ -1563,7 +1676,7 @@ const VendorProfile = () => {
                     </div>
 
                     {/* Pagination controls */}
-                    {totalPages > 1 && (
+                    {usedProductTotalPages > 1 && (
                       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-4 px-1">
                         <p className="text-xs text-gray-500">
                           Showing {(currentPage - 1) * itemsPerPage + 1}–
@@ -1586,7 +1699,7 @@ const VendorProfile = () => {
                           </button>
 
                           {Array.from(
-                            { length: totalPages },
+                            { length: usedProductTotalPages },
                             (_, i) => i + 1,
                           ).map((page) => (
                             <button
@@ -1604,7 +1717,9 @@ const VendorProfile = () => {
 
                           <button
                             onClick={() =>
-                              setCurrentPage((p) => Math.min(totalPages, p + 1))
+                              setCurrentPage((p) =>
+                                Math.min(usedProductTotalPages, p + 1),
+                              )
                             }
                             disabled={currentPage === totalPages}
                             className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
@@ -1656,6 +1771,22 @@ const VendorProfile = () => {
                   </div>
                 ) : (
                   <>
+                    <div className="mb-4">
+                      <div className="relative w-96">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+                        <input
+                          type="text"
+                          value={equipmentSearch}
+                          onChange={(e) => {
+                            setEquipmentSearch(e.target.value);
+                            setCurrentPage(1);
+                          }}
+                          placeholder="Search equipment..."
+                          className="w-full pl-10 pr-4 py-3 text-sm border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none"
+                        />
+                      </div>
+                    </div>
                     <div className="overflow-x-auto">
                       <table className="min-w-full border border-gray-200 rounded-xl">
                         <thead className="bg-gray-50 whitespace-nowrap">
@@ -1809,6 +1940,22 @@ const VendorProfile = () => {
                   </div>
                 ) : (
                   <>
+                    <div className="mb-4">
+                      <div className="relative w-99">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+                        <input
+                          type="text"
+                          value={enquirySearch}
+                          onChange={(e) => {
+                            setEnquirySearch(e.target.value);
+                            setCurrentPage(1);
+                          }}
+                          placeholder="Search enquiries..."
+                          className="w-full pl-10 pr-4 py-3 text-sm border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none"
+                        />
+                      </div>
+                    </div>
                     <div className="overflow-x-auto rounded-xl border border-gray-200">
                       <table className="min-w-full">
                         <thead className="bg-gray-50">
@@ -1987,6 +2134,22 @@ const VendorProfile = () => {
                   </div>
                 ) : (
                   <>
+                    <div className="mb-4">
+                      <div className="relative w-99">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+
+                        <input
+                          type="text"
+                          value={followupSearch}
+                          onChange={(e) => {
+                            setFollowupSearch(e.target.value);
+                            setCurrentPage(1);
+                          }}
+                          placeholder="Search follow-ups..."
+                          className="w-full pl-10 pr-4 py-3 text-sm border border-gray-300 rounded-xl bg-white focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none"
+                        />
+                      </div>
+                    </div>
                     <div className="overflow-x-auto rounded-xl border border-gray-200">
                       <table className="min-w-full">
                         <thead className="bg-gray-50">

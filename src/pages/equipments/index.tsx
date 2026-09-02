@@ -21,8 +21,6 @@ const EquipmentVariant = () => {
   const isEdit = !!id;
   const [step, setStep] = useState(0);
 
-  // ✅ Edit mode: saare steps ko shuru se hi "completed" maan lo,
-  // taaki stepper me sabhi steps checked + directly clickable ho
   const [completedSteps, setCompletedSteps] = useState(
     isEdit ? Array.from({ length: TOTAL_STEPS }, (_, i) => i) : [],
   );
@@ -34,9 +32,7 @@ const EquipmentVariant = () => {
 
     const loadProduct = async () => {
       try {
-        // TODO: swap once the real equipment endpoint exists
         const res = await apiHelper.get(`/vendor-web/equipmentvariant/${id}`);
-
         setProductData(res.data);
       } catch (err) {
         console.log(err);
@@ -46,37 +42,37 @@ const EquipmentVariant = () => {
     loadProduct();
   }, [id]);
 
-  // Handle step navigation with validation
-  const handleStepChange = (newStep:any) => {
-    // Always allow going backwards
+  const handleStepChange = (newStep: any) => {
     if (newStep <= step) {
       setStep(newStep);
       return;
     }
 
-    // Allow going only to the next step
     if (newStep === step + 1) {
       setCompletedSteps((prev) =>
         prev.includes(step) ? prev : [...prev, step],
       );
-
       setStep(newStep);
       return;
     }
 
-    // Allow clicking any completed step
-    // (in edit mode this array already has every step, so any step
-    // is directly reachable)
     if (completedSteps.includes(newStep)) {
       setStep(newStep);
     }
   };
 
-  // Mark a step as completed (for cases where user saves without moving forward)
-  const markStepCompleted = (stepId:any) => {
+  const markStepCompleted = (stepId: any) => {
     setCompletedSteps((prev) =>
       prev.includes(stepId) ? prev : [...prev, stepId],
     );
+  };
+
+  // ✅ Naya: har step ke successful save ke baad parent ka productData
+  // state update karo, taaki "Previous" ya kisi aur step par jaake
+  // wapas aane par bhi data yahi se milta rahe.
+  const handleProductSaved = (data: any) => {
+    if (!data) return;
+    setProductData((prev: any) => ({ ...(prev || {}), ...data }));
   };
 
   const commonProps = {
@@ -84,9 +80,10 @@ const EquipmentVariant = () => {
     completedSteps,
     setCurrentStep: handleStepChange,
     onComplete: markStepCompleted,
+    onProductSaved: handleProductSaved, // ✅ add
     productData,
     isEdit,
-      id,
+    id,
   };
 
   return (

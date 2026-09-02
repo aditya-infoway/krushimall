@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { Fragment, useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Listbox, RadioGroup } from "@headlessui/react";
+import { Listbox, RadioGroup, Combobox, Transition } from "@headlessui/react";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import {
   Tractor,
   MapPin,
@@ -34,17 +35,101 @@ import {
   MessageCircle,
   X,
 } from "lucide-react";
-import sonalika from "../assets/sonalika.png";
-import eicher from "../assets/eicher.png";
-import escorts from "../assets/escorts.png";
-import force from "../assets/force.png";
-import indo from "../assets/indo.png";
-import kubota from "../assets/kubota.png";
-import massey from "../assets/massey.png";
-import newinfo from "../assets/new.png";
-import swalogo from "../assets/swarajlogo.png";
-import tafe from "../assets/tafe.png";
 import apiHelper from "../utils/apiHelper";
+
+const FilterCombobox = ({
+  value,
+  onChange,
+  options,
+  placeholder,
+  disabled = false,
+}) => {
+  const [query, setQuery] = useState("");
+  const buttonRef = useRef(null);
+
+  const filteredOptions =
+    query === ""
+      ? options
+      : options.filter((opt) =>
+          opt.toLowerCase().includes(query.toLowerCase()),
+        );
+
+  return (
+    <Combobox
+      value={value}
+      onChange={(val) => {
+        onChange(val || "");
+        setQuery("");
+      }}
+      disabled={disabled}
+    >
+      <div className="relative">
+        <div className="relative">
+          <Combobox.Input
+            className={`w-full pl-3 pr-8 py-2.5 text-black border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white ${
+              disabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
+            }`}
+            displayValue={(val) => val || ""}
+            placeholder={placeholder}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => buttonRef.current?.click()}
+            disabled={disabled}
+          />
+          <Combobox.Button
+            ref={buttonRef}
+            className="absolute right-3 top-1/2 -translate-y-1/2"
+          >
+            <MagnifyingGlassIcon className="h-4 w-4 text-gray-400" />
+          </Combobox.Button>
+        </div>
+        <Transition
+          as={Fragment}
+          leave="transition ease-in duration-100"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+          afterLeave={() => setQuery("")}
+        >
+          <Combobox.Options className="absolute z-9999 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+            <Combobox.Option
+              value=""
+              className={({ active }) =>
+                `cursor-pointer px-4 py-2.5 ${
+                  active ? "bg-green-50 text-green-700" : "text-gray-700"
+                }`
+              }
+            >
+              {placeholder}
+            </Combobox.Option>
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt) => (
+                <Combobox.Option
+                  key={opt}
+                  value={opt}
+                  className={({ active, selected }) =>
+                    `cursor-pointer px-4 py-2.5 flex items-center justify-between ${
+                      active ? "bg-green-50 text-green-700" : "text-gray-700"
+                    } ${selected ? "bg-green-100 font-medium" : ""}`
+                  }
+                >
+                  {({ selected }) => (
+                    <>
+                      <span>{opt}</span>
+                      {selected && <Check className="h-4 w-4 text-green-600" />}
+                    </>
+                  )}
+                </Combobox.Option>
+              ))
+            ) : (
+              <div className="px-4 py-2.5 text-sm text-gray-400 text-center">
+                No options found
+              </div>
+            )}
+          </Combobox.Options>
+        </Transition>
+      </div>
+    </Combobox>
+  );
+};
 const UsedTractors = () => {
   const [popularIndex, setPopularIndex] = useState(0);
   const [latestIndex, setLatestIndex] = useState(0);
@@ -73,29 +158,46 @@ const UsedTractors = () => {
   const [categoryOptions, setCategoryOptions] = useState(["All Categories"]);
   const [stateOptions, setStateOptions] = useState(["All States"]);
   const [cityOptions, setCityOptions] = useState(["All Cities"]);
-
   useEffect(() => {
     const fetchFilterOptions = async () => {
       try {
-        // Brands
+        // Brands — case-insensitive dedupe
         const brandRes = await apiHelper.get("/web/brands");
-        const brands = (brandRes.data || [])
+        const rawBrands = (brandRes.data || [])
           .filter((b) => b.status === "ACTIVE")
           .map((b) => b.brandName);
 
+        const brandSeen = new Map();
+        rawBrands.forEach((name) => {
+          const key = name.trim().toLowerCase();
+          if (!brandSeen.has(key)) brandSeen.set(key, name.trim());
+        });
+        const brands = Array.from(brandSeen.values()).sort((a, b) =>
+          a.localeCompare(b),
+        );
+
         setBrandOptions(["All Brands", ...brands]);
 
-        // Categories
+        // Categories — case-insensitive dedupe
         const categoryRes = await apiHelper.get("/web/categories");
-        const categories = (categoryRes.data || [])
+        const rawCategories = (categoryRes.data || [])
           .filter((c) => c.status === "ACTIVE")
           .map((c) => c.categoryName);
+
+        const catSeen = new Map();
+        rawCategories.forEach((name) => {
+          const key = name.trim().toLowerCase();
+          if (!catSeen.has(key)) catSeen.set(key, name.trim());
+        });
+        const categories = Array.from(catSeen.values()).sort((a, b) =>
+          a.localeCompare(b),
+        );
 
         setCategoryOptions(["All Categories", ...categories]);
 
         // Used tractors
         const tractorRes = await apiHelper.get(
-           "/vendor-web/used-website-variant/public"
+          "/vendor-web/used-website-variant/public",
         );
 
         const tractors = tractorRes.data || [];
@@ -165,7 +267,7 @@ const UsedTractors = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
-   const [popularBrands, setPopularBrands] = useState([]);
+  const [popularBrands, setPopularBrands] = useState([]);
   const [brandsLoading, setBrandsLoading] = useState(true);
 
   useEffect(() => {
@@ -480,21 +582,21 @@ const UsedTractors = () => {
     });
   };
 
-const applyFilters = () => {
-  navigate(
-    `/tractors?type=used` +
-      `&search=${encodeURIComponent(searchQuery)}` +
-      `&brand=${encodeURIComponent(selectedBrand)}` +
-      `&hp=${encodeURIComponent(selectedHp)}` +
-      `&category=${encodeURIComponent(selectedCategory)}` +
-      `&driveType=${encodeURIComponent(selectedDriveType)}` +
-      `&state=${encodeURIComponent(selectedState)}` +
-      `&city=${encodeURIComponent(selectedCity)}` +
-      `&minPrice=${priceRange[0]}` +
-      `&maxPrice=${priceRange[1]}` +
-      `&sort=${sortBy}`
-  );
-};
+  const applyFilters = () => {
+    navigate(
+      `/tractors?type=used` +
+        `&search=${encodeURIComponent(searchQuery)}` +
+        `&brand=${encodeURIComponent(selectedBrand)}` +
+        `&hp=${encodeURIComponent(selectedHp)}` +
+        `&category=${encodeURIComponent(selectedCategory)}` +
+        `&driveType=${encodeURIComponent(selectedDriveType)}` +
+        `&state=${encodeURIComponent(selectedState)}` +
+        `&city=${encodeURIComponent(selectedCity)}` +
+        `&minPrice=${priceRange[0]}` +
+        `&maxPrice=${priceRange[1]}` +
+        `&sort=${sortBy}`,
+    );
+  };
 
   useEffect(() => {
     if (selectedState) {
@@ -731,10 +833,7 @@ const applyFilters = () => {
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {tractors.map((tractor) => (
-              <div
-                key={tractor.id}
-                className="snap-start w-[75vw] shrink-0"
-              >
+              <div key={tractor.id} className="snap-start w-[75vw] shrink-0">
                 <TractorCard tractor={tractor} />
               </div>
             ))}
@@ -937,99 +1036,23 @@ const applyFilters = () => {
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                       Brand
                     </label>
-                    <Listbox value={selectedBrand} onChange={setSelectedBrand}>
-                      <div className="relative">
-                        <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
-                          <span
-                            className={
-                              selectedBrand ? "text-gray-900" : "text-gray-400"
-                            }
-                          >
-                            {selectedBrand || "All Brands"}
-                          </span>
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        </Listbox.Button>
-                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-                          <Listbox.Option
-                            value=""
-                            className={({ active }) =>
-                              `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`
-                            }
-                          >
-                            All Brands
-                          </Listbox.Option>
-                          {brandOptions
-                            .filter((b) => b !== "All Brands")
-                            .map((brand) => (
-                              <Listbox.Option
-                                key={brand}
-                                value={brand}
-                                className={({ active, selected }) =>
-                                  `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`
-                                }
-                              >
-                                {({ selected }) => (
-                                  <>
-                                    <span>{brand}</span>
-                                    {selected && (
-                                      <Check className="h-4 w-4 text-green-600" />
-                                    )}
-                                  </>
-                                )}
-                              </Listbox.Option>
-                            ))}
-                        </Listbox.Options>
-                      </div>
-                    </Listbox>
+                    <FilterCombobox
+                      value={selectedBrand}
+                      onChange={setSelectedBrand}
+                      options={brandOptions.filter((b) => b !== "All Brands")}
+                      placeholder="All Brands"
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                       HP Range
                     </label>
-                    <Listbox value={selectedHp} onChange={setSelectedHp}>
-                      <div className="relative">
-                        <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
-                          <span
-                            className={
-                              selectedHp ? "text-gray-900" : "text-gray-400"
-                            }
-                          >
-                            {selectedHp || "All HP"}
-                          </span>
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        </Listbox.Button>
-                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-                          <Listbox.Option
-                            value=""
-                            className={({ active }) =>
-                              `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`
-                            }
-                          >
-                            All HP
-                          </Listbox.Option>
-                          {hpOptions
-                            .filter((hp) => hp !== "All HP")
-                            .map((hp) => (
-                              <Listbox.Option
-                                key={hp}
-                                value={hp}
-                                className={({ active, selected }) =>
-                                  `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`
-                                }
-                              >
-                                {({ selected }) => (
-                                  <>
-                                    <span>{hp}</span>
-                                    {selected && (
-                                      <Check className="h-4 w-4 text-green-600" />
-                                    )}
-                                  </>
-                                )}
-                              </Listbox.Option>
-                            ))}
-                        </Listbox.Options>
-                      </div>
-                    </Listbox>
+                    <FilterCombobox
+                      value={selectedHp}
+                      onChange={setSelectedHp}
+                      options={hpOptions.filter((hp) => hp !== "All HP")}
+                      placeholder="All HP"
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mb-4">
@@ -1037,115 +1060,27 @@ const applyFilters = () => {
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                       Drive Type
                     </label>
-
-                    <Listbox
+                    <FilterCombobox
                       value={selectedDriveType}
                       onChange={setSelectedDriveType}
-                    >
-                      <div className="relative">
-                        <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left bg-gray-50 hover:bg-white">
-                          <span
-                            className={
-                              selectedDriveType
-                                ? "text-gray-900"
-                                : "text-gray-400"
-                            }
-                          >
-                            {selectedDriveType || "All Drive Types"}
-                          </span>
-
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        </Listbox.Button>
-
-                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 text-black rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-                          <Listbox.Option
-                            value=""
-                            className={({ active }) =>
-                              `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`
-                            }
-                          >
-                            All Drive Types
-                          </Listbox.Option>
-
-                          {driveTypeOptions
-                            .filter((d) => d !== "All Drive Types")
-                            .map((d) => (
-                              <Listbox.Option
-                                key={d}
-                                value={d}
-                                className={({ active, selected }) =>
-                                  `cursor-pointer px-4 py-2.5 flex justify-between ${
-                                    active ? "bg-green-50 text-green-500" : ""
-                                  } ${selected ? "bg-green-100 text-black" : ""}`
-                                }
-                              >
-                                {({ selected }) => (
-                                  <>
-                                    <span>{d.toUpperCase()}</span>
-                                    {selected && (
-                                      <Check className="h-4 w-4 text-green-600" />
-                                    )}
-                                  </>
-                                )}
-                              </Listbox.Option>
-                            ))}
-                        </Listbox.Options>
-                      </div>
-                    </Listbox>
+                      options={driveTypeOptions.filter(
+                        (d) => d !== "All Drive Types",
+                      )}
+                      placeholder="All Drive Types"
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                       Category
                     </label>
-                    <Listbox
+                    <FilterCombobox
                       value={selectedCategory}
                       onChange={setSelectedCategory}
-                    >
-                      <div className="relative">
-                        <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
-                          <span
-                            className={
-                              selectedCategory
-                                ? "text-gray-900"
-                                : "text-gray-400"
-                            }
-                          >
-                            {selectedCategory || "All Categories"}
-                          </span>
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        </Listbox.Button>
-                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-                          <Listbox.Option
-                            value=""
-                            className={({ active }) =>
-                              `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`
-                            }
-                          >
-                            All Categories
-                          </Listbox.Option>
-                          {categoryOptions
-                            .filter((c) => c !== "All Categories")
-                            .map((c) => (
-                              <Listbox.Option
-                                key={c}
-                                value={c}
-                                className={({ active, selected }) =>
-                                  `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`
-                                }
-                              >
-                                {({ selected }) => (
-                                  <>
-                                    <span>{c}</span>
-                                    {selected && (
-                                      <Check className="h-4 w-4 text-green-600" />
-                                    )}
-                                  </>
-                                )}
-                              </Listbox.Option>
-                            ))}
-                        </Listbox.Options>
-                      </div>
-                    </Listbox>
+                      options={categoryOptions.filter(
+                        (c) => c !== "All Categories",
+                      )}
+                      placeholder="All Categories"
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mb-4">
@@ -1153,105 +1088,24 @@ const applyFilters = () => {
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                       State
                     </label>
-                    <Listbox value={selectedState} onChange={setSelectedState}>
-                      <div className="relative">
-                        <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
-                          <span
-                            className={
-                              selectedState ? "text-gray-900" : "text-gray-400"
-                            }
-                          >
-                            {selectedState || "All States"}
-                          </span>
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        </Listbox.Button>
-                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-                          <Listbox.Option
-                            value=""
-                            className={({ active }) =>
-                              `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`
-                            }
-                          >
-                            All States
-                          </Listbox.Option>
-                          {stateOptions
-                            .filter((s) => s !== "All States")
-                            .map((state) => (
-                              <Listbox.Option
-                                key={state}
-                                value={state}
-                                className={({ active, selected }) =>
-                                  `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`
-                                }
-                              >
-                                {({ selected }) => (
-                                  <>
-                                    <span>{state}</span>
-                                    {selected && (
-                                      <Check className="h-4 w-4 text-green-600" />
-                                    )}
-                                  </>
-                                )}
-                              </Listbox.Option>
-                            ))}
-                        </Listbox.Options>
-                      </div>
-                    </Listbox>
+                    <FilterCombobox
+                      value={selectedState}
+                      onChange={setSelectedState}
+                      options={stateOptions.filter((s) => s !== "All States")}
+                      placeholder="All States"
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                       City
                     </label>
-                    <Listbox
+                    <FilterCombobox
                       value={selectedCity}
                       onChange={setSelectedCity}
+                      options={cityOptions.filter((c) => c !== "All Cities")}
+                      placeholder="All Cities"
                       disabled={cityOptions.length <= 1}
-                    >
-                      <div className="relative">
-                        <Listbox.Button
-                          className={`w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white ${cityOptions.length <= 1 ? "opacity-50 cursor-not-allowed" : "cursor-pointer"}`}
-                        >
-                          <span
-                            className={
-                              selectedCity ? "text-gray-900" : "text-gray-400"
-                            }
-                          >
-                            {selectedCity || "All Cities"}
-                          </span>
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        </Listbox.Button>
-                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-                          <Listbox.Option
-                            value=""
-                            className={({ active }) =>
-                              `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`
-                            }
-                          >
-                            All Cities
-                          </Listbox.Option>
-                          {cityOptions
-                            .filter((c) => c !== "All Cities")
-                            .map((city) => (
-                              <Listbox.Option
-                                key={city}
-                                value={city}
-                                className={({ active, selected }) =>
-                                  `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`
-                                }
-                              >
-                                {({ selected }) => (
-                                  <>
-                                    <span>{city}</span>
-                                    {selected && (
-                                      <Check className="h-4 w-4 text-green-600" />
-                                    )}
-                                  </>
-                                )}
-                              </Listbox.Option>
-                            ))}
-                        </Listbox.Options>
-                      </div>
-                    </Listbox>
+                    />
                   </div>
                 </div>
                 <div className="mb-4">
@@ -1576,7 +1430,7 @@ const applyFilters = () => {
 
       {/* ========== POPULAR BRANDS MARQUEE ========== */}
       {/* Popular Brands Marquee Section */}
-          <div className="bg-white border-b border-gray-100">
+      <div className="bg-white border-b border-gray-100">
         <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 pt-16 md:pt-20 lg:pt-24">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
@@ -1608,7 +1462,9 @@ const applyFilters = () => {
                 {[...popularBrands, ...popularBrands].map((brand, idx) => (
                   <Link
                     key={idx}
-                    to={`/tractors?type=used&brand=${encodeURIComponent(brand.name)}`}
+                    to={`/tractors?type=used&brand=${encodeURIComponent(
+                      brand.name,
+                    )}`}
                     className="flex flex-col items-center gap-2 shrink-0 group cursor-pointer"
                   >
                     <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-50 border-2 border-gray-200 flex items-center justify-center group-hover:border-green-600 group-hover:shadow-md group-hover:bg-green-100 transition-all duration-300 overflow-hidden">
@@ -1945,10 +1801,18 @@ const applyFilters = () => {
                         <RadioGroup.Option value="used">
                           {({ checked }) => (
                             <div
-                              className={`flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer ${checked ? "border-green-600 bg-green-50" : "border-gray-200 bg-white"}`}
+                              className={`flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer ${
+                                checked
+                                  ? "border-green-600 bg-green-50"
+                                  : "border-gray-200 bg-white"
+                              }`}
                             >
                               <div
-                                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${checked ? "border-green-600 bg-green-600" : "border-gray-300"}`}
+                                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                  checked
+                                    ? "border-green-600 bg-green-600"
+                                    : "border-gray-300"
+                                }`}
                               >
                                 {checked && (
                                   <Check className="h-3 w-3 text-white" />
@@ -2026,7 +1890,11 @@ const applyFilters = () => {
             {FAQ_DATA.map((faq, index) => (
               <div
                 key={index}
-                className={`bg-white rounded-xl border transition-all duration-300 ${openIndex === index ? "border-green-600 shadow-md" : "border-gray-200 hover:border-gray-300 shadow-sm"}`}
+                className={`bg-white rounded-xl border transition-all duration-300 ${
+                  openIndex === index
+                    ? "border-green-600 shadow-md"
+                    : "border-gray-200 hover:border-gray-300 shadow-sm"
+                }`}
               >
                 <button
                   onClick={() => toggleFAQ(index)}
@@ -2034,24 +1902,38 @@ const applyFilters = () => {
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${openIndex === index ? "bg-green-100" : "bg-gray-100"}`}
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                        openIndex === index ? "bg-green-100" : "bg-gray-100"
+                      }`}
                     >
                       <MessageCircle
-                        className={`h-4 w-4 transition-colors ${openIndex === index ? "text-green-600" : "text-gray-400"}`}
+                        className={`h-4 w-4 transition-colors ${
+                          openIndex === index
+                            ? "text-green-600"
+                            : "text-gray-400"
+                        }`}
                       />
                     </div>
                     <span
-                      className={`text-sm sm:text-base font-semibold transition-colors ${openIndex === index ? "text-green-700" : "text-gray-900"}`}
+                      className={`text-sm sm:text-base font-semibold transition-colors ${
+                        openIndex === index ? "text-green-700" : "text-gray-900"
+                      }`}
                     >
                       {faq.question}
                     </span>
                   </div>
                   <ChevronDown
-                    className={`h-4 w-4 text-gray-400 flex-shrink-0 transition-transform duration-300 ${openIndex === index ? "rotate-180 text-green-600" : ""}`}
+                    className={`h-4 w-4 text-gray-400 flex-shrink-0 transition-transform duration-300 ${
+                      openIndex === index ? "rotate-180 text-green-600" : ""
+                    }`}
                   />
                 </button>
                 <div
-                  className={`transition-all duration-300 overflow-hidden ${openIndex === index ? "max-h-96 opacity-100" : "max-h-0 opacity-0"}`}
+                  className={`transition-all duration-300 overflow-hidden ${
+                    openIndex === index
+                      ? "max-h-96 opacity-100"
+                      : "max-h-0 opacity-0"
+                  }`}
                 >
                   <div className="px-5 pb-4 pl-16">
                     <div className="border-t border-gray-100 pt-4">

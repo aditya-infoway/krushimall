@@ -4,12 +4,12 @@ import Select from "react-select";
 import { Country, State, City } from "country-state-city";
 import toast from "react-hot-toast";
 import { Listbox, Transition } from "@headlessui/react";
-import { ChevronUpDownIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
-
+import { Combobox } from "@headlessui/react";
 import { EquipmentBasicInfoSchema } from "./schema";
 import apiHelper from "../../utils/apiHelper";
 
@@ -23,7 +23,7 @@ const equipmentTypeOptions = [
   { label: "Seed Drill", value: "seed_drill" },
   { label: "MB Plough", value: "mb_plough" },
   { label: "Trolley", value: "trolley" },
-    { label: "Trailer", value: "trailer" },
+  { label: "Trailer", value: "trailer" },
   { label: "Other", value: "other" },
 ];
 
@@ -214,72 +214,101 @@ const CustomListbox = ({
   placeholder,
   label,
   error,
-  required,
-  disabled,
 }) => {
+  const [query, setQuery] = useState("");
+  const buttonRef = useRef(null);
+
+  const filteredData =
+    query === ""
+      ? data
+      : data?.filter((item) =>
+          (item[displayField] || item.label || "")
+            .toLowerCase()
+            .includes(query.toLowerCase()),
+        );
+
   return (
     <div>
       {label && (
         <label className="block text-xs font-semibold text-gray-700 mb-1.5">
-          {label} {required && <span className="text-red-500">*</span>}
+          {label}
         </label>
       )}
-      <Listbox value={value} onChange={onChange} disabled={disabled}>
+      <Combobox
+        value={value}
+        onChange={(option) => {
+          onChange(option);
+          setQuery("");
+        }}
+      >
         <div className="relative">
-          <Listbox.Button
-            className={`relative w-full cursor-default rounded-xl border border-gray-200 bg-white py-3 pl-4 pr-10 text-left text-sm text-gray-900 outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
-              disabled ? "bg-gray-50 cursor-not-allowed" : ""
-            }`}
-          >
-            <span className="block truncate">
-              {value ? value[displayField] || value.label : placeholder}
-            </span>
-            <span className="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-              <ChevronUpDownIcon
-                className="h-5 w-5 text-gray-400"
+          <div className="relative">
+            <Combobox.Input
+              className={`w-full cursor-default rounded-xl border bg-white py-3 pl-10 pr-4 text-left text-sm text-gray-900 outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+                error ? "border-red-300 bg-red-50" : "border-gray-200"
+              }`}
+              displayValue={(item) => (item ? item[displayField] : "")}
+              placeholder={placeholder}
+              onChange={(e) => setQuery(e.target.value)}
+              onFocus={() => buttonRef.current?.click()}
+            />
+            <Combobox.Button
+              ref={buttonRef}
+              className="absolute inset-y-0 left-0 flex items-center pl-3"
+            >
+              <MagnifyingGlassIcon
+                className="h-4 w-4 text-gray-400"
                 aria-hidden="true"
               />
-            </span>
-          </Listbox.Button>
+            </Combobox.Button>
+          </div>
+
           <Transition
             as={Fragment}
             leave="transition ease-in duration-100"
             leaveFrom="opacity-100"
             leaveTo="opacity-0"
+            afterLeave={() => setQuery("")}
           >
-            <Listbox.Options className="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-              {data?.map((item) => (
-                <Listbox.Option
-                  key={item.id || item.value}
-                  className={({ active }) =>
-                    `relative cursor-default select-none py-2 pl-10 pr-4 ${
-                      active ? "bg-green-100 text-green-900" : "text-gray-900"
-                    }`
-                  }
-                  value={item}
-                >
-                  {({ selected }) => (
-                    <>
-                      <span
-                        className={`block truncate ${
-                          selected ? "font-medium" : "font-normal"
-                        }`}
-                      >
-                        {item[displayField] || item.label}
-                      </span>
-                      {selected && (
-                        <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-green-600">
-                          <CheckIcon className="h-4 w-4" aria-hidden="true" />
+            <Combobox.Options className="absolute z-20 mt-1 max-h-60 w-full overflow-auto rounded-xl bg-white py-1 text-sm shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+              {filteredData?.length ? (
+                filteredData.map((item) => (
+                  <Combobox.Option
+                    key={item.id || item.value}
+                    className={({ active }) =>
+                      `relative cursor-default select-none py-2 pl-10 pr-4 ${
+                        active ? "bg-green-100 text-green-900" : "text-gray-900"
+                      }`
+                    }
+                    value={item}
+                  >
+                    {({ selected }) => (
+                      <>
+                        <span
+                          className={`block truncate ${
+                            selected ? "font-medium" : "font-normal"
+                          }`}
+                        >
+                          {item[displayField] || item.label}
                         </span>
-                      )}
-                    </>
-                  )}
-                </Listbox.Option>
-              ))}
-            </Listbox.Options>
+                        {selected && (
+                          <span className="absolute inset-y-0 left-0 flex items-center pl-3 text-green-600">
+                            <CheckIcon className="h-4 w-4" aria-hidden="true" />
+                          </span>
+                        )}
+                      </>
+                    )}
+                  </Combobox.Option>
+                ))
+              ) : (
+                <div className="px-4 py-2 text-sm text-gray-400">
+                  No results found
+                </div>
+              )}
+            </Combobox.Options>
           </Transition>
         </div>
-      </Listbox>
+      </Combobox>
       {error && <p className="mt-1 text-xs text-red-600">{error}</p>}
     </div>
   );
@@ -471,9 +500,10 @@ export default function BasicInformation({
   setCurrentStep,
   step,
   onComplete,
+  onProductSaved,
   productData,
   isEdit,
-   id,
+  id,
 }) {
   const navigate = useNavigate();
   const {
@@ -527,56 +557,53 @@ export default function BasicInformation({
     if (watchDistrict) setDistrictName(watchDistrict);
   }, [watchDistrict]);
 
-useEffect(() => {
-  if (!isEdit || !productData) return;
+  useEffect(() => {
+    if (!productData) return;
 
-  // Wait until dropdown data is loaded
-  if (!categoryOptions.length) return;
-  if (!brandOptions.length) return;
-  if (!modelOptions.length) return;
-  if (!variantOptions.length) return;
+    // Wait until dropdown data is loaded
+    if (!categoryOptions.length) return;
+    if (!brandOptions.length) return;
+    if (!modelOptions.length) return;
+    if (!variantOptions.length) return;
 
-  setCountry(productData.country || "");
-  setStateCode(productData.state || "");
-  setDistrictName(productData.district || "");
+    setCountry(productData.country || "");
+    setStateCode(productData.state || "");
+    setDistrictName(productData.district || "");
 
-  reset({
-     displayName: productData.displayName || "",
-    categoryId: Number(productData.categoryId),
-    equipmentType: productData.equipmentType || "",
-    brandId: Number(productData.brandId),
-    modelId: Number(productData.modelId),
-    variantId: Number(productData.variantId),
+    reset({
+      displayName: productData.displayName || "",
+      categoryId: Number(productData.categoryId),
+      equipmentType: productData.equipmentType || "",
+      brandId: Number(productData.brandId),
+      modelId: Number(productData.modelId),
+      variantId: Number(productData.variantId),
 
-    manufacturingYear: productData.manufacturingYear || "",
-    purchaseYear: productData.purchaseYear || "",
-    equipmentCondition: productData.equipmentCondition || "",
-    serialNumber: productData.serialNumber || "",
-    productCode: productData.productCode || "",
-    color: productData.color || "",
+      manufacturingYear: productData.manufacturingYear || "",
+      purchaseYear: productData.purchaseYear || "",
+      equipmentCondition: productData.equipmentCondition || "",
+      serialNumber: productData.serialNumber || "",
+      productCode: productData.productCode || "",
+      color: productData.color || "",
 
-    country: productData.country || "",
-    state: productData.state || "",
-    district: productData.district || "",
-    taluka: productData.taluka || "",
-    village: productData.village || "",
+      country: productData.country || "",
+      state: productData.state || "",
+      district: productData.district || "",
+      taluka: productData.taluka || "",
+      village: productData.village || "",
 
-    sellerType: productData.sellerType || "",
-    ownerType: productData.ownerType || "",
-    ownershipProofAvailable: Boolean(
-      productData.ownershipProofAvailable
-    ),
-    usage: productData.usage || "",
-  });
-}, [
-  productData,
-  isEdit,
-  reset,
-  categoryOptions,
-  brandOptions,
-  modelOptions,
-  variantOptions,
-]);
+      sellerType: productData.sellerType || "",
+      ownerType: productData.ownerType || "",
+      ownershipProofAvailable: Boolean(productData.ownershipProofAvailable),
+      usage: productData.usage || "",
+    });
+  }, [
+    productData,
+    reset,
+    categoryOptions,
+    brandOptions,
+    modelOptions,
+    variantOptions,
+  ]);
 
   const countryOptions = Country.getAllCountries().map((c) => ({
     value: c.isoCode,
@@ -601,171 +628,152 @@ useEffect(() => {
   }));
 
   const onSubmit = async (data) => {
-  try {
-    const selectedBrand = filteredBrands.find(
-      (item) => Number(item.id) === Number(data.brandId),
-    );
+    try {
+      const selectedBrand = filteredBrands.find(
+        (item) => Number(item.id) === Number(data.brandId),
+      );
 
-    const selectedModel = filteredModels.find(
-      (item) => Number(item.id) === Number(data.modelId),
-    );
+      const selectedModel = filteredModels.find(
+        (item) => Number(item.id) === Number(data.modelId),
+      );
 
-    const selectedVariant = filteredVariants.find(
-      (item) => Number(item.id) === Number(data.variantId),
-    );
+      const selectedVariant = filteredVariants.find(
+        (item) => Number(item.id) === Number(data.variantId),
+      );
 
-    const payload = {
+      const payload = {
+        displayName: data.displayName?.trim() || "",
 
+        // ==========================
+        // Equipment Classification
+        // ==========================
+        categoryId: data.categoryId ? Number(data.categoryId) : null,
 
-      displayName: data.displayName?.trim() || "",
+        equipmentType: data.equipmentType || "",
 
-      // ==========================
-      // Equipment Classification
-      // ==========================
-      categoryId: data.categoryId
-        ? Number(data.categoryId)
-        : null,
+        brandId: data.brandId ? Number(data.brandId) : null,
 
-      equipmentType: data.equipmentType || "",
+        brand: selectedBrand?.brandName || "",
 
-      brandId: data.brandId
-        ? Number(data.brandId)
-        : null,
+        modelId: data.modelId ? Number(data.modelId) : null,
 
-      brand: selectedBrand?.brandName || "",
+        model: selectedModel?.modelName || "",
 
-      modelId: data.modelId
-        ? Number(data.modelId)
-        : null,
+        variantId: data.variantId ? Number(data.variantId) : null,
 
-      model: selectedModel?.modelName || "",
+        variant: selectedVariant?.variantName || "",
 
-      variantId: data.variantId
-        ? Number(data.variantId)
-        : null,
+        // ==========================
+        // Equipment Details
+        // ==========================
+        manufacturingYear: data.manufacturingYear || null,
 
-      variant: selectedVariant?.variantName || "",
+        purchaseYear: data.purchaseYear || null,
 
-      // ==========================
-      // Equipment Details
-      // ==========================
-      manufacturingYear:
-        data.manufacturingYear || null,
+        equipmentCondition: data.equipmentCondition || "",
 
-      purchaseYear:
-        data.purchaseYear || null,
+        serialNumber: data.serialNumber || "",
 
-      equipmentCondition:
-        data.equipmentCondition || "",
+        productCode: data.productCode || "",
 
-      serialNumber:
-        data.serialNumber || "",
+        color: data.color || "",
 
-      productCode:
-        data.productCode || "",
+        // ==========================
+        // Location
+        // ==========================
+        country: data.country || "",
 
-      color:
-        data.color || "",
+        state: data.state || "",
 
-      // ==========================
-      // Location
-      // ==========================
-      country:
-        data.country || "",
+        district: data.district || "",
 
-      state:
-        data.state || "",
+        taluka: data.taluka || "",
 
-      district:
-        data.district || "",
+        village: data.village || "",
 
-      taluka:
-        data.taluka || "",
+        // ==========================
+        // Seller Details
+        // ==========================
+        sellerType: data.sellerType || "",
 
-      village:
-        data.village || "",
+        ownerType: data.ownerType || "",
 
-      // ==========================
-      // Seller Details
-      // ==========================
-      sellerType:
-        data.sellerType || "",
+        ownershipProofAvailable: Boolean(data.ownershipProofAvailable),
 
-      ownerType:
-        data.ownerType || "",
+        usage: data.usage || "",
 
-      ownershipProofAvailable:
-        Boolean(data.ownershipProofAvailable),
+        // ==========================
+        // Step
+        // ==========================
+        currentStep: 1,
+      };
 
-      usage:
-        data.usage || "",
+      // ONLY CREATE FOR NOW
+         let res;
+    const existingId = productData?.id
+      ? productData.id
+      : localStorage.getItem("vendorEquipmentId");
 
-      // ==========================
-      // Step
-      // ==========================
-      currentStep: 1,
-    };
+    if (existingId) {
+      try {
+        res = await apiHelper.put(
+          `/vendor-web/equipmentvariant/${existingId}`,
+          payload,
+        );
+      } catch (err) {
+        if (err?.response?.status === 404) {
+          res = await apiHelper.post("/vendor-web/equipmentvariant", payload);
+          if (res.data?.id) {
+            localStorage.setItem("vendorEquipmentId", res.data.id.toString());
+          }
+        } else {
+          throw err;
+        }
+      }
+    } else {
+      res = await apiHelper.post("/vendor-web/equipmentvariant", payload);
+      if (res.data?.id) {
+        localStorage.setItem("vendorEquipmentId", res.data.id.toString());
+      }
+    }
 
-    console.log("Equipment Variant Payload:", payload);
-
-    // ONLY CREATE FOR NOW
-   let res;
-
-if (isEdit) {
-  res = await apiHelper.put(
-    `/vendor-web/equipmentvariant/${id}`,
-    payload,
-  );
-} else {
-  res = await apiHelper.post(
-    "/vendor-web/equipmentvariant",
-    payload,
-  );
-}
-
-    console.log("Equipment Variant Created:", res.data);
-
-    // Store created ID for next steps
-if (!isEdit && res.data?.id) {
-  localStorage.setItem(
-    "vendorEquipmentId",
-    res.data.id.toString(),
-  );
-}
+    
 
     toast.success("Basic information saved!");
+
+    onProductSaved?.({
+      ...payload,
+      id: res?.data?.id || existingId,
+    });
 
     if (onComplete) {
       onComplete(step);
     }
 
     setCurrentStep(step + 1);
-  } catch (error) {
-    console.error(
-      "Create Equipment Variant Error:",
-      error,
-    );
+    } catch (error) {
+      console.error("Create Equipment Variant Error:", error);
 
-    toast.error(
-      error?.response?.data?.message ||
-        "Failed to save basic information. Please try again.",
-    );
-  }
-};
+      toast.error(
+        error?.response?.data?.message ||
+          "Failed to save basic information. Please try again.",
+      );
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 md:py-12 lg:py-16">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Page Header */}
         <div className="mb-8">
-<h1 className="text-2xl font-bold text-gray-900">
-  {isEdit ? "Edit Equipment" : "Add Equipment"}
-</h1>
+          <h1 className="text-2xl font-bold text-gray-900">
+            {isEdit ? "Edit Equipment" : "Add Equipment"}
+          </h1>
           <p className="text-sm text-gray-500 mt-1">
-  {isEdit
-    ? "Update your equipment details"
-    : "Fill in the equipment details below to list your product"}
-</p>
+            {isEdit
+              ? "Update your equipment details"
+              : "Fill in the equipment details below to list your product"}
+          </p>
         </div>
 
         {/* Form Card */}
@@ -785,11 +793,11 @@ if (!isEdit && res.data?.id) {
                     render={({ field }) => (
                       <CustomListbox
                         data={categoryOptions}
-                       value={
-  categoryOptions.find(
-    (c) => Number(c.id) === Number(field.value)
-  ) || null
-}
+                        value={
+                          categoryOptions.find(
+                            (c) => Number(c.id) === Number(field.value),
+                          ) || null
+                        }
                         onChange={(option) => {
                           field.onChange(option.id);
                           setValue("brandId", "");
@@ -834,11 +842,11 @@ if (!isEdit && res.data?.id) {
                     render={({ field }) => (
                       <CustomListbox
                         data={filteredBrands}
-                       value={
-  filteredBrands.find(
-    (b) => Number(b.id) === Number(field.value)
-  ) || null
-}
+                        value={
+                          filteredBrands.find(
+                            (b) => Number(b.id) === Number(field.value),
+                          ) || null
+                        }
                         onChange={(option) => {
                           field.onChange(option.id);
                           setValue("modelId", "");
@@ -860,11 +868,11 @@ if (!isEdit && res.data?.id) {
                     render={({ field }) => (
                       <CustomListbox
                         data={filteredModels}
-                       value={
-  filteredModels.find(
-    (m) => Number(m.id) === Number(field.value)
-  ) || null
-}
+                        value={
+                          filteredModels.find(
+                            (m) => Number(m.id) === Number(field.value),
+                          ) || null
+                        }
                         onChange={(option) => {
                           field.onChange(option.id);
                           setValue("variantId", "");
@@ -885,11 +893,11 @@ if (!isEdit && res.data?.id) {
                     render={({ field }) => (
                       <CustomListbox
                         data={filteredVariants}
-                       value={
-  filteredVariants.find(
-    (v) => Number(v.id) === Number(field.value)
-  ) || null
-}
+                        value={
+                          filteredVariants.find(
+                            (v) => Number(v.id) === Number(field.value),
+                          ) || null
+                        }
                         onChange={(option) => field.onChange(option?.id)}
                         displayField="variantName"
                         placeholder="Select Variant / Version"
@@ -900,13 +908,13 @@ if (!isEdit && res.data?.id) {
                   />
 
                   {/* 1. Display Name */}
-<Input
-  {...register("displayName")}
-  label="Display Name"
-  placeholder="Enter display name"
-  error={errors?.displayName?.message}
-  required
-/>
+                  <Input
+                    {...register("displayName")}
+                    label="Display Name"
+                    placeholder="Enter display name"
+                    error={errors?.displayName?.message}
+                    required
+                  />
 
                   {/* 6. Manufacturing Year - Using DatePicker */}
                   <Controller

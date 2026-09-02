@@ -70,6 +70,7 @@ export default function MediaDocument({
   step,
   completedSteps,
   onComplete,
+  onProductSaved,
   productData,
   isEdit,
 }) {
@@ -90,8 +91,13 @@ export default function MediaDocument({
     defaultValues: {},
   });
 
+  // ✅ Fix: pehle sirf isEdit mode me chalta tha. Ab productData jab
+  // bhi available ho (edit mode se ya parent ke onProductSaved se
+  // aane wale updated state se), pehle se upload ki gayi images/docs
+  // ke previews wapas dikh jayenge — "Previous" dabane ke baad ye
+  // step khaali nahi dikhega.
   useEffect(() => {
-    if (!isEdit || !productData) return;
+    if (!productData) return;
 
     const newPreviews = {};
     const newDocs = {};
@@ -116,7 +122,7 @@ export default function MediaDocument({
     setPreviews(newPreviews);
     setUploadedDocs(newDocs);
 
-  }, [productData, isEdit, setValue, getValues]);
+  }, [productData, setValue, getValues]);
 
   useEffect(() => {
     register("frontView");
@@ -158,8 +164,8 @@ export default function MediaDocument({
   const onSubmit = async (data) => {
     try {
       setLoading(true);
-      const productId = isEdit
-        ? productData?.id
+      const productId = productData?.id
+        ? productData.id
         : localStorage.getItem("vendorProductId");
 
       if (!productId) {
@@ -172,7 +178,7 @@ export default function MediaDocument({
         if (value instanceof File) formData.append(key, value);
       });
 
-      await apiHelper.put(
+      const res = await apiHelper.put(
         `/vendor-web/website-variant/${productId}/save-step`,
         formData,
         {
@@ -181,6 +187,17 @@ export default function MediaDocument({
       );
 
       toast.success("Media and documents saved!");
+
+      // ✅ Parent ka productData state bhi update karo taaki
+      // "Previous" dabane par uploaded images/docs ke previews
+      // dubara dikh jayein. Backend jo updated record wapas deta
+      // hai (file paths ke saath) wahi use karo.
+      const updated = res?.data?.data || res?.data;
+      if (updated) {
+        onProductSaved?.({ ...updated, id: productId });
+      } else {
+        onProductSaved?.({ id: productId });
+      }
 
       if (onComplete) onComplete(step);
       if (setCurrentStep) setCurrentStep(step + 1);

@@ -1,9 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { Fragment, useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { Listbox, RadioGroup } from "@headlessui/react";
+import { Listbox, RadioGroup, Combobox, Transition } from "@headlessui/react";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import {
   Search,
   Filter,
+
   ChevronDown,
   ChevronLeft,
   ChevronRight,
@@ -53,6 +55,95 @@ const selectStyles = {
     cursor: "pointer",
   }),
   menu: (base) => ({ ...base, zIndex: 9999 }),
+};
+
+// ===== SEARCHABLE SELECT / COMBOBOX =====
+const FilterCombobox = ({ value, onChange, options, placeholder }) => {
+  const [query, setQuery] = useState("");
+  const buttonRef = useRef(null);
+
+  const filteredOptions =
+    query === ""
+      ? options
+      : options.filter((opt) =>
+          String(opt).toLowerCase().includes(query.toLowerCase()),
+        );
+
+  return (
+    <Combobox
+      value={value}
+      onChange={(val) => {
+        onChange(val || placeholder);
+        setQuery("");
+      }}
+    >
+      <div className="relative">
+        <div className="relative">
+          <Combobox.Input
+            className="w-full pl-3 pr-8 py-2.5 text-black border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer"
+            displayValue={(val) => val || ""}
+            placeholder={placeholder}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => buttonRef.current?.click()}
+          />
+          <Combobox.Button
+            ref={buttonRef}
+            className="absolute right-3 top-1/2 -translate-y-1/2"
+          >
+            <MagnifyingGlassIcon className="h-4 w-4 text-gray-400" />
+          </Combobox.Button>
+        </div>
+
+        <Transition
+          as={Fragment}
+          leave="transition ease-in duration-100"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+          afterLeave={() => setQuery("")}
+        >
+          <Combobox.Options className="absolute z-[9999] mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+            <Combobox.Option
+              value={placeholder}
+              className={({ active }) =>
+                `cursor-pointer px-4 py-2.5 ${
+                  active ? "bg-green-50 text-green-700" : "text-gray-700"
+                }`
+              }
+            >
+              {placeholder}
+            </Combobox.Option>
+
+            {filteredOptions.length > 0 ? (
+              filteredOptions
+                .filter((opt) => opt !== placeholder)
+                .map((opt) => (
+                  <Combobox.Option
+                    key={opt}
+                    value={opt}
+                    className={({ active, selected }) =>
+                      `cursor-pointer px-4 py-2.5 flex items-center justify-between ${
+                        active ? "bg-green-50 text-green-700" : "text-gray-700"
+                      } ${selected ? "bg-green-100 font-medium" : ""}`
+                    }
+                  >
+                    {({ selected }) => (
+                      <>
+                        <span>{opt}</span>
+                        {selected && <Check className="h-4 w-4 text-green-600" />}
+                      </>
+                    )}
+                  </Combobox.Option>
+                ))
+            ) : (
+              <div className="px-4 py-2.5 text-sm text-gray-400 text-center">
+                No options found
+              </div>
+            )}
+          </Combobox.Options>
+        </Transition>
+      </div>
+    </Combobox>
+  );
 };
 
 // ===== MAIN COMPONENT =====
@@ -498,150 +589,39 @@ const submitEnquiry = async (e) => {
                 </div>
 
                 {/* Category - Headless UI Listbox */}
-                <div>
+<div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                     Category
                   </label>
-                  <Listbox
+                  <FilterCombobox
                     value={selectedCategory}
                     onChange={setSelectedCategory}
-                  >
-                    <div className="relative">
-                      <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
-                        <span
-                          className={
-                            selectedCategory !== "All Categories"
-                              ? "text-gray-900"
-                              : "text-gray-400"
-                          }
-                        >
-                          {selectedCategory}
-                        </span>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      </Listbox.Button>
-                      <Listbox.Options className="absolute z-[9999] mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-                        {categories.map((category) => (
-                          <Listbox.Option
-                            key={category}
-                            value={category}
-                            className={({ active, selected }) =>
-                              `cursor-pointer px-4 py-2.5 flex items-center justify-between ${
-                                active
-                                  ? "bg-green-50 text-green-700"
-                                  : "text-gray-700"
-                              } ${selected ? "bg-green-100 font-medium" : ""}`
-                            }
-                          >
-                            {({ selected }) => (
-                              <>
-                                <span>{category}</span>
-                                {selected && (
-                                  <Check className="h-4 w-4 text-green-600" />
-                                )}
-                              </>
-                            )}
-                          </Listbox.Option>
-                        ))}
-                      </Listbox.Options>
-                    </div>
-                  </Listbox>
-                </div>
-
-                {/* Brand - Headless UI Listbox */}
-                <div>
+                    options={categories}
+                    placeholder="All Categories"
+                  />
+                </div>                {/* Brand - Headless UI Listbox */}
+<div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                     Brand
                   </label>
-                  <Listbox value={selectedBrand} onChange={setSelectedBrand}>
-                    <div className="relative">
-                      <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
-                        <span
-                          className={
-                            selectedBrand !== "All Brands"
-                              ? "text-gray-900"
-                              : "text-gray-400"
-                          }
-                        >
-                          {selectedBrand}
-                        </span>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      </Listbox.Button>
-                      <Listbox.Options className="absolute z-[9999] mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-                        {BRANDS.map((brand) => (
-                          <Listbox.Option
-                            key={brand}
-                            value={brand}
-                            className={({ active, selected }) =>
-                              `cursor-pointer px-4 py-2.5 flex items-center justify-between ${
-                                active
-                                  ? "bg-green-50 text-green-700"
-                                  : "text-gray-700"
-                              } ${selected ? "bg-green-100 font-medium" : ""}`
-                            }
-                          >
-                            {({ selected }) => (
-                              <>
-                                <span>{brand}</span>
-                                {selected && (
-                                  <Check className="h-4 w-4 text-green-600" />
-                                )}
-                              </>
-                            )}
-                          </Listbox.Option>
-                        ))}
-                      </Listbox.Options>
-                    </div>
-                  </Listbox>
-                </div>
-
-                {/* HP - Headless UI Listbox */}
-                <div>
+                  <FilterCombobox
+                    value={selectedBrand}
+                    onChange={setSelectedBrand}
+                    options={BRANDS}
+                    placeholder="All Brands"
+                  />
+                </div>                {/* HP - Headless UI Listbox */}
+<div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                     Horse Power
                   </label>
-                  <Listbox value={selectedHp} onChange={setSelectedHp}>
-                    <div className="relative">
-                      <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
-                        <span
-                          className={
-                            selectedHp !== "All HP"
-                              ? "text-gray-900"
-                              : "text-gray-400"
-                          }
-                        >
-                          {selectedHp}
-                        </span>
-                        <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                      </Listbox.Button>
-                      <Listbox.Options className="absolute z-[9999] mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-                        {HP_OPTIONS.map((hp) => (
-                          <Listbox.Option
-                            key={hp}
-                            value={hp}
-                            className={({ active, selected }) =>
-                              `cursor-pointer px-4 py-2.5 flex items-center justify-between ${
-                                active
-                                  ? "bg-green-50 text-green-700"
-                                  : "text-gray-700"
-                              } ${selected ? "bg-green-100 font-medium" : ""}`
-                            }
-                          >
-                            {({ selected }) => (
-                              <>
-                                <span>{hp}</span>
-                                {selected && (
-                                  <Check className="h-4 w-4 text-green-600" />
-                                )}
-                              </>
-                            )}
-                          </Listbox.Option>
-                        ))}
-                      </Listbox.Options>
-                    </div>
-                  </Listbox>
-                </div>
-
-                {/* Price Range */}
+                  <FilterCombobox
+                    value={selectedHp}
+                    onChange={setSelectedHp}
+                    options={HP_OPTIONS}
+                    placeholder="All HP"
+                  />
+                </div>                {/* Price Range */}
                 <div>
                   <label className="block text-xs font-semibold text-gray-700 mb-1.5">
                     Price Range (₹)

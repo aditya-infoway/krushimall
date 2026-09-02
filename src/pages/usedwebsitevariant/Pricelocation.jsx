@@ -235,6 +235,7 @@ export default function PriceLocation({
   setCurrentStep,
   step,
   completedSteps,
+    onProductSaved,
   onComplete,
   productData,
   isEdit,
