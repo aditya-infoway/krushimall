@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from "react";
+import { Fragment, useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-import { Listbox, RadioGroup } from "@headlessui/react";
+import { Listbox, RadioGroup, Combobox, Transition } from "@headlessui/react";
+import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import {
   Tractor,
   MapPin,
@@ -37,7 +38,89 @@ import apiHelper from "../utils/apiHelper";
 import TractorCategory from "../components/TractorCategory";
 import { useWishlist } from "../context/WishlistContext";
 import { useAuth } from "../context/AuthContext";
+const FilterCombobox = ({ value, onChange, options, placeholder }) => {
+  const [query, setQuery] = useState("");
+  const buttonRef = useRef(null);
 
+  const filteredOptions =
+    query === ""
+      ? options
+      : options.filter((opt) =>
+          opt.toLowerCase().includes(query.toLowerCase()),
+        );
+
+  return (
+    <Combobox
+      value={value}
+      onChange={(val) => {
+        onChange(val || "");
+        setQuery("");
+      }}
+    >
+      <div className="relative">
+        <div className="relative">
+          <Combobox.Input
+            className="w-full pl-3 pr-8 py-2.5 text-black border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer"
+            displayValue={(val) => val || ""}
+            placeholder={placeholder}
+            onChange={(e) => setQuery(e.target.value)}
+            onFocus={() => buttonRef.current?.click()}
+          />
+          <Combobox.Button
+            ref={buttonRef}
+            className="absolute right-3 top-1/2 -translate-y-1/2"
+          >
+            <MagnifyingGlassIcon className="h-4 w-4 text-gray-400" />
+          </Combobox.Button>
+        </div>
+        <Transition
+          as={Fragment}
+          leave="transition ease-in duration-100"
+          leaveFrom="opacity-100"
+          leaveTo="opacity-0"
+          afterLeave={() => setQuery("")}
+        >
+          <Combobox.Options className="absolute z-9999 mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
+            <Combobox.Option
+              value=""
+              className={({ active }) =>
+                `cursor-pointer px-4 py-2.5 ${
+                  active ? "bg-green-50 text-green-700" : "text-gray-700"
+                }`
+              }
+            >
+              {placeholder}
+            </Combobox.Option>
+            {filteredOptions.length > 0 ? (
+              filteredOptions.map((opt) => (
+                <Combobox.Option
+                  key={opt}
+                  value={opt}
+                  className={({ active, selected }) =>
+                    `cursor-pointer px-4 py-2.5 flex items-center justify-between ${
+                      active ? "bg-green-50 text-green-700" : "text-gray-700"
+                    } ${selected ? "bg-green-100 font-medium" : ""}`
+                  }
+                >
+                  {({ selected }) => (
+                    <>
+                      <span>{opt}</span>
+                      {selected && <Check className="h-4 w-4 text-green-600" />}
+                    </>
+                  )}
+                </Combobox.Option>
+              ))
+            ) : (
+              <div className="px-4 py-2.5 text-sm text-gray-400 text-center">
+                No options found
+              </div>
+            )}
+          </Combobox.Options>
+        </Transition>
+      </div>
+    </Combobox>
+  );
+};
 const NewTractors = () => {
   const [popularIndex, setPopularIndex] = useState(0);
   const [latestIndex, setLatestIndex] = useState(0);
@@ -797,10 +880,7 @@ const NewTractors = () => {
             style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
           >
             {tractors.map((tractor) => (
-              <div
-                key={tractor.id}
-                className="snap-start w-[75vw] shrink-0"
-              >
+              <div key={tractor.id} className="snap-start w-[75vw] shrink-0">
                 <TractorCard tractor={tractor} />
               </div>
             ))}
@@ -1010,54 +1090,12 @@ const NewTractors = () => {
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                       Brand
                     </label>
-                    <Listbox value={selectedBrand} onChange={setSelectedBrand}>
-                      <div className="relative">
-                        <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
-                          <span
-                            className={
-                              selectedBrand ? "text-gray-900" : "text-gray-400"
-                            }
-                          >
-                            {selectedBrand || "All Brands"}
-                          </span>
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        </Listbox.Button>
-                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-                          <Listbox.Option
-                            value=""
-                            className={({ active }) =>
-                              `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`
-                            }
-                          >
-                            All Brands
-                          </Listbox.Option>
-                          {brandOptions
-                            .filter((b) => b !== "All Brands")
-                            .map((brand) => (
-                              <Listbox.Option
-                                key={brand}
-                                value={brand}
-                                className={({ active, selected }) =>
-                                  `cursor-pointer px-4 py-2.5 flex items-center justify-between ${
-                                    active
-                                      ? "bg-green-50 text-green-700"
-                                      : "text-gray-700"
-                                  } ${selected ? "bg-green-100 font-medium" : ""}`
-                                }
-                              >
-                                {({ selected }) => (
-                                  <>
-                                    <span>{brand}</span>
-                                    {selected && (
-                                      <Check className="h-4 w-4 text-green-600" />
-                                    )}
-                                  </>
-                                )}
-                              </Listbox.Option>
-                            ))}
-                        </Listbox.Options>
-                      </div>
-                    </Listbox>
+                    <FilterCombobox
+                      value={selectedBrand}
+                      onChange={setSelectedBrand}
+                      options={brandOptions.filter((b) => b !== "All Brands")}
+                      placeholder="All Brands"
+                    />
                   </div>
                   {/* HP Select */}
                   {/* HP Select - Headless UI Listbox */}
@@ -1065,50 +1103,13 @@ const NewTractors = () => {
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                       HP Range
                     </label>
-                    <Listbox value={selectedHp} onChange={setSelectedHp}>
-                      <div className="relative">
-                        <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
-                          <span
-                            className={
-                              selectedHp ? "text-gray-900" : "text-gray-400"
-                            }
-                          >
-                            {selectedHp || "All HP"}
-                          </span>
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        </Listbox.Button>
-                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-                          <Listbox.Option
-                            value=""
-                            className={({ active }) =>
-                              `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`
-                            }
-                          >
-                            All HP
-                          </Listbox.Option>
-                          {hpOptions
-                            .filter((hp) => hp !== "All HP")
-                            .map((hp) => (
-                              <Listbox.Option
-                                key={hp}
-                                value={hp}
-                                className={({ active, selected }) =>
-                                  `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`
-                                }
-                              >
-                                {({ selected }) => (
-                                  <>
-                                    <span>{hp}</span>
-                                    {selected && (
-                                      <Check className="h-4 w-4 text-green-600" />
-                                    )}
-                                  </>
-                                )}
-                              </Listbox.Option>
-                            ))}
-                        </Listbox.Options>
-                      </div>
-                    </Listbox>
+
+                    <FilterCombobox
+                      value={selectedHp}
+                      onChange={setSelectedHp}
+                      options={hpOptions.filter((hp) => hp !== "All HP")}
+                      placeholder="All HP"
+                    />
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4 mb-4">
@@ -1118,55 +1119,15 @@ const NewTractors = () => {
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                       Transmission
                     </label>
-                    <Listbox
+
+                    <FilterCombobox
                       value={selectedTransmission}
                       onChange={setSelectedTransmission}
-                    >
-                      <div className="relative">
-                        <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
-                          <span
-                            className={
-                              selectedTransmission
-                                ? "text-gray-900"
-                                : "text-gray-400"
-                            }
-                          >
-                            {selectedTransmission || "All Transmissions"}
-                          </span>
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        </Listbox.Button>
-                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-                          <Listbox.Option
-                            value=""
-                            className={({ active }) =>
-                              `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`
-                            }
-                          >
-                            All Transmissions
-                          </Listbox.Option>
-                          {transmissionOptions
-                            .filter((t) => t !== "All Transmissions")
-                            .map((t) => (
-                              <Listbox.Option
-                                key={t}
-                                value={t}
-                                className={({ active, selected }) =>
-                                  `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`
-                                }
-                              >
-                                {({ selected }) => (
-                                  <>
-                                    <span>{t}</span>
-                                    {selected && (
-                                      <Check className="h-4 w-4 text-green-600" />
-                                    )}
-                                  </>
-                                )}
-                              </Listbox.Option>
-                            ))}
-                        </Listbox.Options>
-                      </div>
-                    </Listbox>
+                      options={transmissionOptions.filter(
+                        (t) => t !== "All Transmissions",
+                      )}
+                      placeholder="All Transmissions"
+                    />
                   </div>
 
                   {/* Category Filter */}
@@ -1175,55 +1136,15 @@ const NewTractors = () => {
                     <label className="block text-sm font-semibold text-gray-700 mb-1.5">
                       Category
                     </label>
-                    <Listbox
+
+                    <FilterCombobox
                       value={selectedCategory}
                       onChange={setSelectedCategory}
-                    >
-                      <div className="relative">
-                        <Listbox.Button className="w-full pl-3 pr-8 py-2.5 border border-gray-200 rounded-xl text-sm text-left focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none bg-gray-50 hover:bg-white cursor-pointer">
-                          <span
-                            className={
-                              selectedCategory
-                                ? "text-gray-900"
-                                : "text-gray-400"
-                            }
-                          >
-                            {selectedCategory || "All Categories"}
-                          </span>
-                          <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                        </Listbox.Button>
-                        <Listbox.Options className="absolute z-9999  mt-1 w-full bg-white border border-gray-200 rounded-xl shadow-lg max-h-60 overflow-auto py-1 text-sm">
-                          <Listbox.Option
-                            value=""
-                            className={({ active }) =>
-                              `cursor-pointer px-4 py-2.5 ${active ? "bg-green-50 text-green-700" : "text-gray-700"}`
-                            }
-                          >
-                            All Categories
-                          </Listbox.Option>
-                          {categoryOptions
-                            .filter((c) => c !== "All Categories")
-                            .map((c) => (
-                              <Listbox.Option
-                                key={c}
-                                value={c}
-                                className={({ active, selected }) =>
-                                  `cursor-pointer px-4 py-2.5 flex items-center justify-between ${active ? "bg-green-50 text-green-700" : "text-gray-700"} ${selected ? "bg-green-100 font-medium" : ""}`
-                                }
-                              >
-                                {({ selected }) => (
-                                  <>
-                                    <span>{c}</span>
-                                    {selected && (
-                                      <Check className="h-4 w-4 text-green-600" />
-                                    )}
-                                  </>
-                                )}
-                              </Listbox.Option>
-                            ))}
-                        </Listbox.Options>
-                      </div>
-                    </Listbox>
+                      options={categoryOptions.filter(
+                        (c) => c !== "All Categories",
+                      )}
+                      placeholder="All Categories"
+                    />
                   </div>
                 </div>
                 {/* Price Range Slider */}
@@ -1522,70 +1443,74 @@ const NewTractors = () => {
       </div>
 
       {/* Popular Brands Marquee Section */}
-   {/* Popular Brands Marquee Section */}
-<div className="bg-white border-b border-gray-100">
-  <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 pt-16 md:pt-20 lg:pt-24">
-    {/* Header with View All Button */}
-    <div className="flex items-center justify-between mb-6">
-      <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-        Popular{" "}
-        <span className="text-transparent bg-clip-text bg-green-600">
-          Tractor Brands
-        </span>
-      </h3>
-      <Link
-        to="/all-brands"
-        className="flex items-center gap-2 text-green-600 hover:text-green-700 font-semibold text-sm transition-colors whitespace-nowrap"
-      >
-        View All Brands
-        <ArrowRight className="h-4 w-4" />
-      </Link>
-    </div>
-
-    <div className="relative overflow-hidden">
-      {brandsLoading ? (
-        <div className="flex justify-center items-center py-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
-        </div>
-      ) : popularBrands.length === 0 ? (
-        <p className="text-center text-gray-500 py-8">No brands available</p>
-      ) : (
-        <div className="flex gap-8 animate-marquee">
-          {[...popularBrands, ...popularBrands].map((brand, idx) => (
-            <Link
-              key={idx}
-              to={`/tractors?type=new&brand=${encodeURIComponent(brand.name)}`}
-              className="flex flex-col items-center gap-2 shrink-0 group cursor-pointer"
-            >
-              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-50 border-2 border-gray-200 flex items-center justify-center group-hover:border-green-600 group-hover:shadow-md group-hover:bg-green-100 transition-all duration-300 overflow-hidden">
-                <img
-                  src={brand.logo}
-                  alt={brand.name}
-                  className="w-full h-full object-contain p-3"
-                  onError={(e) => {
-                    e.target.style.display = "none";
-                    e.target.nextSibling.style.display = "flex";
-                  }}
-                />
-                <span className="text-base sm:text-lg font-black text-green-700 hidden">
-                  {brand.name
-                    .split(" ")
-                    .map((w) => w[0])
-                    .join("")
-                    .slice(0, 2)
-                    .toUpperCase()}
-                </span>
-              </div>
-              <span className="text-xs font-medium text-gray-600 group-hover:text-green-700 transition-colors">
-                {brand.name}
+      {/* Popular Brands Marquee Section */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-8 pt-16 md:pt-20 lg:pt-24">
+          {/* Header with View All Button */}
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+              Popular{" "}
+              <span className="text-transparent bg-clip-text bg-green-600">
+                Tractor Brands
               </span>
+            </h3>
+            <Link
+              to="/all-brands"
+              className="flex items-center gap-2 text-green-600 hover:text-green-700 font-semibold text-sm transition-colors whitespace-nowrap"
+            >
+              View All Brands
+              <ArrowRight className="h-4 w-4" />
             </Link>
-          ))}
+          </div>
+
+          <div className="relative overflow-hidden">
+            {brandsLoading ? (
+              <div className="flex justify-center items-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-700"></div>
+              </div>
+            ) : popularBrands.length === 0 ? (
+              <p className="text-center text-gray-500 py-8">
+                No brands available
+              </p>
+            ) : (
+              <div className="flex gap-8 animate-marquee">
+                {[...popularBrands, ...popularBrands].map((brand, idx) => (
+                  <Link
+                    key={idx}
+                    to={`/tractors?type=new&brand=${encodeURIComponent(
+                      brand.name,
+                    )}`}
+                    className="flex flex-col items-center gap-2 shrink-0 group cursor-pointer"
+                  >
+                    <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-green-50 border-2 border-gray-200 flex items-center justify-center group-hover:border-green-600 group-hover:shadow-md group-hover:bg-green-100 transition-all duration-300 overflow-hidden">
+                      <img
+                        src={brand.logo}
+                        alt={brand.name}
+                        className="w-full h-full object-contain p-3"
+                        onError={(e) => {
+                          e.target.style.display = "none";
+                          e.target.nextSibling.style.display = "flex";
+                        }}
+                      />
+                      <span className="text-base sm:text-lg font-black text-green-700 hidden">
+                        {brand.name
+                          .split(" ")
+                          .map((w) => w[0])
+                          .join("")
+                          .slice(0, 2)
+                          .toUpperCase()}
+                      </span>
+                    </div>
+                    <span className="text-xs font-medium text-gray-600 group-hover:text-green-700 transition-colors">
+                      {brand.name}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
-      )}
-    </div>
-  </div>
-</div>
+      </div>
 
       {/* --- POPULAR COMPARISON HANDPICKS --- */}
       <div className="border-t border-gray-200 w-full">
@@ -1924,10 +1849,18 @@ const NewTractors = () => {
                         <RadioGroup.Option value="new">
                           {({ checked }) => (
                             <div
-                              className={`flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer ${checked ? "border-green-600 bg-green-50" : "border-gray-200 bg-white"}`}
+                              className={`flex items-center gap-3 p-3 border-2 rounded-xl cursor-pointer ${
+                                checked
+                                  ? "border-green-600 bg-green-50"
+                                  : "border-gray-200 bg-white"
+                              }`}
                             >
                               <div
-                                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${checked ? "border-green-600 bg-green-600" : "border-gray-300"}`}
+                                className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                                  checked
+                                    ? "border-green-600 bg-green-600"
+                                    : "border-gray-300"
+                                }`}
                               >
                                 {checked && (
                                   <Check className="h-3 w-3 text-white" />

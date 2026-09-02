@@ -1,7 +1,15 @@
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
-import { Upload, Trash2, FileText, Image, X, Video, Camera } from "lucide-react";
+import {
+  Upload,
+  Trash2,
+  FileText,
+  Image,
+  X,
+  Video,
+  Camera,
+} from "lucide-react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
@@ -19,7 +27,11 @@ const mandatoryPhotos = [
   { key: "controlPanel", label: "Control Panel", required: true },
   { key: "serialNumberImage", label: "Serial Number", required: true },
   { key: "attachmentsImage", label: "Attachments", required: false },
-  { key: "tyresWheels", label: "Tyres / Wheels (if applicable)", required: false },
+  {
+    key: "tyresWheels",
+    label: "Tyres / Wheels (if applicable)",
+    required: false,
+  },
 ];
 
 // Optional Videos
@@ -59,7 +71,9 @@ const Button = ({
   return (
     <button
       type={type}
-      className={`${baseStyles} ${variants[variant] || variants.primary} ${className}`}
+      className={`${baseStyles} ${
+        variants[variant] || variants.primary
+      } ${className}`}
       {...props}
     >
       {children}
@@ -71,6 +85,7 @@ export default function MediaDocument({
   setCurrentStep,
   step,
   onComplete,
+  onProductSaved,
   productData,
   isEdit,
 }) {
@@ -93,40 +108,75 @@ export default function MediaDocument({
   });
 
   useEffect(() => {
-    if (!isEdit || !productData) return;
+    const fetchMediaDocument = async () => {
+      try {
+        const productId = productData?.id
+          ? productData.id
+          : localStorage.getItem("vendorEquipmentId");
 
-    const newPreviews = {};
-    const newVideoPreviews = {};
-    const newDocs = {};
+        if (!productId) return;
 
-    mandatoryPhotos.forEach(({ key }) => {
-      if (productData[key]) {
-        newPreviews[key] = apiHelper.image(productData[key]);
-        setValue(key, productData[key], { shouldValidate: false });
+        const res = await apiHelper.get(
+          `/vendor-web/equipmentvariant/${productId}`,
+        );
+
+        const data = res?.data?.data || res?.data;
+
+        if (!data) return;
+
+        const newPreviews = {};
+        const newVideoPreviews = {};
+        const newDocs = {};
+
+        // Images
+        mandatoryPhotos.forEach(({ key }) => {
+          if (data[key]) {
+            newPreviews[key] = apiHelper.image(data[key]);
+
+            setValue(key, data[key], {
+              shouldValidate: false,
+              shouldDirty: false,
+            });
+          }
+        });
+
+        // Videos
+        optionalVideos.forEach(({ key }) => {
+          if (data[key]) {
+            newVideoPreviews[key] = apiHelper.image(data[key]);
+
+            setValue(key, data[key], {
+              shouldValidate: false,
+              shouldDirty: false,
+            });
+          }
+        });
+
+        // Documents
+        documentUploads.forEach(({ key }) => {
+          if (data[key]) {
+            newDocs[key] = {
+              name: data[key].split("/").pop().replace(/^\d+-/, ""),
+              existingUrl: apiHelper.image(data[key]),
+            };
+
+            setValue(key, data[key], {
+              shouldValidate: false,
+              shouldDirty: false,
+            });
+          }
+        });
+
+        setPreviews(newPreviews);
+        setVideoPreviews(newVideoPreviews);
+        setDocuments(newDocs);
+      } catch (error) {
+        console.error("Media document fetch error:", error);
       }
-    });
+    };
 
-    optionalVideos.forEach(({ key }) => {
-      if (productData[key]) {
-        newVideoPreviews[key] = apiHelper.image(productData[key]);
-        setValue(key, productData[key], { shouldValidate: false });
-      }
-    });
-
-    documentUploads.forEach(({ key }) => {
-      if (productData[key]) {
-        newDocs[key] = {
-          name: productData[key].split("/").pop().replace(/^\d+-/, ""),
-          existingUrl: apiHelper.image(productData[key]),
-        };
-        setValue(key, productData[key], { shouldValidate: false });
-      }
-    });
-
-    setPreviews(newPreviews);
-    setVideoPreviews(newVideoPreviews);
-    setDocuments(newDocs);
-  }, [productData, isEdit, setValue, getValues]);
+    fetchMediaDocument();
+  }, [productData?.id, setValue]);
 
   useEffect(() => {
     // Register mandatory photos
@@ -140,10 +190,13 @@ export default function MediaDocument({
   const handleFileChange = (key, file) => {
     if (!file) return;
     setValue(key, file);
-    
+
     // Check if it's a video
     if (file.type.startsWith("video/")) {
-      setVideoPreviews((prev) => ({ ...prev, [key]: URL.createObjectURL(file) }));
+      setVideoPreviews((prev) => ({
+        ...prev,
+        [key]: URL.createObjectURL(file),
+      }));
       setDocuments((prev) => ({ ...prev, [key]: file }));
     } else if (file.type.startsWith("image/")) {
       setPreviews((prev) => ({ ...prev, [key]: URL.createObjectURL(file) }));
@@ -188,22 +241,34 @@ export default function MediaDocument({
         if (value instanceof File) formData.append(key, value);
       });
 
-      await apiHelper.put(
+      const res = await apiHelper.put(
         `/vendor-web/equipmentvariant/${productId}/save-step`,
         formData,
         {
           headers: { "Content-Type": "multipart/form-data" },
-        }
+        },
       );
 
       toast.success("Media and documents saved!");
 
-      if (onComplete) onComplete(step);
-      if (setCurrentStep) setCurrentStep(step + 1);
+      const updated = res?.data?.data || res?.data;
+
+      onProductSaved?.({
+        ...(updated || {}),
+        id: productId,
+      });
+
+      if (onComplete) {
+        onComplete(step);
+      }
+
+      if (setCurrentStep) {
+        setCurrentStep(step + 1);
+      }
     } catch (error) {
       console.error(error);
       toast.error(
-        error.response?.data?.message || "Failed to save media and documents."
+        error.response?.data?.message || "Failed to save media and documents.",
       );
     } finally {
       setLoading(false);
@@ -375,7 +440,7 @@ export default function MediaDocument({
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {mandatoryPhotos.map((image) =>
-                    renderImageUpload(image, previews, removeImage, false)
+                    renderImageUpload(image, previews, removeImage, false),
                   )}
                 </div>
               </div>
@@ -391,7 +456,7 @@ export default function MediaDocument({
 
                 <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                   {optionalVideos.map((video) =>
-                    renderImageUpload(video, videoPreviews, removeVideo, true)
+                    renderImageUpload(video, videoPreviews, removeVideo, true),
                   )}
                 </div>
 
@@ -448,7 +513,11 @@ export default function MediaDocument({
                   className="min-w-28 cursor-pointer"
                   disabled={loading}
                 >
-                  {loading ? "Saving..." : isEdit ? "Update & Next" : "Save & Next"}
+                  {loading
+                    ? "Saving..."
+                    : isEdit
+                    ? "Update & Next"
+                    : "Save & Next"}
                 </Button>
               </div>
             </div>

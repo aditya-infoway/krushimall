@@ -29,21 +29,21 @@ const WebsiteVariant = () => {
 
   const [productData, setProductData] = useState(null);
 
-useEffect(() => {
-  if (!id) return;
+  useEffect(() => {
+    if (!id) return;
 
-  const loadProduct = async () => {
-    try {
-      const res = await apiHelper.get(`/vendor-web/website-variant/${id}`);
+    const loadProduct = async () => {
+      try {
+        const res = await apiHelper.get(`/vendor-web/website-variant/${id}`);
 
-      setProductData(res.data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
+        setProductData(res.data);
+      } catch (err) {
+        console.log(err);
+      }
+    };
 
-  loadProduct();
-}, [id]);
+    loadProduct();
+  }, [id]);
 
   // Handle step navigation with validation
   const handleStepChange = (newStep) => {
@@ -78,14 +78,25 @@ useEffect(() => {
     );
   };
 
-const commonProps = {
+  // ✅ Naya: har step ke successful save ke baad parent ka productData
+  // state update karo. Ye state parent me hi rehta hai (parent kabhi
+  // unmount nahi hota, sirf children conditionally render hote hain),
+  // isliye "Previous" dabake pichhle step par aane par bhi data yahi
+  // se milta rahega — koi extra fetch call ki zaroorat nahi.
+  const handleProductSaved = (data) => {
+    if (!data) return;
+    setProductData((prev) => ({ ...(prev || {}), ...data }));
+  };
+
+  const commonProps = {
     step,
     completedSteps,
     setCurrentStep: handleStepChange,
     onComplete: markStepCompleted,
+    onProductSaved: handleProductSaved,
     productData,
     isEdit,
-};
+  };
 
   return (
     <AddProductStepper

@@ -4,7 +4,7 @@ import Select from "react-select";
 import { Country, State, City } from "country-state-city";
 import toast from "react-hot-toast";
 import { Listbox, Transition } from "@headlessui/react";
-import { ChevronUpDownIcon, CheckIcon } from "@heroicons/react/24/outline";
+import { MagnifyingGlassIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
@@ -195,8 +195,7 @@ const Button = ({
   );
 };
 
-// Custom Listbox Component using Headless UI - matches vendor profile theme
-// Custom Listbox Component using Headless UI - matches vendor profile theme (with search)
+
 const CustomListbox = ({
   data,
   value,
@@ -208,7 +207,7 @@ const CustomListbox = ({
 }) => {
   const [query, setQuery] = useState("");
   const buttonRef = useRef(null);
-
+ 
   const filteredData =
     query === ""
       ? data
@@ -217,7 +216,7 @@ const CustomListbox = ({
             .toLowerCase()
             .includes(query.toLowerCase()),
         );
-
+ 
   return (
     <div>
       {label && (
@@ -235,7 +234,7 @@ const CustomListbox = ({
         <div className="relative">
           <div className="relative">
             <Combobox.Input
-              className={`w-full cursor-default rounded-xl border bg-white py-3 pl-4 pr-10 text-left text-sm text-gray-900 outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+              className={`w-full cursor-default rounded-xl border bg-white py-3 pl-10 pr-4 text-left text-sm text-gray-900 outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
                 error ? "border-red-300 bg-red-50" : "border-gray-200"
               }`}
               displayValue={(item) => (item ? item[displayField] : "")}
@@ -243,14 +242,17 @@ const CustomListbox = ({
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => buttonRef.current?.click()}
             />
-            <Combobox.Button ref={buttonRef} className="absolute inset-y-0 right-0 flex items-center pr-3">
-              <ChevronUpDownIcon
-                className="h-5 w-5 text-gray-400"
+            <Combobox.Button
+              ref={buttonRef}
+              className="absolute inset-y-0 left-0 flex items-center pl-3"
+            >
+              <MagnifyingGlassIcon
+                className="h-4 w-4 text-gray-400"
                 aria-hidden="true"
               />
             </Combobox.Button>
           </div>
-
+ 
           <Transition
             as={Fragment}
             leave="transition ease-in duration-100"
@@ -301,6 +303,8 @@ const CustomListbox = ({
     </div>
   );
 };
+ 
+ 
 
 // Custom DatePicker Component - matches vendor profile theme
 
@@ -476,6 +480,7 @@ export default function BasicInformation({
   setCurrentStep,
   step,
   onComplete,
+  onProductSaved,
   productData,
   isEdit,
 }) {
@@ -546,8 +551,13 @@ export default function BasicInformation({
     }
   };
 
+  // ✅ Fix: pehle ye sirf `isEdit` mode me chalta tha (`if (!isEdit || !productData) return;`).
+  // Ab sirf `productData` ki presence check karte hain — parent (WebsiteVariant) ab
+  // create-flow me bhi step 0 save hone ke baad apna `productData` state update karta
+  // hai (onProductSaved callback se), isliye "Previous" dabake wapas is step par aane
+  // par bhi form yahi se refill ho jayega, koi extra fetch call ki zaroorat nahi.
   useEffect(() => {
-    if (!isEdit || !productData) return;
+    if (!productData) return;
 
     setCountry(productData.country || "");
 
@@ -607,7 +617,7 @@ export default function BasicInformation({
     });
 
     setValue("showCustomColor", productData.customColor);
-  }, [productData, isEdit, reset]);
+  }, [productData, reset]);
 
   const countryOptions = Country.getAllCountries().map((c) => ({
     value: c.isoCode,
@@ -679,33 +689,51 @@ export default function BasicInformation({
         currentStep: 0,
       };
 
-      let res;
+     let res;
+    const existingProductId = productData?.id
+      ? productData.id
+      : localStorage.getItem("vendorProductId");
 
-      if (isEdit) {
+    if (existingProductId) {
+      try {
         res = await apiHelper.put(
-          `/vendor-web/website-variant/${productData.id}`,
+          `/vendor-web/website-variant/${existingProductId}`,
           payload,
         );
-      } else {
-        res = await apiHelper.post("/vendor-web/website-variant", payload);
-
-        localStorage.setItem("vendorProductId", res.data.id.toString());
+      } catch (err) {
+        // Stale/deleted record — fall back to creating a fresh one
+        if (err?.response?.status === 404) {
+          res = await apiHelper.post("/vendor-web/website-variant", payload);
+          localStorage.setItem("vendorProductId", res.data.id.toString());
+        } else {
+          throw err;
+        }
       }
-
-      toast.success("Basic information saved!");
-      if (onComplete) {
-        onComplete(step);
-      }
-
-      setCurrentStep(step + 1);
-    } catch (error) {
-      console.error(error);
-      toast.error(
-        error.response?.data?.message ||
-          "Failed to save basic information. Please try again.",
-      );
+    } else {
+      res = await apiHelper.post("/vendor-web/website-variant", payload);
+      localStorage.setItem("vendorProductId", res.data.id.toString());
     }
-  };
+
+    toast.success("Basic information saved!");
+
+    onProductSaved?.({
+      ...payload,
+      id: res?.data?.id || existingProductId,
+    });
+
+    if (onComplete) {
+      onComplete(step);
+    }
+
+    setCurrentStep(step + 1);
+  } catch (error) {
+    console.error(error);
+    toast.error(
+      error.response?.data?.message ||
+        "Failed to save basic information. Please try again.",
+    );
+  }
+};
 
   return (
     <div className="min-h-screen bg-gray-50 py-8 md:py-12 lg:py-16">
@@ -1270,25 +1298,9 @@ export default function BasicInformation({
                 Cancel
               </Button>
               <div className="flex flex-col sm:flex-row gap-3 order-1 sm:order-2">
-                {/* <Button
-                  type="button"
-                  variant="outlined"
-                  className="min-w-[7rem] cursor-pointer"
-                  onClick={() => {
-                    if (step > 1) {
-                      if (setCurrentStep) {
-                        setCurrentStep(step - 1);
-                      } else if (prevStep) {
-                        prevStep();
-                      }
-                    }
-                  }}
-                >
-                  Previous
-                </Button> */}
-              <Button type="submit" className="min-w-[9rem] cursor-pointer">
-  {isEdit ? "Update & Next" : "Save & Next"}
-</Button>
+                <Button type="submit" className="min-w-[9rem] cursor-pointer">
+                  {isEdit ? "Update & Next" : "Save & Next"}
+                </Button>
               </div>
             </div>
           </form>
