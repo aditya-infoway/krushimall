@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
-import { useState } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Trash2,
   Minus,
@@ -15,9 +15,12 @@ import {
   X,
   CheckCircle,
   ChevronLeft,
+  ChevronDown,
+  ChevronUp,
 } from "lucide-react";
 import { showErrorToast } from "../utils/toast";
 import apiHelper from "../utils/apiHelper";
+
 const Cart = () => {
   const {
     cart,
@@ -39,6 +42,12 @@ const Cart = () => {
   const [couponCode, setCouponCode] = useState("");
   const [couponError, setCouponError] = useState("");
   const [applyingCoupon, setApplyingCoupon] = useState(false);
+  const [applyingCode, setApplyingCode] = useState(""); // tracks which coupon card is mid-apply
+
+  // ---------- Available Coupons (storefront offers list) ----------
+  const [showCoupons, setShowCoupons] = useState(false);
+  const [availableCoupons, setAvailableCoupons] = useState([]);
+  const [loadingCoupons, setLoadingCoupons] = useState(false);
 
   const getMaxOrderQuantity = (item) => {
     const maxQty = Number(item?.maxOrderQuantity);
@@ -46,6 +55,41 @@ const Cart = () => {
   };
 
   const subtotal = cartTotal;
+
+  // ---------- fetch coupons eligible/visible for this cart ----------
+  const fetchAvailableCoupons = useCallback(async () => {
+    if (!cart.length) {
+      setAvailableCoupons([]);
+      return;
+    }
+    try {
+      setLoadingCoupons(true);
+      const data = await apiHelper.post("/web/coupons/available", {
+        cartItems: cart.map((item) => ({ productId: item.id })),
+        subtotal,
+      });
+      if (data.success) {
+        setAvailableCoupons(data.data || []);
+      }
+    } catch (err) {
+      console.error("fetchAvailableCoupons error:", err);
+    } finally {
+      setLoadingCoupons(false);
+    }
+  }, [cart, subtotal]);
+
+  useEffect(() => {
+    fetchAvailableCoupons();
+  }, [fetchAvailableCoupons]);
+
+  // Clear a stale error (e.g. "minimum order value" from a previous,
+  // smaller cart) once the cart total changes — otherwise an old failed
+  // attempt keeps showing even after the cart now qualifies.
+  useEffect(() => {
+    if (!appliedCoupon) {
+      setCouponError("");
+    }
+  }, [subtotal, appliedCoupon]);
 
   const handleApplyCoupon = async () => {
     if (!couponCode.trim()) {
@@ -64,6 +108,18 @@ const Cart = () => {
     setCouponCode("");
   };
 
+  // Apply directly from the Available Coupons list card
+  const handleApplyFromList = async (code) => {
+    setApplyingCode(code);
+    setCouponError("");
+    const result = await applyCoupon(code);
+    setApplyingCode("");
+
+    if (!result?.success) {
+      setCouponError(result?.message || "Invalid coupon code");
+    }
+  };
+
   const handleRemoveCoupon = async () => {
     await removeCoupon();
     setCouponError("");
@@ -72,6 +128,15 @@ const Cart = () => {
   const handleRemoveItem = (id) => {
     removeFromCart(id);
   };
+
+  const formatDiscount = (coupon) =>
+    coupon.type === "PERCENTAGE"
+      ? `${coupon.discountValue}% OFF${
+          coupon.maxDiscountAmount
+            ? ` up to ₹${coupon.maxDiscountAmount.toLocaleString("en-IN")}`
+            : ""
+        }`
+      : `₹${coupon.discountValue} OFF`;
 
   // Redirect to login if not authenticated
   if (!isAuthenticated) {
@@ -247,6 +312,117 @@ const Cart = () => {
                 ))}
               </div>
             </div>
+
+            {/* Available Coupons */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-4 sm:p-6 mt-5">
+              <button
+                type="button"
+                onClick={() => setShowCoupons((v) => !v)}
+                className="w-full flex items-center justify-between cursor-pointer"
+              >
+                <span className="flex items-center gap-2 font-semibold text-gray-900 text-sm sm:text-base">
+                  <Ticket className="h-5 w-5 text-green-600" />
+                  Available Offers
+                  {availableCoupons.length > 0 && (
+                    <span className="bg-green-50 text-green-700 text-xs font-medium px-2 py-0.5 rounded-full">
+                      {availableCoupons.length}
+                    </span>
+                  )}
+                </span>
+                {showCoupons ? (
+                  <ChevronUp className="h-4 w-4 text-gray-400" />
+                ) : (
+                  <ChevronDown className="h-4 w-4 text-gray-400" />
+                )}
+              </button>
+
+              {showCoupons && (
+                <div className="mt-4 space-y-3">
+                  {loadingCoupons ? (
+                    <p className="text-sm text-gray-500">
+                      Loading offers...
+                    </p>
+                  ) : availableCoupons.length === 0 ? (
+                    <p className="text-sm text-gray-500">
+                      No offers available right now.
+                    </p>
+                  ) : (
+                    availableCoupons.map((coupon) => {
+                      const isApplied = appliedCoupon?.code === coupon.code;
+                      return (
+                        <div
+                          key={coupon.code}
+                          className={`rounded-xl border p-3 sm:p-4 ${
+                            isApplied
+                              ? "border-green-300 bg-green-50"
+                              : coupon.isEligible
+                                ? "border-dashed border-green-300"
+                                : "border-gray-200 bg-gray-50"
+                          }`}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="font-semibold text-gray-900 text-sm">
+                                {coupon.title}
+                              </p>
+                              <div className="flex items-center gap-2 mt-1">
+                                <span className="inline-block bg-gray-100 text-gray-700 text-xs font-mono font-semibold px-2 py-0.5 rounded">
+                                  {coupon.code}
+                                </span>
+                                <span className="text-xs font-medium text-green-700">
+                                  {formatDiscount(coupon)}
+                                </span>
+                              </div>
+                              {coupon.minOrderValue > 0 && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Min order ₹
+                                  {coupon.minOrderValue.toLocaleString(
+                                    "en-IN",
+                                  )}
+                                </p>
+                              )}
+                              {coupon.displayMessage && (
+                                <p className="text-xs text-gray-500 mt-1">
+                                  {coupon.displayMessage}
+                                </p>
+                              )}
+                              {!coupon.isEligible && coupon.reason && (
+                                <p className="text-xs text-red-500 mt-1">
+                                  {coupon.reason}
+                                </p>
+                              )}
+                            </div>
+
+                            <button
+                              type="button"
+                              onClick={() => handleApplyFromList(coupon.code)}
+                              disabled={
+                                isApplied ||
+                                !coupon.isEligible ||
+                                applyingCode === coupon.code
+                              }
+                              className={`shrink-0 text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg transition-colors ${
+                                isApplied
+                                  ? "bg-green-600 text-white cursor-default"
+                                  : coupon.isEligible
+                                    ? "border border-green-600 text-green-700 hover:bg-green-50 cursor-pointer"
+                                    : "border border-gray-200 text-gray-400 cursor-not-allowed"
+                              }`}
+                            >
+                              {isApplied
+                                ? "Applied"
+                                : applyingCode === coupon.code
+                                  ? "Applying..."
+                                  : "Apply"}
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Order Summary */}
@@ -278,7 +454,10 @@ const Cart = () => {
                             type="text"
                             placeholder="Coupon code"
                             value={couponCode}
-                            onChange={(e) => setCouponCode(e.target.value)}
+                            onChange={(e) => {
+                              setCouponCode(e.target.value);
+                              setCouponError("");
+                            }}
                             className="w-full pl-9 pr-3 py-2 border border-gray-200 rounded-lg text-sm focus:ring-2 focus:ring-green-600 focus:border-green-600 outline-none"
                           />
                         </div>
@@ -295,6 +474,15 @@ const Cart = () => {
                           {couponError}
                         </p>
                       )}
+                      {availableCoupons.length > 0 && (
+                        <button
+                          type="button"
+                          onClick={() => setShowCoupons(true)}
+                          className="text-xs text-green-600 hover:text-green-700 font-medium mt-2 cursor-pointer"
+                        >
+                          View available offers ({availableCoupons.length})
+                        </button>
+                      )}
                     </div>
                   ) : (
                     <div className="bg-green-50 border border-gray-200 rounded-lg p-3">
@@ -309,7 +497,7 @@ const Cart = () => {
                           onClick={handleRemoveCoupon}
                           className="text-green-600 hover:text-green-700"
                         >
-                          <X className="h-4 w-4" />
+                          <X className="h-4 w-4 cursor-pointer" />
                         </button>
                       </div>
                       <p className="text-xs text-green-600 mt-1">

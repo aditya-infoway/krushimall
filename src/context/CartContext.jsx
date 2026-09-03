@@ -90,13 +90,17 @@ export const CartProvider = ({ children }) => {
 
   const clearCart = async () => {
     try {
-      await apiHelper.delete("/cart/clear");
+      await apiHelper.delete("/web/cart/clear");
       setCartData(EMPTY_CART);
     } catch (err) {
       console.error("clearCart error:", err);
     }
   };
 
+  // Applies the coupon AND persists it on the cart (cart.couponCode) —
+  // hits cart.controller.ts, not a standalone coupon controller, because
+  // this is the endpoint that returns the full recalculated cart object
+  // (subtotal/gst/shipping/total) that this context stores as cartData.
   const applyCoupon = async (code) => {
     try {
       const data = await apiHelper.post("/web/cart/coupon/apply", { code });
