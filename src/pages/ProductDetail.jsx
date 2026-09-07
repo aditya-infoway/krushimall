@@ -501,7 +501,7 @@ const finalPrice =
             </span>
           </button>
         </div>
-        <div className="grid lg:grid-cols-3 gap-8 mb-12">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8 mb-8 lg:mb-12">
           {/* Column 1: Gallery Design */}
           {/* Column 1: Gallery - Hover Zoom on Image */}
           <div className="lg:col-span-1">
@@ -556,7 +556,7 @@ const finalPrice =
           </div>
           {/* Column 2: Product Info & Features */}
           <div className="lg:col-span-1">
-            <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm h-full flex flex-col">
+        <div className="bg-white border border-gray-200 rounded-xl p-6 shadow-sm lg:h-full flex flex-col">
               <div className="text-xs uppercase tracking-wider font-bold text-green-600 mb-2">
                 {product.brand}
               </div>
@@ -805,7 +805,7 @@ const finalPrice =
         </div>
 
         {/* Compatibility Check Bar */}
-        <div className="bg-white border border-gray-200 rounded-xl p-5 mb-12 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+        <div className="bg-white border border-gray-200 rounded-xl p-5 mb-8 lg:mb-12  shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-green-50 rounded-lg text-green-600">
               <Car className="h-6 w-6" />

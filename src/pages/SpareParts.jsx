@@ -59,14 +59,16 @@ const SpareParts = () => {
   const [oemPart, setOemPart] = useState(true);
   const [oesCertified, setOesCertified] = useState(true);
   const [selectedGalleryImage, setSelectedGalleryImage] = useState(0);
-
-
+  const [selectedCountry, setSelectedCountry] = useState("");
+  const [minPrice, setMinPrice] = useState("");
+  const [maxPrice, setMaxPrice] = useState("");
+  const [countries, setCountries] = useState([]);
   const galleryImages = [
-  "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=600&h=400&fit=crop",
- "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&h=400&fit=crop",
-  "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=600&h=400&fit=crop",
-];
+    "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=600&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1486262715619-67b85e0b08d3?w=600&h=400&fit=crop",
+    "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=600&h=400&fit=crop",
+  ];
 
   // Hook to detect scroll for showing arrows
   const useScrollDetection = (ref, setIsScrolling, timeoutRef) => {
@@ -152,11 +154,16 @@ const SpareParts = () => {
 
   const vehicleYears = Array.from({ length: 25 }, (_, i) => 2025 - i);
 
-  const handleSearch = () => {
-    navigate(
-      `/spare-parts?price=${selectedPriceRange}&category=${selectedPartCategory}&brand=${selectedBrand}&city=${selectedCity}`,
-    );
-  };
+const handleSearch = () => {
+  const params = new URLSearchParams();
+  if (selectedPartCategory) params.append("categoryId", selectedPartCategory);
+  if (selectedBrand) params.append("brandId", selectedBrand);
+  if (minPrice) params.append("minPrice", minPrice);
+  if (maxPrice) params.append("maxPrice", maxPrice);
+  if (selectedCountry) params.append("country", selectedCountry);
+
+  navigate(`/products?${params.toString()}`);
+};
 
   // ========== CATEGORIES ==========
   // const categories = [
@@ -225,41 +232,92 @@ const SpareParts = () => {
   //     slug: "body-parts",
   //   },
   // ];
-const [categories, setCategories] = useState([]);
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        const response = await apiHelper.get("/web/product");
+        const responseData = response?.data ?? response;
+        const data = Array.isArray(responseData)
+          ? responseData
+          : Array.isArray(responseData?.data)
+          ? responseData.data
+          : [];
 
-useEffect(() => {
-  const fetchCategories = async () => {
-    try {
-      const response = await apiHelper.get("/web/VendorCategory", {
-        parentId: "null", // sirf top-level groups
-      });
+        const uniqueCountries = Array.from(
+          new Set(
+            data
+              .map((item) => item.countryOfOrigin)
+              .filter((c) => c && c.trim() !== ""),
+          ),
+        );
 
-      let categoriesData = [];
-      if (response && response.data && Array.isArray(response.data)) {
-        categoriesData = response.data;
-      } else if (Array.isArray(response)) {
-        categoriesData = response;
+        setCountries(uniqueCountries);
+      } catch (error) {
+        console.error("Failed to fetch countries:", error);
+        setCountries([]);
       }
+    };
 
-      const mappedData = categoriesData.map((item) => ({
-        id: item.id,
-        name: item.categoryName,
-        image: apiHelper.getImageUrl(item.image),
-        slug: item.categoryName
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/(^-|-$)/g, ""),
-      }));
+    fetchCountries();
+  }, []);
+  const [brands, setBrands] = useState([]);
 
-      setCategories(mappedData);
-    } catch (error) {
-      console.error("Failed to fetch categories:", error);
-      setCategories([]);
-    }
-  };
+  useEffect(() => {
+    const fetchBrands = async () => {
+      try {
+        const response = await apiHelper.get("/web/Vendorbrand"); // confirm exact path from your backend routes
+        const data = Array.isArray(response?.data)
+          ? response.data
+          : Array.isArray(response)
+          ? response
+          : [];
+        setBrands(data.map((b) => ({ id: b.id, name: b.brandName ?? b.name })));
+      } catch (error) {
+        console.error("Failed to fetch brands:", error);
+        setBrands([]);
+      }
+    };
+    fetchBrands();
+  }, []);
+  const [categories, setCategories] = useState([]);
 
-  fetchCategories();
-}, []);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await apiHelper.get("/web/VendorCategory", {
+          parentId: "null", // sirf top-level groups
+        });
+
+        let categoriesData = [];
+        if (response && response.data && Array.isArray(response.data)) {
+          categoriesData = response.data;
+        } else if (Array.isArray(response)) {
+          categoriesData = response;
+        }
+
+        const mappedData = categoriesData.map((item) => ({
+          id: item.id,
+          name: item.categoryName,
+          image: apiHelper.getImageUrl(item.image),
+          slug: item.categoryName
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/(^-|-$)/g, ""),
+        }));
+
+        setCategories(mappedData);
+      } catch (error) {
+        console.error("Failed to fetch categories:", error);
+        setCategories([]);
+      }
+    };
+
+    fetchCategories();
+  }, []);
+  const selectedPartCategoryName =
+  categories.find((c) => c.id === selectedPartCategory)?.name || "";
+const selectedBrandName =
+  brands.find((b) => b.id === selectedBrand)?.name || "";
   // ========== MOCK DATA ARRAYS FOR NEW SECTIONS ==========
   const featuredProducts = [
     {
@@ -500,52 +558,23 @@ useEffect(() => {
 
                 <div className="space-y-3">
                   {/* Price Range Filter */}
-                  <Listbox
-                    value={selectedPriceRange}
-                    onChange={setSelectedPriceRange}
-                  >
-                    <div className="relative">
-                      <Listbox.Button className="w-full px-4 py-3 rounded-lg text-gray-900 bg-white text-left flex items-center justify-between hover:shadow-md transition-shadow duration-200 border border-gray-200 focus:ring-2 focus:ring-green-600">
-                        <div className="flex items-center gap-3">
-                          <IndianRupee className="h-4 w-4 text-gray-400" />
-                          <span
-                            className={
-                              selectedPriceRange
-                                ? "text-gray-900 font-medium"
-                                : "text-gray-400"
-                            }
-                          >
-                            {selectedPriceRange || "Price Range"}
-                          </span>
-                        </div>
-                        <ChevronDown className="h-4 w-4 text-gray-400" />
-                      </Listbox.Button>
-                      <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto py-1 text-sm">
-                        {[
-                          "Below ₹200",
-                          "₹201 - ₹800",
-                          "₹801 - ₹2,500",
-                          "Above ₹2,501",
-                        ].map((range) => (
-                          <Listbox.Option
-                            key={range}
-                            value={range}
-                            className={({ active, selected }) =>
-                              `cursor-pointer px-4 py-2.5 transition-colors ${
-                                active
-                                  ? "bg-green-100 text-green-700 font-medium"
-                                  : selected
-                                    ? "bg-green-50 text-green-600"
-                                    : "text-gray-700"
-                              }`
-                            }
-                          >
-                            {range}
-                          </Listbox.Option>
-                        ))}
-                      </Listbox.Options>
-                    </div>
-                  </Listbox>
+                  {/* Price Range — replaces Price Range Listbox */}
+                  <div className="grid grid-cols-2 gap-3">
+                    <input
+                      type="number"
+                      placeholder="Min Price"
+                      value={minPrice}
+                      onChange={(e) => setMinPrice(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg text-gray-900 bg-white border border-gray-200 focus:ring-2 focus:ring-green-600 outline-none text-sm"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Max Price"
+                      value={maxPrice}
+                      onChange={(e) => setMaxPrice(e.target.value)}
+                      className="w-full px-4 py-3 rounded-lg text-gray-900 bg-white border border-gray-200 focus:ring-2 focus:ring-green-600 outline-none text-sm"
+                    />
+                  </div>
 
                   {/* Categories Filter */}
                   <Listbox
@@ -556,39 +585,29 @@ useEffect(() => {
                       <Listbox.Button className="w-full px-4 py-3 rounded-lg text-gray-900 bg-white text-left flex items-center justify-between hover:shadow-md transition-shadow duration-200 border border-gray-200 focus:ring-2 focus:ring-green-600">
                         <div className="flex items-center gap-3">
                           <Cog className="h-4 w-4 text-gray-400" />
-                          <span
-                            className={
-                              selectedPartCategory
-                                ? "text-gray-900 font-medium"
-                                : "text-gray-400"
-                            }
-                          >
-                            {selectedPartCategory || "Categories"}
-                          </span>
+                         <span className={selectedPartCategory ? "text-gray-900 font-medium" : "text-gray-400"}>
+  {selectedPartCategoryName || "Categories"}
+</span>
                         </div>
                         <ChevronDown className="h-4 w-4 text-gray-400" />
                       </Listbox.Button>
+
                       <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto py-1 text-sm">
-                        {[
-                          "Tractor Parts Assembly",
-                          "Tractor Valve",
-                          "Tractor Pto Pulley",
-                          "Tractor Brake Shoe",
-                        ].map((category) => (
+                        {categories.map((category) => (
                           <Listbox.Option
-                            key={category}
-                            value={category}
+                            key={category.id}
+                            value={category.id}
                             className={({ active, selected }) =>
                               `cursor-pointer px-4 py-2.5 transition-colors ${
                                 active
                                   ? "bg-green-100 text-green-700 font-medium"
                                   : selected
-                                    ? "bg-green-50 text-green-600"
-                                    : "text-gray-700"
+                                  ? "bg-green-50 text-green-600"
+                                  : "text-gray-700"
                               }`
                             }
                           >
-                            {category}
+                            {category.name}
                           </Listbox.Option>
                         ))}
                       </Listbox.Options>
@@ -601,39 +620,28 @@ useEffect(() => {
                       <Listbox.Button className="w-full px-4 py-3 rounded-lg text-gray-900 bg-white text-left flex items-center justify-between hover:shadow-md transition-shadow duration-200 border border-gray-200 focus:ring-2 focus:ring-green-600">
                         <div className="flex items-center gap-3">
                           <Tractor className="h-4 w-4 text-gray-400" />
-                          <span
-                            className={
-                              selectedBrand
-                                ? "text-gray-900 font-medium"
-                                : "text-gray-400"
-                            }
-                          >
-                            {selectedBrand || "Brands"}
-                          </span>
+                        <span className={selectedBrand ? "text-gray-900 font-medium" : "text-gray-400"}>
+  {selectedBrandName || "Brands"}
+</span>
                         </div>
                         <ChevronDown className="h-4 w-4 text-gray-400" />
                       </Listbox.Button>
                       <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto py-1 text-sm">
-                        {[
-                          "HMT Tractor Spare Parts",
-                          "Mahindra Tractor Spare Parts",
-                          "Eicher Tractor Spare Parts",
-                          "Kubota Spare Parts",
-                        ].map((brand) => (
+                        {brands.map((brand) => (
                           <Listbox.Option
-                            key={brand}
-                            value={brand}
+                            key={brand.id}
+                            value={brand.id}
                             className={({ active, selected }) =>
                               `cursor-pointer px-4 py-2.5 transition-colors ${
                                 active
                                   ? "bg-green-100 text-green-700 font-medium"
                                   : selected
-                                    ? "bg-green-50 text-green-600"
-                                    : "text-gray-700"
+                                  ? "bg-green-50 text-green-600"
+                                  : "text-gray-700"
                               }`
                             }
                           >
-                            {brand}
+                            {brand.name}
                           </Listbox.Option>
                         ))}
                       </Listbox.Options>
@@ -641,9 +649,9 @@ useEffect(() => {
                   </Listbox>
 
                   {/* State & City Grid */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3">
                     {/* State Filter */}
-                    <Listbox value={selectedState} onChange={setSelectedState}>
+                    {/* <Listbox value={selectedState} onChange={setSelectedState}>
                       <div className="relative">
                         <Listbox.Button className="w-full px-4 py-3 rounded-lg text-gray-900 bg-white text-left flex items-center justify-between hover:shadow-md transition-shadow duration-200 border border-gray-200 focus:ring-2 focus:ring-green-600">
                           <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -681,8 +689,8 @@ useEffect(() => {
                                   active
                                     ? "bg-green-100 text-green-700 font-medium"
                                     : selected
-                                      ? "bg-green-50 text-green-600"
-                                      : "text-gray-700"
+                                    ? "bg-green-50 text-green-600"
+                                    : "text-gray-700"
                                 }`
                               }
                             >
@@ -691,10 +699,10 @@ useEffect(() => {
                           ))}
                         </Listbox.Options>
                       </div>
-                    </Listbox>
+                    </Listbox> */}
 
                     {/* City Filter */}
-                    <Listbox value={selectedCity} onChange={setSelectedCity}>
+                    {/* <Listbox value={selectedCity} onChange={setSelectedCity}>
                       <div className="relative">
                         <Listbox.Button className="w-full px-4 py-3 rounded-lg text-gray-900 bg-white text-left flex items-center justify-between hover:shadow-md transition-shadow duration-200 border border-gray-200 focus:ring-2 focus:ring-green-600">
                           <div className="flex items-center gap-2">
@@ -732,12 +740,54 @@ useEffect(() => {
                                   active
                                     ? "bg-green-100 text-green-700 font-medium"
                                     : selected
-                                      ? "bg-green-50 text-green-600"
-                                      : "text-gray-700"
+                                    ? "bg-green-50 text-green-600"
+                                    : "text-gray-700"
                                 }`
                               }
                             >
                               {city}
+                            </Listbox.Option>
+                          ))}
+                        </Listbox.Options>
+                      </div>
+                    </Listbox> */}
+                    {/* Country Filter — replaces State & City grid */}
+                    <Listbox
+                      value={selectedCountry}
+                      onChange={setSelectedCountry}
+                    >
+                      <div className="relative">
+                        <Listbox.Button className="w-full px-4 py-3 rounded-lg text-gray-900 bg-white text-left flex items-center justify-between hover:shadow-md transition-shadow duration-200 border border-gray-200 focus:ring-2 focus:ring-green-600">
+                          <div className="flex items-center gap-3">
+                            <MapPin className="h-4 w-4 text-gray-400" />
+                            <span
+                              className={
+                                selectedCountry
+                                  ? "text-gray-900 font-medium"
+                                  : "text-gray-400"
+                              }
+                            >
+                              {selectedCountry || "Country of Origin"}
+                            </span>
+                          </div>
+                          <ChevronDown className="h-4 w-4 text-gray-400" />
+                        </Listbox.Button>
+                        <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-auto py-1 text-sm">
+                          {countries.map((country) => (
+                            <Listbox.Option
+                              key={country}
+                              value={country}
+                              className={({ active, selected }) =>
+                                `cursor-pointer px-4 py-2.5 transition-colors ${
+                                  active
+                                    ? "bg-green-100 text-green-700 font-medium"
+                                    : selected
+                                    ? "bg-green-50 text-green-600"
+                                    : "text-gray-700"
+                                }`
+                              }
+                            >
+                              {country}
                             </Listbox.Option>
                           ))}
                         </Listbox.Options>
@@ -810,7 +860,7 @@ useEffect(() => {
                 className="snap-start w-[75vw] flex-shrink-0"
               >
                 <Link
-                to={`/category/${category.id}`}
+                  to={`/category/${category.id}`}
                   className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden flex flex-col h-full"
                 >
                   <div className="relative h-40 overflow-hidden bg-gray-100">
@@ -827,8 +877,8 @@ useEffect(() => {
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                     <div className="absolute bottom-3 left-3 text-white">
-                     <Wrench className="h-6 w-6 mb-1" />
-  <h3 className="text-sm font-bold">{category.name}</h3>
+                      <Wrench className="h-6 w-6 mb-1" />
+                      <h3 className="text-sm font-bold">{category.name}</h3>
                     </div>
                   </div>
                   <div className="p-3 border-t border-gray-100 mt-auto">
@@ -857,7 +907,7 @@ useEffect(() => {
           {categories.map((category) => (
             <Link
               key={category.id}
-               to={`/category/${category.id}`}
+              to={`/category/${category.id}`}
               className="group relative bg-white rounded-xl shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 overflow-hidden"
             >
               <div className="relative h-48 overflow-hidden">
@@ -872,8 +922,8 @@ useEffect(() => {
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
                 <div className="absolute bottom-4 left-4 text-white">
-                   <Wrench className="h-8 w-8 mb-2" />
-  <h3 className="text-lg font-bold">{category.name}</h3>
+                  <Wrench className="h-8 w-8 mb-2" />
+                  <h3 className="text-lg font-bold">{category.name}</h3>
                 </div>
               </div>
               <div className="p-4 border-t border-gray-100">
@@ -1424,100 +1474,100 @@ useEffect(() => {
       </section>
 
       {/* ========== SECTION 9: PRODUCT DETAIL IN-DEPTH BREAKDOWN ========== */}
-     <section className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-14">
-  <div className="bg-white rounded-2xl border border-gray-200 p-6 lg:p-8 shadow-sm">
-    <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-      {/* Gallery Component layout */}
-      <div className="lg:col-span-5 space-y-3">
-        <div className="bg-gray-50 rounded-xl overflow-hidden border border-gray-200/60 h-64 shadow-inner relative group">
-          <img
-            src={galleryImages[selectedGalleryImage]}
-            className="w-full h-full object-cover transition-all duration-300"
-            alt="Main Component Breakdown"
-          />
-          <span className="absolute bottom-3 right-3 text-[10px] font-bold text-gray-700 bg-white/90 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
-            Interactive Preview
-          </span>
-        </div>
-        <div className="grid grid-cols-4 gap-2">
-          {galleryImages.map((img, index) => (
-            <div
-              key={index}
-              onClick={() => setSelectedGalleryImage(index)}
-              className={`h-14 rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${
-                selectedGalleryImage === index
-                  ? "border-2 border-green-700 opacity-100"
-                  : "border border-gray-200 opacity-60 hover:opacity-100"
-              }`}
-            >
-              <img
-                src={img}
-                className="w-full h-full object-cover"
-                alt={`Thumbnail ${index + 1}`}
-              />
+      <section className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-14">
+        <div className="bg-white rounded-2xl border border-gray-200 p-6 lg:p-8 shadow-sm">
+          <div className="grid lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            {/* Gallery Component layout */}
+            <div className="lg:col-span-5 space-y-3">
+              <div className="bg-gray-50 rounded-xl overflow-hidden border border-gray-200/60 h-64 shadow-inner relative group">
+                <img
+                  src={galleryImages[selectedGalleryImage]}
+                  className="w-full h-full object-cover transition-all duration-300"
+                  alt="Main Component Breakdown"
+                />
+                <span className="absolute bottom-3 right-3 text-[10px] font-bold text-gray-700 bg-white/90 backdrop-blur-sm px-2 py-1 rounded shadow-sm">
+                  Interactive Preview
+                </span>
+              </div>
+              <div className="grid grid-cols-4 gap-2">
+                {galleryImages.map((img, index) => (
+                  <div
+                    key={index}
+                    onClick={() => setSelectedGalleryImage(index)}
+                    className={`h-14 rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${
+                      selectedGalleryImage === index
+                        ? "border-2 border-green-700 opacity-100"
+                        : "border border-gray-200 opacity-60 hover:opacity-100"
+                    }`}
+                  >
+                    <img
+                      src={img}
+                      className="w-full h-full object-cover"
+                      alt={`Thumbnail ${index + 1}`}
+                    />
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
-        </div>
-      </div>
 
-      {/* Specs / Content Details layout */}
-      <div className="lg:col-span-7 space-y-4">
-        <div>
-          <span className="bg-green-100 text-green-700 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider inline-block border border-green-200/50">
-            Component Spotlight
-          </span>
-          <h3 className="text-xl sm:text-2xl font-extrabold text-gray-900 mt-2.5 tracking-tight">
-            High-Output Engine Ignition Control Assembly Block
-          </h3>
-        </div>
+            {/* Specs / Content Details layout */}
+            <div className="lg:col-span-7 space-y-4">
+              <div>
+                <span className="bg-green-100 text-green-700 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider inline-block border border-green-200/50">
+                  Component Spotlight
+                </span>
+                <h3 className="text-xl sm:text-2xl font-extrabold text-gray-900 mt-2.5 tracking-tight">
+                  High-Output Engine Ignition Control Assembly Block
+                </h3>
+              </div>
 
-        <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
-          Engineered specifically with high-density internal coil windings
-          to optimize secondary voltage output profiles. Dramatically
-          reduces thermal resistance degradation and eliminates cylinder
-          cold-start misfires under highly humid conditions or abrupt
-          temperature changes.
-        </p>
+              <p className="text-gray-600 text-xs sm:text-sm leading-relaxed">
+                Engineered specifically with high-density internal coil windings
+                to optimize secondary voltage output profiles. Dramatically
+                reduces thermal resistance degradation and eliminates cylinder
+                cold-start misfires under highly humid conditions or abrupt
+                temperature changes.
+              </p>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200/60 text-xs text-gray-600">
-          <div className="flex items-center justify-between border-b border-gray-200/40 pb-1.5 sm:border-none sm:pb-0">
-            <span className="text-gray-400 font-medium">
-              Core Alloys:
-            </span>
-            <span className="font-bold text-gray-900">
-              Reinforced Ceramic / Pure Copper
-            </span>
-          </div>
-          <div className="flex items-center justify-between border-b border-gray-200/40 pb-1.5 sm:border-none sm:pb-0">
-            <span className="text-gray-400 font-medium">
-              Standard Compliance:
-            </span>
-            <span className="font-bold text-gray-900">
-              ISO 9001 / ARAI Calibrated
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-400 font-medium">
-              Factory Warranty:
-            </span>
-            <span className="font-bold text-gray-900">
-              12 Months Product Cover
-            </span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-gray-400 font-medium">
-              Compatibility Guard:
-            </span>
-            <span className="font-bold text-green-700 flex items-center gap-1">
-              <CheckCircle className="h-3.5 w-3.5 fill-green-100" /> 100%
-              Fit Confirmed
-            </span>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-gray-50 p-4 rounded-xl border border-gray-200/60 text-xs text-gray-600">
+                <div className="flex items-center justify-between border-b border-gray-200/40 pb-1.5 sm:border-none sm:pb-0">
+                  <span className="text-gray-400 font-medium">
+                    Core Alloys:
+                  </span>
+                  <span className="font-bold text-gray-900">
+                    Reinforced Ceramic / Pure Copper
+                  </span>
+                </div>
+                <div className="flex items-center justify-between border-b border-gray-200/40 pb-1.5 sm:border-none sm:pb-0">
+                  <span className="text-gray-400 font-medium">
+                    Standard Compliance:
+                  </span>
+                  <span className="font-bold text-gray-900">
+                    ISO 9001 / ARAI Calibrated
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400 font-medium">
+                    Factory Warranty:
+                  </span>
+                  <span className="font-bold text-gray-900">
+                    12 Months Product Cover
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-400 font-medium">
+                    Compatibility Guard:
+                  </span>
+                  <span className="font-bold text-green-700 flex items-center gap-1">
+                    <CheckCircle className="h-3.5 w-3.5 fill-green-100" /> 100%
+                    Fit Confirmed
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
-    </div>
-  </div>
-</section>
+      </section>
 
       {/* ========== SECTION 10: OFFERS & DEALS ========== */}
       <section
@@ -1589,31 +1639,31 @@ useEffect(() => {
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-  {recentlyViewed.map((item) => (
-    <Link
-      key={item.id}
-      to={`/categories`}
-      className="bg-white border border-gray-200 rounded-xl p-3 flex items-center gap-3 shadow-sm hover:shadow-md transition-all duration-200 group cursor-pointer hover:border-green-600"
-    >
-      <div className="w-14 h-14 rounded-lg bg-gray-50 overflow-hidden flex-shrink-0 border border-gray-100">
-        <img
-          src={item.image}
-          alt={item.name}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-        />
-      </div>
-      <div className="min-w-0 flex-1">
-        <h5 className="text-xs font-bold text-gray-800 line-clamp-1 group-hover:text-green-700 transition-colors">
-          {item.name}
-        </h5>
-        <p className="text-xs text-gray-900 font-extrabold mt-1">
-          {item.price}
-        </p>
-      </div>
-      <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all" />
-    </Link>
-  ))}
-</div>
+          {recentlyViewed.map((item) => (
+            <Link
+              key={item.id}
+              to={`/categories`}
+              className="bg-white border border-gray-200 rounded-xl p-3 flex items-center gap-3 shadow-sm hover:shadow-md transition-all duration-200 group cursor-pointer hover:border-green-600"
+            >
+              <div className="w-14 h-14 rounded-lg bg-gray-50 overflow-hidden flex-shrink-0 border border-gray-100">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                />
+              </div>
+              <div className="min-w-0 flex-1">
+                <h5 className="text-xs font-bold text-gray-800 line-clamp-1 group-hover:text-green-700 transition-colors">
+                  {item.name}
+                </h5>
+                <p className="text-xs text-gray-900 font-extrabold mt-1">
+                  {item.price}
+                </p>
+              </div>
+              <ChevronRight className="h-4 w-4 text-gray-300 group-hover:text-gray-600 group-hover:translate-x-0.5 transition-all" />
+            </Link>
+          ))}
+        </div>
       </section>
 
       {/* ========== SECTION 12: FREQUENTLY ANSWERED QUERIES (FAQ) ========== */}
@@ -1638,7 +1688,11 @@ useEffect(() => {
             return (
               <div
                 key={idx}
-                className={`bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-200 shadow-sm ${isOpen ? "ring-1 ring-green-600 border-transparent shadow-md" : "hover:border-gray-300"}`}
+                className={`bg-white rounded-xl border border-gray-200 overflow-hidden transition-all duration-200 shadow-sm ${
+                  isOpen
+                    ? "ring-1 ring-green-600 border-transparent shadow-md"
+                    : "hover:border-gray-300"
+                }`}
               >
                 <button
                   onClick={() => setFaqOpen(isOpen ? null : idx)}
@@ -1648,11 +1702,17 @@ useEffect(() => {
                     {faq.q}
                   </span>
                   <ChevronDown
-                    className={`h-4 w-4 text-gray-400 flex-shrink-0 transition-transform duration-300 ${isOpen ? "rotate-180 text-green-700" : ""}`}
+                    className={`h-4 w-4 text-gray-400 flex-shrink-0 transition-transform duration-300 ${
+                      isOpen ? "rotate-180 text-green-700" : ""
+                    }`}
                   />
                 </button>
                 <div
-                  className={`transition-all duration-300 ease-in-out overflow-hidden ${isOpen ? "max-h-40 border-t border-gray-100 bg-gray-50/50" : "max-h-0"}`}
+                  className={`transition-all duration-300 ease-in-out overflow-hidden ${
+                    isOpen
+                      ? "max-h-40 border-t border-gray-100 bg-gray-50/50"
+                      : "max-h-0"
+                  }`}
                 >
                   <div className="px-5 py-4 text-xs sm:text-sm text-gray-600 leading-relaxed">
                     {faq.a}
