@@ -927,7 +927,7 @@ const UsedTractorDetails = () => {
       navigate(`/login?redirect=/tractor/${id}`);
       return;
     }
-    toggleWishlist(wishlistProduct);
+    toggleWishlist(wishlistProduct, "usedVariant");
   };
 
   // ─── Auto Slider ──────────────────────────────────────────────────────────
@@ -1173,7 +1173,7 @@ const getVisibleRelated = () => {
                     <Heart
                       size={18}
                       className={
-                        isInWishlist(Number(id))
+                       isInWishlist(Number(id), "usedVariant")
                           ? "fill-green-500 text-green-500"
                           : "text-gray-500"
                       }

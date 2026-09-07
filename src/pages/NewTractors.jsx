@@ -697,7 +697,7 @@ const NewTractors = () => {
   };
 
   const TractorCard = ({ tractor }) => {
-    const wishlisted = isInWishlist(tractor.id);
+  const wishlisted = isInWishlist(tractor.id, "variant");
 
     return (
       <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col shrink-0 w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]">
@@ -728,7 +728,7 @@ const NewTractors = () => {
                 navigate(`/login?redirect=${location.pathname}`);
                 return;
               }
-              toggleWishlist(tractor);
+            toggleWishlist(tractor, "variant");  
             }}
             className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow hover:bg-gray-100 cursor-pointer"
           >

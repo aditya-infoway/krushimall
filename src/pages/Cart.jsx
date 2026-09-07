@@ -65,7 +65,15 @@ const Cart = () => {
     try {
       setLoadingCoupons(true);
       const data = await apiHelper.post("/web/coupons/available", {
-        cartItems: cart.map((item) => ({ productId: item.id })),
+        // price + quantity bhi bhej rahe hain ab — backend ko SPECIFIC_PRODUCTS
+        // coupon ke minOrderValue check ke liye sirf eligible items ka subtotal
+        // nikalna hota hai, poora cart subtotal nahi (varna unrelated item add
+        // karke min-order threshold "unlock" ho jaata tha).
+        cartItems: cart.map((item) => ({
+          productId: item.id,
+          price: item.price,
+          quantity: item.quantity,
+        })),
         subtotal,
       });
       if (data.success) {

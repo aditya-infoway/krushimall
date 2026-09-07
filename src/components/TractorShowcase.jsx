@@ -195,15 +195,15 @@ const TractorShowcase = () => {
     fetchTrendingComparisons();
   }, []);
 
-  const handleWishlistClick = (tractor, e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!isAuthenticated) {
-      navigate("/login?redirect=/");
-      return;
-    }
-    toggleWishlist(tractor);
-  };
+const handleWishlistClick = (tractor, e) => {
+  e.preventDefault();
+  e.stopPropagation();
+  if (!isAuthenticated) {
+    navigate("/login?redirect=/");
+    return;
+  }
+  toggleWishlist(tractor, "variant");
+};
 
   // Detect screen size for responsive cards
   useEffect(() => {
@@ -322,7 +322,7 @@ const TractorShowcase = () => {
             className="p-1 sm:p-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white transition-all"
           >
             <Heart
-              className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors ${isInWishlist(tractor.id)
+              className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors ${isInWishlist(tractor.id, "variant")
                   ? "fill-green-500 text-green-500"
                   : "text-gray-600 hover:text-green-500"
                 }`}
