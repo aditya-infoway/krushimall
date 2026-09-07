@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback,useRef } from "react";
 import { useAuth } from "./AuthContext";
 import apiHelper from "../utils/apiHelper";
 
@@ -33,14 +33,22 @@ const mapProduct = (item) => ({
   oldPrice: Number(item.product.mrp) || 0,
   image: apiHelper.image(item.product.mainImage),
 });
-
+const mapUsedVariant = (item) => ({
+  wishlistId: item.id,
+  id: item.usedVariant.id,
+  type: "usedVariant",
+  name: item.usedVariant.productName,
+  brand: item.usedVariant.brand || "Unknown",
+  price: item.usedVariant.expectedPrice || 0,
+  image: apiHelper.image(item.usedVariant.frontView),
+});
 export const WishlistProvider = ({ children }) => {
   const { isAuthenticated } = useAuth();
   const [wishlistItems, setWishlistItems] = useState([]);
   const [wishlistIds, setWishlistIds] = useState(new Set());   // ✅ ab composite keys store honge
   const [showWishlistToast, setShowWishlistToast] = useState(false);
   const [toastMessage, setToastMessage] = useState("");
-
+  const pendingRef = useRef(new Set());
   const notify = (msg) => {
     setToastMessage(msg);
     setShowWishlistToast(true);
@@ -79,13 +87,17 @@ export const WishlistProvider = ({ children }) => {
 
   // ✅ ab type zaroori hai: "product" ya "variant". Default "product" rakha
   // hai taaki spare-parts pages (jahan zyada calls honge) bina change ke chal jayein.
-  const toggleWishlist = async (product, type = "product") => {
+ const toggleWishlist = async (product, type = "product") => {
     if (!isAuthenticated) return;
 
     const key = makeKey(product.id, type);
+
+    // ✅ agar isi item ka toggle already pending hai to naya request mat bhejo
+    if (pendingRef.current.has(key)) return;
+    pendingRef.current.add(key);
+
     const currentlyIn = wishlistIds.has(key);
 
-    // optimistic UI update
     setWishlistIds((prev) => {
       const next = new Set(prev);
       currentlyIn ? next.delete(key) : next.add(key);
@@ -103,14 +115,16 @@ export const WishlistProvider = ({ children }) => {
     );
 
     try {
-      const payload = type === "variant"
-        ? { variantId: product.id }
-        : { productId: product.id };
-
+     const payload =
+  type === "variant" ? { variantId: product.id }
+  : type === "usedVariant" ? { usedVariantId: product.id }
+  : { productId: product.id };
       await apiHelper.post("/wishlist/toggle", payload);
     } catch (error) {
       console.error("Failed to toggle wishlist:", error);
-      fetchWishlist(); // revert to server truth on failure
+      fetchWishlist();
+    } finally {
+      pendingRef.current.delete(key); // ✅ request complete hote hi lock hatao
     }
   };
 

@@ -1090,7 +1090,7 @@ const EquipmentDetails = () => {
                     <Share2 size={18} className="text-gray-500" />
                   </button>
                 </div>
-                <div className="absolute bottom-3 left-3">
+                {/* <div className="absolute bottom-3 left-3">
                   <span
                     className={`text-white text-xs font-bold px-3 py-1 rounded-full ${
                       equipment.status === "ACTIVE"
@@ -1100,7 +1100,7 @@ const EquipmentDetails = () => {
                   >
                     {equipment.status || "ACTIVE"}
                   </span>
-                </div>
+                </div> */}
               </div>
               <div className="flex gap-2 p-3 overflow-x-auto">
                 {equipment.images.map((img, index) => (

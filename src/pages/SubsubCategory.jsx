@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import { useParams, Link, useLocation } from "react-router-dom";
-import { ChevronRight, Home, Wrench, ArrowLeft,  Search, } from "lucide-react";
+import { useParams, Link, useLocation ,useNavigate} from "react-router-dom";
+import { ChevronRight, Home, Wrench, ArrowLeft,  Search,ChevronLeft } from "lucide-react";
 import apiHelper from "../utils/apiHelper";
 
 const SubSubCategory = () => {
@@ -13,7 +13,7 @@ const SubSubCategory = () => {
   const [loading, setLoading] = useState(true);
 const [searchTerm, setSearchTerm] = useState("");
 const categoryId = location.state?.categoryId || category?.id;
-
+const navigate = useNavigate();
 const backTo = categoryId
   ? `/category/${categoryId}`
   : "/categories";
@@ -194,6 +194,7 @@ const filteredSubSubCategories = subSubCategories.filter((item) => {
       </div>
 
       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46  pb-6">
+         <div className=" flex items-center justify-between mb-3">
         <Link
           to={backTo}
           className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-green-600 "
@@ -201,7 +202,17 @@ const filteredSubSubCategories = subSubCategories.filter((item) => {
           <ArrowLeft className="h-4 w-4" />
           Back to {backLabel}
         </Link>
-
+  <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group shrink-0"
+            aria-label="Go back"
+          >
+            <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" />
+            <span className="text-sm font-medium text-gray-600 group-hover:text-green-600 transition-colors">
+              Back
+            </span>
+          </button>
+          </div>
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
           {subCategory.subCategoryName}
         </h1>

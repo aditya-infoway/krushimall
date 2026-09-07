@@ -31,7 +31,7 @@ import {
   showWishlistAddedToast,
   showWishlistRemovedToast,
   showLoginRequiredToast,
-    showErrorToast,   
+  showErrorToast,
 } from "../utils/toast.jsx";
 
 const Products = () => {
@@ -46,12 +46,12 @@ const Products = () => {
   const subSubCategoryId = searchParams.get("subSubCategoryId");
   const subCategoryId = searchParams.get("subCategoryId");
   const categoryId = searchParams.get("categoryId");
+  const brandIdParam = searchParams.get("brandId");
+  const minPriceParam = searchParams.get("minPrice");
+  const maxPriceParam = searchParams.get("maxPrice");
+  const countryParam = searchParams.get("country");
   const [viewMode, setViewMode] = useState("grid");
-  const [selectedCategory, setSelectedCategory] = useState(
-    categoryId || category || "all",
-  );
-  const [selectedBrands, setSelectedBrands] = useState([]);
-  const [priceRange, setPriceRange] = useState([0, 50000]);
+
   const [sortBy, setSortBy] = useState("popular");
   const [showFilters, setShowFilters] = useState(false);
   const [showVehicleSearch, setShowVehicleSearch] = useState(false);
@@ -60,10 +60,28 @@ const Products = () => {
   const [selectedYear, setSelectedYear] = useState("");
   const [inStockOnly, setInStockOnly] = useState(false);
 
-  const [appliedCategory, setAppliedCategory] = useState(categoryId || "all");
-  const [appliedBrands, setAppliedBrands] = useState([]);
-  const [appliedPriceRange, setAppliedPriceRange] = useState([0, 50000]);
+  const [selectedCategory, setSelectedCategory] = useState(
+    categoryId || category || "all",
+  );
+  const [selectedBrands, setSelectedBrands] = useState(
+    brandIdParam ? [brandIdParam] : [],
+  );
+  const [priceRange, setPriceRange] = useState([
+    minPriceParam ? Number(minPriceParam) : 0,
+    maxPriceParam ? Number(maxPriceParam) : 50000,
+  ]);
+  const [selectedCountry, setSelectedCountry] = useState(countryParam || "");
 
+  const [appliedCategory, setAppliedCategory] = useState(categoryId || "all");
+  const [appliedBrands, setAppliedBrands] = useState(
+    brandIdParam ? [brandIdParam] : [],
+  );
+  const [appliedPriceRange, setAppliedPriceRange] = useState([
+    minPriceParam ? Number(minPriceParam) : 0,
+    maxPriceParam ? Number(maxPriceParam) : 50000,
+  ]);
+
+  const [appliedCountry, setAppliedCountry] = useState(countryParam || "");
   // ---- products from backend ----
   const [products, setProducts] = useState([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
@@ -104,12 +122,14 @@ const Products = () => {
             !item?.verificationStatus,
         )
         .map((item) => {
-         const mrp = Number(item.mrp) || 0;
-const sellingPrice = Number(item.sellingPrice) || 0;
-const finalPrice =
-  Number(item.finalPrice) > 0 ? Number(item.finalPrice) : sellingPrice;
-const discount =
-  mrp > 0 ? Math.round(((mrp - finalPrice) / mrp) * 100) : 0;
+          const mrp = Number(item.mrp) || 0;
+          const sellingPrice = Number(item.sellingPrice) || 0;
+          const finalPrice =
+            Number(item.finalPrice) > 0
+              ? Number(item.finalPrice)
+              : sellingPrice;
+          const discount =
+            mrp > 0 ? Math.round(((mrp - finalPrice) / mrp) * 100) : 0;
 
           let compatibility = item.shortDescription || "";
           try {
@@ -139,10 +159,11 @@ const discount =
             rating: item.rating || 4.5,
             reviews: item.reviewsCount || 0,
             stock: Number(item.stockQuantity) || 0,
-              maxOrderQuantity: Number(item.maxOrderQuantity) || 0,
+            maxOrderQuantity: Number(item.maxOrderQuantity) || 0,
             image: apiHelper.getImageUrl(item.mainImage) || "",
             partNumber: item.sku || item.barcode || "",
             compatibility,
+            countryOfOrigin: item.countryOfOrigin || "",
             warranty: item.warrantyPeriod || "-",
             shipping: item.freeShipping ? "Free" : "Paid",
             inStock:
@@ -232,31 +253,33 @@ const discount =
       document.body.style.paddingRight = "";
     };
   }, [showFilters]);
-const handleAddToCart = (e, product) => {
-  e.preventDefault();
-  if (!isAuthenticated) {
-    showLoginRequiredToast();
-    navigate("/login?redirect=/products");
-    return;
-  }
+  const handleAddToCart = (e, product) => {
+    e.preventDefault();
+    if (!isAuthenticated) {
+      showLoginRequiredToast();
+      navigate("/login?redirect=/products");
+      return;
+    }
 
-  const maxQty = getMaxOrderQuantity(product);
-  const currentQty = getCartQuantity(product.id);
+    const maxQty = getMaxOrderQuantity(product);
+    const currentQty = getCartQuantity(product.id);
 
-  if (currentQty >= maxQty) {
-    showErrorToast(
-      `Maximum order quantity is ${maxQty}. You cannot order more than ${maxQty} item${maxQty > 1 ? "s" : ""}.`,
-    );
-    return;
-  }
+    if (currentQty >= maxQty) {
+      showErrorToast(
+        `Maximum order quantity is ${maxQty}. You cannot order more than ${maxQty} item${
+          maxQty > 1 ? "s" : ""
+        }.`,
+      );
+      return;
+    }
 
-  addToCart(product, 1);
-};
+    addToCart(product, 1);
+  };
 
   const toggleBrand = (brandId) => {
     setSelectedBrands((prev) =>
-      prev.includes(brandId)
-        ? prev.filter((b) => b !== brandId)
+      prev.some((b) => String(b) === String(brandId))
+        ? prev.filter((b) => String(b) !== String(brandId))
         : [...prev, brandId],
     );
   };
@@ -265,6 +288,7 @@ const handleAddToCart = (e, product) => {
     setAppliedCategory(selectedCategory);
     setAppliedBrands(selectedBrands);
     setAppliedPriceRange(priceRange);
+    setAppliedCountry(selectedCountry);
     setShowFilters(false);
   };
 
@@ -272,36 +296,40 @@ const handleAddToCart = (e, product) => {
     setSelectedCategory("all");
     setSelectedBrands([]);
     setPriceRange([0, 50000]);
+    setSelectedCountry("");
     setInStockOnly(false);
     setAppliedCategory("all");
     setAppliedBrands([]);
     setAppliedPriceRange([0, 50000]);
+    setAppliedCountry("");
   };
 
   const getCartQuantity = (productId) => {
     const cartItem = cart.find((item) => item.id === productId);
     return cartItem ? cartItem.quantity : 0;
   };
-const getMaxOrderQuantity = (product) => {
-  const maxQty = Number(product?.maxOrderQuantity);
-  return maxQty > 0 ? maxQty : Infinity;
-};
-const handleIncreaseQuantity = (e, product) => {
-  e.preventDefault();
-  e.stopPropagation();
+  const getMaxOrderQuantity = (product) => {
+    const maxQty = Number(product?.maxOrderQuantity);
+    return maxQty > 0 ? maxQty : Infinity;
+  };
+  const handleIncreaseQuantity = (e, product) => {
+    e.preventDefault();
+    e.stopPropagation();
 
-  const maxQty = getMaxOrderQuantity(product);
-  const currentQty = getCartQuantity(product.id);
+    const maxQty = getMaxOrderQuantity(product);
+    const currentQty = getCartQuantity(product.id);
 
-  if (currentQty >= maxQty) {
-    showErrorToast(
-      `Maximum order quantity is ${maxQty}. You cannot order more than ${maxQty} item${maxQty > 1 ? "s" : ""}.`,
-    );
-    return;
-  }
+    if (currentQty >= maxQty) {
+      showErrorToast(
+        `Maximum order quantity is ${maxQty}. You cannot order more than ${maxQty} item${
+          maxQty > 1 ? "s" : ""
+        }.`,
+      );
+      return;
+    }
 
-  addToCart(product, 1);
-};
+    addToCart(product, 1);
+  };
 
   const handleDecreaseQuantity = (e, product) => {
     e.preventDefault();
@@ -342,9 +370,17 @@ const handleIncreaseQuantity = (e, product) => {
 
     const matchesStock = !inStockOnly || product.inStock;
 
-    return matchesCategory && matchesBrand && matchesPrice && matchesStock;
-  });
+    const matchesCountry =
+      !appliedCountry || product.countryOfOrigin === appliedCountry;
 
+    return (
+      matchesCategory &&
+      matchesBrand &&
+      matchesPrice &&
+      matchesStock &&
+      matchesCountry
+    );
+  });
   // ---- sorting ----
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     switch (sortBy) {
@@ -594,21 +630,9 @@ const handleIncreaseQuantity = (e, product) => {
       </div>
 
       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-6">
-        {/* <div className=" flex items-center justify-end ">
-                    <button
-                      onClick={() => navigate(-1)}
-                      className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group shrink-0"
-                      aria-label="Go back"
-                    >
-                      <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" />
-                      <span className="text-sm font-medium text-gray-600 group-hover:text-green-600 transition-colors">
-                        Back
-                      </span>
-                    </button>
-                    </div> */}
         <div className="flex gap-8 items-start">
           {/* Desktop Sidebar Filters */}
-          <div className="hidden lg:block w-64 flex-shrink-0">
+          <div className="hidden lg:block w-64 shrink-0">
             <div className="sticky top-28 bg-white border border-gray-200 rounded-xl p-5 shadow-sm space-y-6">
               {/* Categories */}
               <div>
@@ -624,7 +648,7 @@ const handleIncreaseQuantity = (e, product) => {
                         key={cat.id}
                         onClick={() => setSelectedCategory(cat.id)}
                         className={`flex items-center justify-between w-full text-left px-3 py-2 rounded-lg text-sm transition-colors border ${
-                          selectedCategory === cat.id
+                          String(selectedCategory) === String(cat.id)
                             ? "bg-green-50 text-green-600 font-medium border-green-200"
                             : "text-gray-600 hover:bg-gray-50 border-transparent"
                         }`}
@@ -648,33 +672,38 @@ const handleIncreaseQuantity = (e, product) => {
                       Loading brands...
                     </p>
                   ) : (
-                    brands.map((brand) => (
-                      <button
-                        key={brand.id}
-                        onClick={() => toggleBrand(brand.id)}
-                        className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-sm transition-colors border ${
-                          selectedBrands.includes(brand.id)
-                            ? "bg-green-50 text-green-600 font-medium border-green-200"
-                            : "text-gray-600 hover:bg-gray-50 border-transparent"
-                        }`}
-                      >
-                        <div
-                          className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${
-                            selectedBrands.includes(brand.id)
-                              ? "bg-green-600 border-green-600"
-                              : "border-gray-300"
+                    brands.map((brand) => {
+                      const isSelected = selectedBrands.some(
+                        (b) => String(b) === String(brand.id),
+                      );
+                      return (
+                        <button
+                          key={brand.id}
+                          onClick={() => toggleBrand(brand.id)}
+                          className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-sm transition-colors border ${
+                            isSelected
+                              ? "bg-green-50 text-green-600 font-medium border-green-200"
+                              : "text-gray-600 hover:bg-gray-50 border-transparent"
                           }`}
                         >
-                          {selectedBrands.includes(brand.id) && (
-                            <Check className="h-3 w-3 text-white" />
-                          )}
-                        </div>
-                        <span className="flex-1">{brand.name}</span>
-                        <span className="text-xs text-gray-400">
-                          ({brand.count})
-                        </span>
-                      </button>
-                    ))
+                          <div
+                            className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                              isSelected
+                                ? "bg-green-600 border-green-600"
+                                : "border-gray-300"
+                            }`}
+                          >
+                            {isSelected && (
+                              <Check className="h-3 w-3 text-white" />
+                            )}
+                          </div>
+                          <span className="flex-1">{brand.name}</span>
+                          <span className="text-xs text-gray-400">
+                            ({brand.count})
+                          </span>
+                        </button>
+                      );
+                    })
                   )}
                 </div>
               </div>
@@ -724,7 +753,7 @@ const handleIncreaseQuantity = (e, product) => {
                   className="flex items-center gap-3 text-sm text-gray-600 cursor-pointer"
                 >
                   <div
-                    className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                    className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 ${
                       inStockOnly
                         ? "bg-green-600 border-green-600"
                         : "border-gray-300"
@@ -761,6 +790,16 @@ const handleIncreaseQuantity = (e, product) => {
                 products
               </p>
               <button
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group shrink-0"
+                aria-label="Go back"
+              >
+                <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" />
+                <span className="text-sm font-medium text-gray-600 group-hover:text-green-600 transition-colors">
+                  Back
+                </span>
+              </button>
+              <button
                 onClick={() => setShowFilters(true)}
                 className="lg:hidden flex items-center gap-2 bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium shadow-sm"
               >
@@ -789,7 +828,7 @@ const handleIncreaseQuantity = (e, product) => {
                       className="bg-white border border-gray-200 rounded-lg hover:border-gray-300 hover:shadow-sm transition-all group flex flex-col"
                     >
                       {/* Product Image - Compact */}
-                      <div className="relative bg-gray-100 overflow-hidden flex-shrink-0 aspect-[4/3] rounded-t-lg w-full">
+                      <div className="relative bg-gray-100 overflow-hidden shrink-0 aspect-4/3 rounded-t-lg w-full">
                         <img
                           src={product.image}
                           alt={product.name}
@@ -1008,7 +1047,7 @@ const handleIncreaseQuantity = (e, product) => {
                             <span className="text-[11px] font-medium text-gray-500 truncate">
                               {product.brand}
                             </span>
-                            <div className="flex items-center gap-0.5 flex-shrink-0 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
+                            <div className="flex items-center gap-0.5 shrink-0 bg-gray-50 px-1.5 py-0.5 rounded border border-gray-100">
                               <Star className="h-2.5 w-2.5 fill-yellow-400 text-yellow-400" />
                               <span className="text-[10px] font-semibold text-gray-600">
                                 {product.rating}
@@ -1034,7 +1073,7 @@ const handleIncreaseQuantity = (e, product) => {
                               )}
                             </div>
 
-                            <div className="text-[10px] flex-shrink-0">
+                            <div className="text-[10px] shrink-0">
                               <span
                                 className={`font-semibold ${
                                   product.inStock
@@ -1094,7 +1133,7 @@ const handleIncreaseQuantity = (e, product) => {
                         className="bg-white border border-gray-200 rounded-xl hover:border-gray-300 hover:shadow-md transition-all group flex items-stretch overflow-hidden"
                       >
                         {/* Left: Product Image */}
-                        <div className="relative w-48 bg-gray-50 flex-shrink-0 aspect-square">
+                        <div className="relative w-48 bg-gray-50 shrink-0 aspect-square">
                           <img
                             src={product.image}
                             alt={product.name}
@@ -1200,7 +1239,7 @@ const handleIncreaseQuantity = (e, product) => {
 
                           {/* List Add to Cart / Quantity Switch */}
                           {quantity > 0 ? (
-                            <div className="w-full flex items-center justify-between border border-green-600 rounded-lg overflow-hidden bg-white py-2 px-3 h-[42px]">
+                            <div className="w-full flex items-center justify-between border border-green-600 rounded-lg overflow-hidden bg-white py-2 px-3 h-10.5">
                               <button
                                 onClick={(e) =>
                                   handleDecreaseQuantity(e, product)
@@ -1225,7 +1264,7 @@ const handleIncreaseQuantity = (e, product) => {
                             <button
                               disabled={!product.inStock}
                               onClick={(e) => handleAddToCart(e, product)}
-                              className={`w-full flex items-center justify-center gap-2 font-medium px-4 py-2.5 rounded-lg transition-colors text-sm h-[42px] cursor-pointer ${
+                              className={`w-full flex items-center justify-center gap-2 font-medium px-4 py-2.5 rounded-lg transition-colors text-sm h-10.5 cursor-pointer ${
                                 product.inStock
                                   ? "bg-green-600 hover:bg-green-700 text-white"
                                   : "bg-gray-200 text-gray-400 cursor-not-allowed"
@@ -1284,8 +1323,8 @@ const handleIncreaseQuantity = (e, product) => {
                       <button
                         key={cat.id}
                         onClick={() => setSelectedCategory(cat.id)}
-                        className={`flex items-center justify-between w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors border ${
-                          selectedCategory === cat.id
+                        className={`flex items-center justify-between w-full text-left px-3 py-2 rounded-lg text-sm transition-colors border ${
+                          String(selectedCategory) === String(cat.id)
                             ? "bg-green-50 text-green-600 font-medium border-green-200"
                             : "text-gray-600 hover:bg-gray-50 border-transparent"
                         }`}
@@ -1313,22 +1352,26 @@ const handleIncreaseQuantity = (e, product) => {
                       <button
                         key={brand.id}
                         onClick={() => toggleBrand(brand.id)}
-                        className={`flex items-center gap-2 w-full text-left px-3 py-2.5 rounded-lg text-sm transition-colors border ${
-                          selectedBrands.includes(brand.id)
+                        className={`flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg text-sm transition-colors border ${
+                          selectedBrands.some(
+                            (b) => String(b) === String(brand.id),
+                          )
                             ? "bg-green-50 text-green-600 font-medium border-green-200"
                             : "text-gray-600 hover:bg-gray-50 border-transparent"
                         }`}
                       >
                         <div
-                          className={`w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 ${
-                            selectedBrands.includes(brand.id)
+                          className={`w-4 h-4 rounded border flex items-center justify-center shrink-0 ${
+                            selectedBrands.some(
+                              (b) => String(b) === String(brand.id),
+                            )
                               ? "bg-green-600 border-green-600"
                               : "border-gray-300"
                           }`}
                         >
-                          {selectedBrands.includes(brand.id) && (
-                            <Check className="h-3 w-3 text-white" />
-                          )}
+                          {selectedBrands.some(
+                            (b) => String(b) === String(brand.id),
+                          ) && <Check className="h-3 w-3 text-white" />}
                         </div>
                         <span className="flex-1">{brand.name}</span>
                         <span className="text-xs text-gray-400">

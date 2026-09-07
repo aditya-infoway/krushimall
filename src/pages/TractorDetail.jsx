@@ -901,13 +901,13 @@ const TractorDetails = () => {
     image: tractor.images[0],
   };
 
-  const handleWishlistClick = () => {
-    if (!isAuthenticated) {
-      navigate(`/login?redirect=/tractor/${id}`);
-      return;
-    }
-    toggleWishlist(wishlistProduct);
-  };
+ const handleWishlistClick = () => {
+  if (!isAuthenticated) {
+    navigate(`/login?redirect=/tractor/${id}`);
+    return;
+  }
+  toggleWishlist(wishlistProduct, "variant");
+};
 
   // ─── Auto Slider ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -1166,14 +1166,14 @@ const TractorDetails = () => {
                     onClick={handleWishlistClick}
                     className="w-10 h-10 cursor-pointer bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all"
                   >
-                    <Heart
-                      size={18}
-                      className={
-                        isInWishlist(Number(id))
-                          ? "fill-green-500 text-green-500"
-                          : "text-gray-500"
-                      }
-                    />
+                  <Heart
+  size={18}
+  className={
+    isInWishlist(Number(id), "variant")
+      ? "fill-green-500 text-green-500"
+      : "text-gray-500"
+  }
+/>
                   </button>
                   <button className="w-10 h-10 cursor-pointer bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all">
                     <Share2 size={18} className="text-gray-500" />

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
-import { useParams, Link } from "react-router-dom";
-import { ChevronRight, ArrowLeft, Wrench, Search } from "lucide-react";
+import { useParams, Link ,useNavigate} from "react-router-dom";
+import { ChevronRight, ArrowLeft, Wrench, Search,ChevronLeft } from "lucide-react";
 import apiHelper from "../utils/apiHelper";
 
 const CategoryDetail = () => {
@@ -10,7 +10,7 @@ const CategoryDetail = () => {
   const [category, setCategory] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [loading, setLoading] = useState(true);
-
+const navigate = useNavigate();
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true);
@@ -126,6 +126,7 @@ const CategoryDetail = () => {
         </div>
 
         {/* Back */}
+        <div className=" flex items-center justify-between ">
         <Link
           to="/categories"
           className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-green-600 mb-4"
@@ -133,7 +134,17 @@ const CategoryDetail = () => {
           <ArrowLeft className="h-4 w-4" />
           Back to All Categories
         </Link>
-
+  <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group shrink-0"
+            aria-label="Go back"
+          >
+            <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" />
+            <span className="text-sm font-medium text-gray-600 group-hover:text-green-600 transition-colors">
+              Back
+            </span>
+          </button>
+          </div>
         {/* Title */}
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
           {category.categoryName}
