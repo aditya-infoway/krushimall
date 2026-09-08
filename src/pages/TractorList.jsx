@@ -339,7 +339,7 @@ useEffect(() => {
               {tractor.brand}
             </span>
             <div className="flex items-center gap-1 text-xs text-gray-500 min-w-0">
-              <MapPin className="h-3 w-3 flex-shrink-0" />
+              <MapPin className="h-3 w-3 shrink-0" />
               <span className="truncate">{tractor.location}</span>
             </div>
           </div>
@@ -347,7 +347,7 @@ useEffect(() => {
             <h3 className="text-sm font-bold text-gray-900 mb-2 line-clamp-1 hover:text-green-600 transition-colors">
               {tractor.name}
             </h3>
-            <div className="flex items-center gap-1 flex-shrink-0">
+            <div className="flex items-center gap-1 shrink-0">
               <Star className="h-3 w-3 text-yellow-400 fill-yellow-400" />
               <span className="text-xs font-semibold text-gray-700">
                 {tractor.rating}
@@ -367,7 +367,7 @@ useEffect(() => {
                   ? `/tractor/${tractor.id}`
                   : `/used-tractor/${tractor.id}`
               }
-              className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg flex-shrink-0"
+              className="bg-green-600 hover:bg-green-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg shrink-0"
             >
               Details
             </Link>
@@ -419,7 +419,7 @@ useEffect(() => {
               type="checkbox"
               checked={selectedItems.length === 0}
               onChange={() => setSelectedItems([])}
-              className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer flex-shrink-0"
+              className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer shrink-0"
             />
             <span className="text-sm text-gray-600 group-hover:text-gray-900">
               All
@@ -443,12 +443,12 @@ useEffect(() => {
                     setSelectedItems(selectedItems.filter((i) => i !== item));
                   }
                 }}
-                className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer flex-shrink-0"
+                className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer shrink-0"
               />
-              <span className="text-sm text-gray-600 group-hover:text-gray-900 truncate max-w-[140px]">
+              <span className="text-sm text-gray-600 group-hover:text-gray-900 truncate max-w-35">
                 {item}
               </span>
-              <span className="ml-auto text-xs text-gray-400 flex-shrink-0">
+              <span className="ml-auto text-xs text-gray-400 shrink-0">
                 ({countData[item] || 0})
               </span>
             </label>
@@ -479,10 +479,10 @@ useEffect(() => {
     );
 
     return (
-      <div className="fixed inset-0 z-[100] flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50">
+      <div className="fixed inset-0 z-100 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/50">
         <div className="bg-white w-full sm:max-w-4xl rounded-t-2xl sm:rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[90vh]">
           {/* Modal Header */}
-          <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-200 bg-white flex-shrink-0">
+          <div className="flex items-center justify-between px-4 sm:px-6 py-4 border-b border-gray-200 bg-white shrink-0">
             <h3 className="text-lg font-bold text-gray-900">Brands</h3>
             <button
               onClick={() => setIsBrandModalOpen(false)}
@@ -493,7 +493,7 @@ useEffect(() => {
           </div>
 
           {/* Modal Search Bar */}
-          <div className="px-4 sm:px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex-shrink-0">
+          <div className="px-4 sm:px-6 py-4 border-b border-gray-100 bg-gray-50/50 shrink-0">
             <div className="relative max-w-md">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
               <input
@@ -514,7 +514,7 @@ useEffect(() => {
                   type="checkbox"
                   checked={selectedBrands.length === 0}
                   onChange={() => setSelectedBrands([])}
-                  className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer flex-shrink-0"
+                  className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer shrink-0"
                 />
                 <span className="text-sm text-gray-700 font-medium">All</span>
               </label>
@@ -535,7 +535,7 @@ useEffect(() => {
                         );
                       }
                     }}
-                    className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer flex-shrink-0"
+                    className="h-4 w-4 rounded border-gray-300 text-green-600 focus:ring-green-500 cursor-pointer shrink-0"
                   />
                   <span className="text-sm text-gray-700 truncate">{item}</span>
                 </label>
@@ -544,7 +544,7 @@ useEffect(() => {
           </div>
 
           {/* Modal Footer */}
-          <div className="flex items-center justify-end gap-4 px-4 sm:px-6 py-4 border-t border-gray-200 bg-white flex-shrink-0">
+          <div className="flex items-center justify-end gap-4 px-4 sm:px-6 py-4 border-t border-gray-200 bg-white shrink-0">
             <button
               onClick={() => setSelectedBrands([])}
               className="text-sm font-semibold text-blue-600 hover:text-blue-800"
@@ -629,7 +629,7 @@ useEffect(() => {
       : 100000;
 
     return (
-      <div className={isMobile ? "w-full" : "w-full lg:w-72 flex-shrink-0"}>
+      <div className={isMobile ? "w-full" : "w-full lg:w-72 shrink-0"}>
         <div
           className={
             isMobile
@@ -695,7 +695,7 @@ useEffect(() => {
                             ? "Newest First"
                             : "Highest Rated"}
                   </span>
-                  <ChevronDown className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                  <ChevronDown className="h-4 w-4 text-gray-400 shrink-0" />
                 </Listbox.Button>
                 <Listbox.Options className="absolute z-50 mt-1 w-full bg-white border border-gray-200 rounded-lg shadow-lg py-1 text-sm max-h-64 overflow-y-auto">
                   {[
@@ -768,7 +768,7 @@ useEffect(() => {
             <h4 className="text-sm font-semibold text-gray-800 mb-3">PRICE</h4>
             <div className="flex flex-col gap-3 px-1">
               <div className="flex items-center gap-3 text-xs text-gray-600">
-                <span className="w-12 flex-shrink-0">
+                <span className="w-12 shrink-0">
                   ₹{priceRange[0].toLocaleString()}
                 </span>
                 <input
@@ -784,7 +784,7 @@ useEffect(() => {
                   }
                   className="flex-1 h-1 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-green-600 min-w-0"
                 />
-                <span className="w-16 flex-shrink-0 text-right">
+                <span className="w-16 shrink-0 text-right">
                   ₹{priceRange[1].toLocaleString()}
                 </span>
               </div>
@@ -820,18 +820,18 @@ useEffect(() => {
 
   return (
     <div className="bg-gray-50 pt-2 xl:mt-4 overflow-x-hidden">
-      <div className="w-full max-w-[1720px] mx-auto px-3 sm:px-6 lg:px-10 xl:px-16 2xl:px-24 pt-4 sm:pt-6 pb-6 lg:pb-20">
+      <div className="w-full max-w-430 mx-auto px-3 sm:px-6 lg:px-10 xl:px-16 2xl:px-24 pt-4 sm:pt-6 pb-6 lg:pb-20">
         {/* Header */}
         <div className="flex flex-wrap items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div className="min-w-0">
-            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 break-words">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 wrap-break-word">
               {getTitle()}
             </h1>
             <p className="text-gray-500 mt-1 text-sm sm:text-base">
               Showing {sortedTractors.length} tractors
             </p>
           </div>
-          <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {/* Mobile / tablet Filter Button (hidden on desktop, sidebar shows instead) */}
             <button
               onClick={() => {
@@ -856,7 +856,7 @@ useEffect(() => {
             </button>
             <button
               onClick={() => navigate(-1)}
-              className="flex items-center gap-2 px-3 sm:px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group flex-shrink-0"
+              className="flex items-center gap-2 px-3 sm:px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group shrink-0"
               aria-label="Go back"
             >
               <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" />
@@ -1044,7 +1044,7 @@ useEffect(() => {
             onClick={() => setIsMobileFilterOpen(false)}
           />
           <div
-            className="fixed inset-x-0 bottom-4 top-[90px] sm:left-0 sm:right-auto sm:top-[90px] sm:bottom-0 w-full  sm:w-[420px] md:w-[460px]
+            className="fixed inset-x-0 bottom-4 top-22.5 sm:left-0 sm:right-auto sm:top-22.5 sm:bottom-0 w-full  sm:w-105 md:w-115
           bg-white shadow-xl rounded-t-2xl sm:rounded-none flex flex-col z-50 lg:hidden"
           >
             <div className="flex items-center justify-between px-4 py-4 border-b border-gray-100 sticky top-0 bg-white z-10">

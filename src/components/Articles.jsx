@@ -50,7 +50,7 @@ const Articles = () => {
         
         {/* Header */}
         <div className="text-center mb-10 md:mb-14">
-          <div className="inline-flex items-center gap-2 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 px-4 py-1.5 rounded-lg mb-4">
+          <div className="inline-flex items-center gap-2 bg-linear-to-r from-green-50 to-green-100 border border-green-200 px-4 py-1.5 rounded-lg mb-4">
             <span className="text-green-700 text-sm font-semibold"> Knowledge Center</span>
           </div>
           

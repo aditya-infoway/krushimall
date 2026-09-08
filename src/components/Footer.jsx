@@ -284,7 +284,7 @@ const Footer = () => {
         {/* Updated: Matching BrandsMakers spacing */}
         <div className="px-4 sm:px-6 lg:px-20 xl:px-24">
           {/* Updated: Applied the same max-width wrapper */}
-          <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto py-6">
+          <div className="w-full max-w-360 xl:max-w-400 2xl:max-w-430 mx-auto py-6">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <p className="text-sm text-gray-400 text-center sm:text-left">
                 Download the Krushi Mall app for easy tractor parts ordering
@@ -311,7 +311,7 @@ const Footer = () => {
         {/* Updated: Matching BrandsMakers spacing */}
         <div className="px-4 sm:px-6 lg:px-20 xl:px-24">
           {/* Updated: Applied the same max-width wrapper */}
-          <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto py-4">
+          <div className="w-full max-w-360 xl:max-w-400 2xl:max-w-430 mx-auto py-4">
             <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
               <p className="text-xs text-gray-500 text-center sm:text-left">
                 © 2025 Krushi Mall. All rights reserved. | India's Trusted

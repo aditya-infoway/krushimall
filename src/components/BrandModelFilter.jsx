@@ -140,11 +140,11 @@ const BrandModelFilter = () => {
   };
 
   return (
-    <div className="w-full bg-gradient-to-b from-gray-50 to-white">
+    <div className="w-full bg-linear-to-b from-gray-50 to-white">
       {/* Updated: Matching BrandsMakers spacing */}
       <div className="px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
         {/* Updated: Applied the same max-width wrapper */}
-        <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto">
+        <div className="w-full max-w-360 xl:max-w-400 2xl:max-w-430 mx-auto">
           
           {/* Simple Top Row Header */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-10 pb-6 border-b border-green-100">
@@ -155,7 +155,7 @@ const BrandModelFilter = () => {
               </span>
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
                 Shop Parts By{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-700">
+                <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-green-700">
                   Tractor Model
                 </span>
               </h2>
@@ -312,7 +312,7 @@ const BrandModelFilter = () => {
                   {filteredProducts.map((product) => (
                     <div
                       key={product.id}
-                      className="snap-start group/card w-[270px] bg-white border border-green-100 rounded-2xl overflow-hidden hover:shadow-md transition-all duration-300 flex flex-col justify-between flex-shrink-0"
+                      className="snap-start group/card w-67.5 bg-white border border-green-100 rounded-2xl overflow-hidden hover:shadow-md transition-all duration-300 flex flex-col justify-between flex-shrink-0"
                     >
                       <div>
                         {/* Product Asset Thumbnail */}

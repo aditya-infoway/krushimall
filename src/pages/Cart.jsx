@@ -65,10 +65,7 @@ const Cart = () => {
     try {
       setLoadingCoupons(true);
       const data = await apiHelper.post("/web/coupons/available", {
-        // price + quantity bhi bhej rahe hain ab — backend ko SPECIFIC_PRODUCTS
-        // coupon ke minOrderValue check ke liye sirf eligible items ka subtotal
-        // nikalna hota hai, poora cart subtotal nahi (varna unrelated item add
-        // karke min-order threshold "unlock" ho jaata tha).
+       
         cartItems: cart.map((item) => ({
           productId: item.id,
           price: item.price,
@@ -90,9 +87,7 @@ const Cart = () => {
     fetchAvailableCoupons();
   }, [fetchAvailableCoupons]);
 
-  // Clear a stale error (e.g. "minimum order value" from a previous,
-  // smaller cart) once the cart total changes — otherwise an old failed
-  // attempt keeps showing even after the cart now qualifies.
+ 
   useEffect(() => {
     if (!appliedCoupon) {
       setCouponError("");
@@ -116,7 +111,7 @@ const Cart = () => {
     setCouponCode("");
   };
 
-  // Apply directly from the Available Coupons list card
+  
   const handleApplyFromList = async (code) => {
     setApplyingCode(code);
     setCouponError("");
@@ -146,7 +141,7 @@ const Cart = () => {
         }`
       : `₹${coupon.discountValue} OFF`;
 
-  // Redirect to login if not authenticated
+
   if (!isAuthenticated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
@@ -412,16 +407,20 @@ const Cart = () => {
                               className={`shrink-0 text-xs sm:text-sm font-semibold px-3 py-1.5 rounded-lg transition-colors ${
                                 isApplied
                                   ? "bg-green-600 text-white cursor-default"
-                                  : coupon.isEligible
-                                    ? "border border-green-600 text-green-700 hover:bg-green-50 cursor-pointer"
-                                    : "border border-gray-200 text-gray-400 cursor-not-allowed"
+                                  : coupon.alreadyUsedByUser
+                                    ? "border border-gray-200 bg-gray-100 text-gray-400 cursor-not-allowed"
+                                    : coupon.isEligible
+                                      ? "border border-green-600 text-green-700 hover:bg-green-50 cursor-pointer"
+                                      : "border border-gray-200 text-gray-400 cursor-not-allowed"
                               }`}
                             >
                               {isApplied
                                 ? "Applied"
-                                : applyingCode === coupon.code
-                                  ? "Applying..."
-                                  : "Apply"}
+                                : coupon.alreadyUsedByUser
+                                  ? "Used"
+                                  : applyingCode === coupon.code
+                                    ? "Applying..."
+                                    : "Apply"}
                             </button>
                           </div>
                         </div>

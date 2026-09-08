@@ -142,7 +142,7 @@ const BookingService = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 text-gray-800 antialiased">
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-4">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-4">
         {/* Navigation Back Link */}
         <button
           type="button"
@@ -590,7 +590,7 @@ const BookingService = () => {
                           className={`border p-4 rounded-xl flex items-start gap-3 cursor-pointer transition-all ${checked ? "border-green-600 bg-green-50" : "border-gray-200 hover:bg-gray-50"}`}
                         >
                           <div
-                            className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center flex-shrink-0 ${checked ? "border-green-600 bg-green-600" : "border-gray-300"}`}
+                            className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center shrink-0 ${checked ? "border-green-600 bg-green-600" : "border-gray-300"}`}
                           >
                             {checked && (
                               <Check className="h-3 w-3 text-white" />
@@ -613,7 +613,7 @@ const BookingService = () => {
                           className={`border p-4 rounded-xl flex items-start gap-3 cursor-pointer transition-all ${checked ? "border-green-600 bg-green-50" : "border-gray-200 hover:bg-gray-50"}`}
                         >
                           <div
-                            className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center flex-shrink-0 ${checked ? "border-green-600 bg-green-600" : "border-gray-300"}`}
+                            className={`w-5 h-5 rounded-full border-2 mt-0.5 flex items-center justify-center shrink-0 ${checked ? "border-green-600 bg-green-600" : "border-gray-300"}`}
                           >
                             {checked && (
                               <Check className="h-3 w-3 text-white" />
@@ -671,7 +671,7 @@ const BookingService = () => {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-br from-green-600 to-green-700 p-5 rounded-2xl space-y-1.5 shadow-md">
+              <div className="bg-linear-to-br from-green-600 to-green-700 p-5 rounded-2xl space-y-1.5 shadow-md">
                 <div className="flex items-center gap-2 text-sm font-bold text-white uppercase tracking-wide">
                   <div className="w-8 h-8 bg-white/20 rounded-lg flex items-center justify-center">
                     <ShieldCheck className="h-4 w-4 text-white" />
@@ -690,7 +690,7 @@ const BookingService = () => {
              SUCCESS SCREEN
              ========================================================= */
           <div className="bg-white border border-gray-200 rounded-2xl shadow-lg overflow-hidden p-6 text-center relative max-w-lg mx-auto">
-            <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-green-500 via-green-600 to-green-700" />
+            <div className="absolute top-0 left-0 right-0 h-1 bg-linear-to-r from-green-500 via-green-600 to-green-700" />
 
             <div className="relative w-16 h-16 mx-auto mb-3 flex items-center justify-center">
               <div className="absolute inset-0 bg-green-100 rounded-full animate-ping opacity-15" />
@@ -745,7 +745,7 @@ const BookingService = () => {
                 <span className="block text-gray-500 font-bold tracking-tight uppercase text-xs mb-1">
                   Vehicle Data Payload
                 </span>
-                <p className="p-3 bg-white border border-gray-200 rounded-lg text-xs font-mono text-gray-600 max-h-16 overflow-y-auto break-words whitespace-pre-wrap leading-relaxed shadow-sm">
+                <p className="p-3 bg-white border border-gray-200 rounded-lg text-xs font-mono text-gray-600 max-h-16 overflow-y-auto wrap-break-word whitespace-pre-wrap leading-relaxed shadow-sm">
                   {vehicleDetails}
                 </p>
               </div>

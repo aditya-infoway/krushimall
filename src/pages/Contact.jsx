@@ -21,7 +21,7 @@ const Contact = () => {
     <div className="min-h-screen bg-gray-50 "> {/* Added pt-16 for mobile, pt-20 for desktop */}
       {/* Hero */}
       <section className="bg-gray-900 text-white py-16">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 text-center">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 text-center">
           <h1 className="text-2xl sm:text-3xl font-extrabold  tracking-tight mb-4">Contact Us</h1>
           <p className="text-gray-300 max-w-2xl mx-auto">
             Have questions about a part? Need help with your order? We're here to help!
@@ -31,7 +31,7 @@ const Contact = () => {
 
       {/* Contact Info Cards */}
       <section className="pt-12 md:pt-16 lg:pt-20">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {contactInfo.map((item, i) => (
               <div key={i} className="bg-white rounded-xl p-6 shadow-sm border border-gray-200 text-center hover:shadow-md transition-shadow">
@@ -50,7 +50,7 @@ const Contact = () => {
 
       {/* Form + Map */}
       <section className="pt-12 md:pt-16 lg:pt-20 pb-6">
-       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 ">
+       <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 ">
 
           <div className="grid lg:grid-cols-2 gap-12">
             {/* Form */}

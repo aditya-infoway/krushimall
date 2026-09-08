@@ -109,11 +109,18 @@ export const CartProvider = ({ children }) => {
         showSuccessToast(`Coupon "${code.toUpperCase()}" applied successfully!`);
         return { success: true };
       }
+      // Backend ne success:false ke saath koi validation message diya
+      // (min order value, expired, per-user limit reached, etc.) — toast
+      // ke saath-saath Cart.jsx apne inline `couponError` mein bhi ye
+      // message dikhata hai (return value se), donon jagah dikhna chahiye.
+      showErrorToast(data.message || "Invalid coupon code");
       return { success: false, message: data.message };
     } catch (err) {
+      const message = err.response?.data?.message || "Invalid coupon code";
+      showErrorToast(message);
       return {
         success: false,
-        message: err.response?.data?.message || "Invalid coupon code",
+        message,
       };
     }
   };

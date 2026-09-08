@@ -1,15 +1,15 @@
-import React from "react";
+// import React from "react";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 import trac from "../assets/mahindra.png"
 
 const PromoBanners = () => {
   return (
-    <section className="bg-gradient-to-b from-gray-50 to-white w-full">
+    <section className="bg-linear-to-b from-gray-50 to-white w-full">
       {/* Updated: Matching BrandsMakers spacing */}
       <div className="px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
         {/* Updated: Applied the same max-width wrapper */}
-        <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto">
+        <div className="w-full max-w-360 xl:max-w-400 2xl:max-w-430 mx-auto">
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 xl:gap-8">
             {/* Banner 1: Motor Oils */}
