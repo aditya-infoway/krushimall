@@ -1,4 +1,4 @@
-import React from "react";
+// import React from "react";
 import {
   Wrench,
   Cog,
@@ -6,7 +6,7 @@ import {
   Tractor,
   Disc,
   ArrowRight,
-  Sparkles,
+  // Sparkles,
   Zap,
   Filter,
   Fuel,
@@ -105,7 +105,7 @@ const CategoryGrid = () => {
       {/* STANDARDIZED: Same spacing pattern as other components */}
       <div className="px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
         {/* Inner container with bottom padding to match top spacing */}
-        <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto">
+        <div className="w-full max-w-360 xl:max-w-400 2xl:max-w-430 mx-auto">
           
           {/* UPDATED: Header with badge/title on left, button on right */}
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-8 md:mb-12">
@@ -113,7 +113,7 @@ const CategoryGrid = () => {
             <div className="flex-1">
              
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
-                Shop By <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-700">Category</span>
+                Shop By <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-green-700">Category</span>
               </h2>
               <p className="text-gray-600 text-base md:text-lg max-w-2xl">
                 Explore tractor spare parts & agriculture equipment categories for every farming need
@@ -121,7 +121,7 @@ const CategoryGrid = () => {
             </div>
 
             {/* Right side: View All Button - aligned with title baseline */}
-            <div className="sm:flex-shrink-0">
+            <div className="sm:shrink-0">
               <Link to="/spare-parts">
                 <button className="inline-flex cursor-pointer items-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3.5 rounded-xl transition-all hover:shadow-lg group whitespace-nowrap">
                   View All Categories
@@ -134,8 +134,8 @@ const CategoryGrid = () => {
           {/* Infinite Loop Slider Track */}
           <div className="relative w-full overflow-hidden mask-gradient-edges">
             {/* Fading Edge Vignette Effect */}
-            <div className="absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-gray-50 to-transparent z-10 pointer-events-none" />
-            <div className="absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-gray-50 to-transparent z-10 pointer-events-none" />
+            <div className="absolute inset-y-0 left-0 w-16 bg-linear-to-r from-gray-50 to-transparent z-10 pointer-events-none" />
+            <div className="absolute inset-y-0 right-0 w-16 bg-linear-to-l from-gray-50 to-transparent z-10 pointer-events-none" />
 
             {/* Slider Row Container */}
             <div className="animate-marquee-continuous gap-6 py-4">
@@ -143,7 +143,7 @@ const CategoryGrid = () => {
                 <Link
                   key={i}
                   to={cat.link}
-                  className="group relative w-35 h-35 lg:w-40 lg:h-40 rounded-full overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-500 flex-shrink-0 border-4 border-white block"
+                  className="group relative w-35 h-35 lg:w-40 lg:h-40 rounded-full overflow-hidden bg-white shadow-md hover:shadow-xl transition-all duration-500 shrink-0 border-4 border-white block"
                 >
                   {/* Circular Zoom Image Background */}
                   <img
@@ -153,12 +153,12 @@ const CategoryGrid = () => {
                   />
 
                   {/* Dark Vignette Mask Layer */}
-                  <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-black/50 to-black/80" />
+                  <div className="absolute inset-0 bg-linear-to-b from-black/20 via-black/50 to-black/80" />
 
                   {/* Card Elements Layered Inside Circle */}
                   <div className="absolute inset-0 flex flex-col items-center justify-center text-center p-6 text-white">
                     {/* Circle Rounded floating icon */}
-                    <div className={`w-11 h-11 rounded-full bg-gradient-to-r ${cat.color} flex items-center justify-center shadow-md  mb-2`}>
+                    <div className={`w-11 h-11 rounded-full bg-linear-to-b ${cat.color} flex items-center justify-center shadow-md  mb-2`}>
                       <cat.icon className="h-5 w-5 text-white" />
                     </div>
 

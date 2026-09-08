@@ -180,13 +180,13 @@ const BookingHistory = () => {
   return (
     <div className="min-h-screen bg-gray-50 ">
       {/* STANDARDIZED: Same spacing pattern as all other components */}
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-4">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-4">
         {/* Header */}
         <div className="mb-6 md:mb-6">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-3">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
               Booking{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-700">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-green-700">
                 History
               </span>
             </h2>
@@ -356,7 +356,7 @@ const BookingHistory = () => {
                         </td>
                         <td className="py-4 px-5">
                           <div className="flex items-start gap-3">
-                            <div className="mt-0.5 p-1.5 bg-green-50 rounded-lg border border-green-100 text-green-600 flex-shrink-0">
+                            <div className="mt-0.5 p-1.5 bg-green-50 rounded-lg border border-green-100 text-green-600 shrink-0">
                               <Wrench className="h-3.5 w-3.5" />
                             </div>
                             <div>

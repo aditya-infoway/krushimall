@@ -1108,7 +1108,7 @@ const getVisibleRelated = () => {
 
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group flex-shrink-0"
+            className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group shrink-0"
             aria-label="Go back"
           >
             <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" />
@@ -1128,7 +1128,7 @@ const getVisibleRelated = () => {
             <div className="bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
               <div
                 ref={containerRef}
-                className="relative aspect-[1/1] bg-gray-100 overflow-hidden cursor-zoom-in"
+                className="relative aspect-square bg-gray-100 overflow-hidden cursor-zoom-in"
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
               >

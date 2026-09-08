@@ -311,10 +311,10 @@ const FeaturedProducts = () => {
   const ProductCard = ({ product }) => (
     <Link
       to={`/product/${product.id}`}
-      className="group bg-white border-2 border-green-100 rounded-2xl overflow-hidden hover:border-green-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex-shrink-0 flex flex-col h-full"
+      className="group bg-white border-2 border-green-100 rounded-2xl overflow-hidden hover:border-green-300 hover:shadow-xl hover:-translate-y-1 transition-all duration-300 shrink-0 flex flex-col h-full"
     >
       {/* Product Image Area */}
-      <div className="relative bg-green-50 h-44 sm:h-56 overflow-hidden flex-shrink-0">
+      <div className="relative bg-green-50 h-44 sm:h-56 overflow-hidden shrink-0">
         <img
           src={product.image}
           alt={product.name}
@@ -374,16 +374,16 @@ const FeaturedProducts = () => {
   const activeProducts = getActiveProducts();
 
   return (
-    <section className="bg-gradient-to-b from-gray-50 to-white w-full">
+    <section className="bg-linear-to-b from-gray-50 to-white w-full">
       {/* STANDARDIZED: Same spacing pattern as all other components */}
       <div className="px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
         {/* Inner container with bottom padding to match top spacing */}
-        <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto ">
+        <div className="w-full max-w-360 xl:max-w-400 2xl:max-w-430 mx-auto ">
           {/* UPDATED: Left-aligned header with title and description */}
           <div className="mb-10 md:mb-14">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
               Our{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-700">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-green-700">
                 Products
               </span>
             </h2>
@@ -494,7 +494,7 @@ const FeaturedProducts = () => {
               {activeProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="snap-start w-[260px] sm:w-[320px] lg:w-[340px] flex-shrink-0"
+                  className="snap-start w-65 sm:w-[320px] lg:w-85 shrink-0"
                 >
                   <ProductCard product={product} />
                 </div>

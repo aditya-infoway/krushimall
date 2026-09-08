@@ -86,14 +86,14 @@ const BrandsMakers = () => {
   return (
     <section className="bg-gray-50 w-full">
       <div className="px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
-        <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto">
+        <div className="w-full max-w-360 xl:max-w-400 2xl:max-w-430 mx-auto">
           
           {/* Header with title/desc on left, button on right */}
           <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-6 mb-8 md:mb-12">
             <div className="flex-1">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
                 Popular{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-700">
+                <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-green-700">
                   Tractor Makers
                 </span>
               </h2>
@@ -103,7 +103,7 @@ const BrandsMakers = () => {
             </div>
 
             {/* View All Button - hidden on mobile, shown on desktop */}
-            <div className="hidden sm:flex sm:flex-shrink-0">
+            <div className="hidden sm:flex sm:shrink-0">
               <button
                 onClick={handleViewAllTractors}
                 className="inline-flex cursor-pointer items-center gap-2 bg-green-700 hover:bg-green-800 text-white font-bold px-6 py-3.5 rounded-xl transition-all hover:shadow-lg group whitespace-nowrap"

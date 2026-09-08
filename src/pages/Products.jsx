@@ -1,19 +1,19 @@
 import { useState, useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
-import { Listbox, RadioGroup } from "@headlessui/react";
+import { Listbox } from "@headlessui/react";
 import {
   Search,
   ShoppingCart,
   Heart,
   Star,
-  Filter,
+  // Filter,
   ChevronDown,
   Grid,
   List,
   Truck,
   Shield,
   RotateCcw,
-  ChevronRight,
+  // ChevronRight,
   X,
   SlidersHorizontal,
   Check,
@@ -27,7 +27,7 @@ import { useNavigate } from "react-router-dom";
 import { useWishlist } from "../context/WishlistContext";
 import apiHelper from "../utils/apiHelper";
 import {
-  showCartAddedToast,
+  // showCartAddedToast,
   showWishlistAddedToast,
   showWishlistRemovedToast,
   showLoginRequiredToast,
@@ -40,7 +40,7 @@ const Products = () => {
   const { isInWishlist, toggleWishlist } = useWishlist();
   const navigate = useNavigate();
 
-  const { category, maker } = useParams();
+  const { category } = useParams();
   const [searchParams] = useSearchParams();
 
   const subSubCategoryId = searchParams.get("subSubCategoryId");
@@ -407,7 +407,7 @@ const Products = () => {
     <div className="min-h-screen bg-gray-50 lg:mt-4">
       {/* Top Trust Bar */}
       <div className="hidden md:block bg-white border-b">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
           <div className="flex items-center justify-between py-2 text-sm">
             {trustBadges.map((badge, index) => (
               <div
@@ -425,7 +425,7 @@ const Products = () => {
 
       {/* Header with Vehicle Search */}
       <div className="bg-white border-b sticky top-0 z-30">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
           <div className="flex items-center justify-between py-4">
             <div className="flex items-center gap-4 flex-1">
               <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight hidden sm:block">
@@ -452,7 +452,7 @@ const Products = () => {
             <div className="flex items-center gap-3">
               <Listbox value={sortBy} onChange={setSortBy}>
                 <div className="relative">
-                  <Listbox.Button className="cursor-pointer border border-gray-300 rounded-lg px-3 py-2 text-sm text-left focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none bg-white min-w-[160px] flex items-center justify-between gap-2">
+                  <Listbox.Button className="cursor-pointer border border-gray-300 rounded-lg px-3 py-2 text-sm text-left focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none bg-white min-w-40 flex items-center justify-between gap-2">
                     <span>
                       {sortBy === "popular"
                         ? "Most Popular"
@@ -629,7 +629,7 @@ const Products = () => {
         </div>
       </div>
 
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-6">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-6">
         <div className="flex gap-8 items-start">
           {/* Desktop Sidebar Filters */}
           <div className="hidden lg:block w-64 shrink-0">
@@ -1429,7 +1429,7 @@ const Products = () => {
                   className="flex items-center gap-3 text-sm text-gray-600 cursor-pointer p-2 hover:bg-gray-50 rounded-lg transition-colors"
                 >
                   <div
-                    className={`w-4 h-4 rounded border-2 flex items-center justify-center flex-shrink-0 ${
+                    className={`w-4 h-4 rounded border-2 flex items-center justify-center shrink-0 ${
                       inStockOnly
                         ? "bg-green-600 border-green-600"
                         : "border-gray-300"

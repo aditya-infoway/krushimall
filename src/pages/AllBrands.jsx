@@ -61,7 +61,7 @@ const AllBrands = () => {
     <div className="min-h-screen bg-gray-50">
       {/* Popular Brands Section */}
       <div className="bg-white border-b border-gray-100">
-        <div className="w-full max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-20 py-16 md:py-20 lg:py-24">
+        <div className="w-full max-w-360 mx-auto px-4 sm:px-6 lg:px-20 py-16 md:py-20 lg:py-24">
           {/* Header with Back Button */}
           <div className="flex items-center justify-between mb-8">
             <div>
@@ -71,7 +71,7 @@ const AllBrands = () => {
               </div>
               <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 tracking-tight">
                 Explore All{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-700">
+                <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-green-700">
                   Tractor Brands
                 </span>
               </h1>

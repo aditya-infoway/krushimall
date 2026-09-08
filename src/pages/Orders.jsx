@@ -395,7 +395,7 @@ const Orders = () => {
                 {cancelReason && (
                   <div className="mb-4 sm:mb-5">
                     <div className="bg-green-50 border border-green-200 rounded-2xl p-3 flex items-start gap-3">
-                      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-green-100 flex items-center justify-center flex-shrink-0">
+                      <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-green-100 flex items-center justify-center shrink-0">
                         {(() => {
                           const selected = cancelReasons.find(
                             (r) => r.label === cancelReason,
@@ -506,7 +506,7 @@ const Orders = () => {
 
                 <div className="bg-amber-50 border border-amber-200 rounded-2xl p-1">
                   <div className="flex gap-2 sm:gap-3">
-                    <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-amber-600 flex-shrink-0 mt-1" />
+                    <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5 text-amber-600 shrink-0 mt-1" />
                     <p className="text-xs sm:text-sm text-amber-700 leading-relaxed">
                       <span className="font-semibold">Refund Information:</span>{" "}
                       Refund will be processed within 3–5 business days to your
@@ -516,7 +516,7 @@ const Orders = () => {
                 </div>
               </div>
 
-              <div className="p-4 sm:p-5 border-t border-gray-100 flex gap-3 flex-shrink-0 bg-white">
+              <div className="p-4 sm:p-5 border-t border-gray-100 flex gap-3 shrink-0 bg-white">
                 <button
                   onClick={closeCancelModal}
                   className="flex-1 h-10 sm:h-11 rounded-2xl border border-gray-300 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition"
@@ -526,7 +526,7 @@ const Orders = () => {
                 <button
                   onClick={handleCancelOrder}
                   disabled={!cancelReason || cancelling}
-                  className="flex-1 h-10 sm:h-11 rounded-2xl text-sm font-semibold text-white bg-gradient-to-r from-green-600 to-green-700 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                  className="flex-1 h-10 sm:h-11 rounded-2xl text-sm font-semibold text-white bg-linear-to-r from-green-600 to-green-700 hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition"
                 >
                   {cancelling ? "Processing..." : "Confirm Cancel"}
                 </button>
@@ -537,7 +537,7 @@ const Orders = () => {
       )}
       {/* Header */}
       <div className="bg-white sticky top-0 z-10">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight mb-2">
             My{" "}
             <span className="text-transparent bg-clip-text bg-green-600">
@@ -549,7 +549,7 @@ const Orders = () => {
           </p>
         </div>
       </div>
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-10">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-10">
         <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <div className="flex-1 relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -657,7 +657,7 @@ const Orders = () => {
                       <div className="p-4 sm:p-5 lg:p-6">
                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
                           <div className="lg:col-span-5 flex items-center gap-4">
-                            <div className="relative flex-shrink-0">
+                            <div className="relative shrink-0">
                               <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-2xl overflow-hidden bg-gray-100 border border-gray-200">
                                 <img
                                   src={apiHelper.getImageUrl(item.image)}
@@ -737,7 +737,7 @@ const Orders = () => {
                                     >
                                       {idx !== arr.length - 1 && (
                                         <div
-                                          className={`absolute top-4 left-1/2 w-full h-[2px] ${
+                                          className={`absolute top-4 left-1/2 w-full h-0.5 ${
                                             step.completed
                                               ? "bg-green-500"
                                               : "bg-gray-300"

@@ -484,7 +484,7 @@ export default function VendorFollowup() {
               <span className={column.color}>{column.title}</span>
             </div>
 
-            <div className="min-h-[280px] p-2">
+            <div className="min-h-70 p-2">
               {displayFollowups
                 .filter((item) => item.callResponse === column.title)
                 .map((item) => (
@@ -552,7 +552,7 @@ export default function VendorFollowup() {
       <Transition appear show={openModal} as={Fragment}>
         <Dialog
           as="div"
-          className="relative z-[9999]"
+          className="relative z-9999"
           onClose={() => setOpenModal(false)}
         >
           <TransitionChild

@@ -1,8 +1,8 @@
 import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Search, ChevronDown,ChevronLeft } from "lucide-react";
+import { Search, ChevronDown, ChevronLeft } from "lucide-react";
 import apiHelper from "../utils/apiHelper";
-import {   useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 const AllCategories = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showAll, setShowAll] = useState(false);
@@ -52,24 +52,24 @@ const AllCategories = () => {
     <div className="min-h-screen bg-white">
       {/* Title */}
       <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-6">
-         <div className=" flex items-center justify-between mb-3">
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
-          All{" "}
-          <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-green-700">
-            Categories
-          </span>
-        </h1>
-         <button
-                    onClick={() => navigate(-1)}
-                    className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group shrink-0"
-                    aria-label="Go back"
-                  >
-                    <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" />
-                    <span className="text-sm font-medium text-gray-600 group-hover:text-green-600 transition-colors">
-                      Back
-                    </span>
-                  </button>
-                  </div>
+        <div className=" flex items-center justify-between mb-3">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
+            All{" "}
+            <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-green-700">
+              Categories
+            </span>
+          </h1>
+          <button
+            onClick={() => navigate(-1)}
+            className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group shrink-0"
+            aria-label="Go back"
+          >
+            <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" />
+            <span className="text-sm font-medium text-gray-600 group-hover:text-green-600 transition-colors">
+              Back
+            </span>
+          </button>
+        </div>
         <p className="text-sm text-gray-500 mt-1">
           {categories.length} categories • {subCategories.length} subcategories
         </p>
@@ -90,7 +90,9 @@ const AllCategories = () => {
       {/* Categories Grid */}
       <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pb-16">
         {loading ? (
-          <div className="text-center py-20 text-gray-400">Loading categories...</div>
+          <div className="text-center py-20 text-gray-400">
+            Loading categories...
+          </div>
         ) : filteredCategories.length === 0 ? (
           <div className="text-center py-20">
             <Search className="h-20 w-20 text-gray-200 mx-auto mb-6" />
@@ -170,7 +172,9 @@ const AllCategories = () => {
                     ? "Show Less"
                     : `View All ${filteredCategories.length} Categories`}
                   <ChevronDown
-                    className={`h-4 w-4 transition-transform ${showAll ? "rotate-180" : ""}`}
+                    className={`h-4 w-4 transition-transform ${
+                      showAll ? "rotate-180" : ""
+                    }`}
                   />
                 </button>
               </div>
