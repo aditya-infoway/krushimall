@@ -15,27 +15,27 @@ import {
   Wind,
   Wrench,
   DollarSign,
-  Tag,
+  // Tag,
   CheckCircle,
-  XCircle,
+  // XCircle,
   Info,
   Package,
   Cog,
   Store,
-  Fuel,
-  Weight,
-  Ruler,
+  // Fuel,
+  // Weight,
+  // Ruler,
   AlertCircle,
   Loader2,
-  Calendar,
+  // Calendar,
   Award,
-  Truck,
-  Shield,
+  // Truck,
+  // Shield,
   Star,
-  User,
+  // User,
   Calendar as CalendarIcon,
-  MessageSquare,
-  ThumbsUp,
+  // MessageSquare,
+  // ThumbsUp,
   Eye,
   ShoppingCart,
 } from "lucide-react";
@@ -118,7 +118,9 @@ const DetailRow = ({ label, value, last = false }) => {
 
   return (
     <div
-      className={`flex justify-between py-3 ${!last ? "border-b border-gray-400" : ""}`}
+      className={`flex justify-between py-3 ${
+        !last ? "border-b border-gray-400" : ""
+      }`}
     >
       <span className="text-gray-500 text-sm">{label}</span>
       <span className="font-semibold text-gray-900 text-sm capitalize text-right max-w-[55%]">
@@ -215,7 +217,7 @@ const ColorDot = ({ color }) => {
   return (
     <div className="flex items-center gap-1.5">
       <div
-        className="w-5 h-5 rounded-full border border-gray-300 flex-shrink-0"
+        className="w-5 h-5 rounded-full border border-gray-300 shrink-0"
         style={{ background: bg }}
       />
       <span className="text-xs text-gray-600">{color}</span>
@@ -262,7 +264,11 @@ const StarRating = ({
           onClick={() => !readonly && onRatingChange(star)}
           onMouseEnter={() => !readonly && setHoverRating(star)}
           onMouseLeave={() => !readonly && setHoverRating(0)}
-          className={`${!readonly && "cursor-pointer"} focus:outline-none transition-transform ${!readonly && "hover:scale-110"}`}
+          className={`${
+            !readonly && "cursor-pointer"
+          } focus:outline-none transition-transform ${
+            !readonly && "hover:scale-110"
+          }`}
           disabled={readonly}
         >
           <Star
@@ -297,7 +303,7 @@ const ReviewCard = ({ review }) => {
   return (
     <div className="border-b border-gray-100 last:border-0 py-4 first:pt-0">
       <div className="flex items-start gap-3">
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center flex-shrink-0">
+        <div className="w-10 h-10 rounded-full bg-linear-to-br from-green-500 to-green-600 flex items-center justify-center shrink-0">
           <span className="text-white font-semibold text-sm">
             {review.userName?.charAt(0)?.toUpperCase() || "U"}
           </span>
@@ -800,7 +806,11 @@ const TractorDetails = () => {
         "maxLiftingCap",
       ]),
     )
-      ? `${getFieldValue(d, ["liftingCapacity", "maxLiftingCapacity", "maxLiftingCap"])} kg`
+      ? `${getFieldValue(d, [
+          "liftingCapacity",
+          "maxLiftingCapacity",
+          "maxLiftingCap",
+        ])} kg`
       : null,
     liftingCapacityLinkEnd: hasValidValue(
       getFieldValue(d, [
@@ -809,7 +819,11 @@ const TractorDetails = () => {
         "liftingCapacityLinkEnd",
       ]),
     )
-      ? `${getFieldValue(d, ["liftingCapacityAt610mm", "liftingCapacityAtLinkEnd", "liftingCapacityLinkEnd"])} kg`
+      ? `${getFieldValue(d, [
+          "liftingCapacityAt610mm",
+          "liftingCapacityAtLinkEnd",
+          "liftingCapacityLinkEnd",
+        ])} kg`
       : null,
     hydraulicType: hasValidValue(d.hydraulicType) ? d.hydraulicType : null,
     controlType: hasValidValue(d.controlType) ? d.controlType : null,
@@ -901,13 +915,13 @@ const TractorDetails = () => {
     image: tractor.images[0],
   };
 
- const handleWishlistClick = () => {
-  if (!isAuthenticated) {
-    navigate(`/login?redirect=/tractor/${id}`);
-    return;
-  }
-  toggleWishlist(wishlistProduct, "variant");
-};
+  const handleWishlistClick = () => {
+    if (!isAuthenticated) {
+      navigate(`/login?redirect=/tractor/${id}`);
+      return;
+    }
+    toggleWishlist(wishlistProduct, "variant");
+  };
 
   // ─── Auto Slider ──────────────────────────────────────────────────────────
   useEffect(() => {
@@ -1078,7 +1092,7 @@ const TractorDetails = () => {
     <div className="bg-gray-100 min-h-screen">
       {/* Breadcrumb */}
       {/* Breadcrumb with Back Button on Right */}
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-8 pb-4">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-8 pb-4">
         <div className="flex items-center justify-between gap-4">
           {/* Breadcrumb - Left */}
           <div className="flex items-center gap-2 text-sm flex-wrap">
@@ -1096,7 +1110,7 @@ const TractorDetails = () => {
               Tractor
             </Link>
             <span className="text-gray-400">/</span>
-            <span className="text-gray-500 truncate max-w-[150px] sm:max-w-[250px]">
+            <span className="text-gray-500 truncate max-w-37.5 sm:max-w-62.5">
               {tractor.name}
             </span>
           </div>
@@ -1104,7 +1118,7 @@ const TractorDetails = () => {
           {/* Back Button - Right */}
           <button
             onClick={() => navigate(-1)}
-            className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group flex-shrink-0"
+            className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group shrink-0"
             aria-label="Go back"
           >
             <ChevronLeft className="w-4 h-4 text-gray-500 group-hover:text-green-600 transition-colors" />
@@ -1116,7 +1130,7 @@ const TractorDetails = () => {
       </div>
 
       {/* ── Main Content ── */}
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pb-10">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pb-10">
         {/* Top Grid - Image, Info, Sidebar */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
           {/* LEFT - Images */}
@@ -1124,7 +1138,7 @@ const TractorDetails = () => {
             <div className="bg-white rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
               <div
                 ref={containerRef}
-                className="relative aspect-[1/1] bg-gray-100 overflow-hidden cursor-zoom-in"
+                className="relative aspect-square bg-gray-100 overflow-hidden cursor-zoom-in"
                 onMouseMove={handleMouseMove}
                 onMouseLeave={handleMouseLeave}
               >
@@ -1135,7 +1149,9 @@ const TractorDetails = () => {
                   style={{
                     transform:
                       zoomStyle.display === "block" ? "scale(2)" : "scale(1)",
-                    transformOrigin: `${zoomStyle.x || 50}% ${zoomStyle.y || 50}%`,
+                    transformOrigin: `${zoomStyle.x || 50}% ${
+                      zoomStyle.y || 50
+                    }%`,
                   }}
                 />
                 <button
@@ -1166,14 +1182,14 @@ const TractorDetails = () => {
                     onClick={handleWishlistClick}
                     className="w-10 h-10 cursor-pointer bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all"
                   >
-                  <Heart
-  size={18}
-  className={
-    isInWishlist(Number(id), "variant")
-      ? "fill-green-500 text-green-500"
-      : "text-gray-500"
-  }
-/>
+                    <Heart
+                      size={18}
+                      className={
+                        isInWishlist(Number(id), "variant")
+                          ? "fill-green-500 text-green-500"
+                          : "text-gray-500"
+                      }
+                    />
                   </button>
                   <button className="w-10 h-10 cursor-pointer bg-white/90 backdrop-blur-sm rounded-full flex items-center justify-center shadow-lg hover:bg-white transition-all">
                     <Share2 size={18} className="text-gray-500" />
@@ -1185,7 +1201,7 @@ const TractorDetails = () => {
                   <button
                     key={index}
                     onClick={() => setCurrentImage(index)}
-                    className={`w-20 h-16 rounded-lg overflow-hidden border-2 flex-shrink-0 transition-all ${
+                    className={`w-20 h-16 rounded-lg overflow-hidden border-2 shrink-0 transition-all ${
                       currentImage === index
                         ? "border-green-500 shadow-md"
                         : "border-gray-200 hover:border-gray-400"
@@ -1211,7 +1227,9 @@ const TractorDetails = () => {
                 </span>
                 {hasValidValue(tractor.stockStatus) && (
                   <span
-                    className={`text-xs font-semibold px-3 py-1 rounded-full border ${getStockStatusColor(tractor.stockStatus)}`}
+                    className={`text-xs font-semibold px-3 py-1 rounded-full border ${getStockStatusColor(
+                      tractor.stockStatus,
+                    )}`}
                   >
                     {tractor.stockStatus}
                   </span>
@@ -1292,11 +1310,11 @@ const TractorDetails = () => {
               {/* Enquiry card */}
               <div className="mt-6 bg-green-50 rounded-xl p-4 flex items-center gap-4">
                 <div className="w-14 h-14 rounded-lg bg-white flex items-center justify-center shadow-sm">
-                 <img
-  src={tractor.images?.[0] || "/mah.png"}
-  alt={tractor.name}
-  className="w-10 h-10 object-contain rounded"
-/>
+                  <img
+                    src={tractor.images?.[0] || "/mah.png"}
+                    alt={tractor.name}
+                    className="w-10 h-10 object-contain rounded"
+                  />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-bold text-gray-900">{tractor.name}</h3>
@@ -1343,34 +1361,34 @@ const TractorDetails = () => {
               </h3>
               <div className="space-y-4">
                 {tractor.similar.map((item, index) => (
-                   <Link
-    key={item.id}
-    to={`/tractor/${item.id}`}
-    className="block"
-  >
-                  <div
-                    key={index}
-                    className="bg-white rounded-2xl border border-green-400 shadow-sm p-3 flex gap-3 hover:shadow-lg transition-all"
+                  <Link
+                    key={item.id}
+                    to={`/tractor/${item.id}`}
+                    className="block"
                   >
-                    <div className="w-23 h-23 rounded-xl overflow-hidden bg-gray-100 shrink-0">
-                      <img
-                        src={item.image || "/mah.png"}
-                        alt={item.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex flex-col justify-between">
-                      <div>
-                        <h4 className="font-semibold text-gray-900 leading-snug">
-                          {item.name}
-                        </h4>
-                        <p className="text-xs text-gray-400 mt-1">
-                          {item.location || "Unknown"}
-                        </p>
+                    <div
+                      key={index}
+                      className="bg-white rounded-2xl border border-green-400 shadow-sm p-3 flex gap-3 hover:shadow-lg transition-all"
+                    >
+                      <div className="w-23 h-23 rounded-xl overflow-hidden bg-gray-100 shrink-0">
+                        <img
+                          src={item.image || "/mah.png"}
+                          alt={item.name}
+                          className="w-full h-full object-cover"
+                        />
                       </div>
-                      <p className="font-bold text-gray-900">{item.price}</p>
+                      <div className="flex flex-col justify-between">
+                        <div>
+                          <h4 className="font-semibold text-gray-900 leading-snug">
+                            {item.name}
+                          </h4>
+                          <p className="text-xs text-gray-400 mt-1">
+                            {item.location || "Unknown"}
+                          </p>
+                        </div>
+                        <p className="font-bold text-gray-900">{item.price}</p>
+                      </div>
                     </div>
-                  </div>
                   </Link>
                 ))}
               </div>
@@ -1442,17 +1460,17 @@ const TractorDetails = () => {
                 <Link
                   key={product.id}
                   to={`/tractor/${product.id}`}
-                  className="snap-start w-[75vw] flex-shrink-0"
+                  className="snap-start w-[75vw] shrink-0"
                 >
                   <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-green-300 transition-all duration-300">
-                    <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 h-44 overflow-hidden">
+                    <div className="relative bg-linear-to-br from-gray-100 to-gray-200 h-44 overflow-hidden">
                       <img
                         src={product.image || "/mah.png"}
                         alt={product.name}
                         className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                       />
                       {/* Gradient overlay */}
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+                      <div className="absolute inset-0 bg-linear-to-t from-black/30 via-transparent to-transparent"></div>
                       {/* Badge */}
                       <span className="absolute top-3 left-3 bg-green-600 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
                         <Award className="w-3 h-3" />
@@ -1468,7 +1486,11 @@ const TractorDetails = () => {
                           {[...Array(5)].map((_, i) => (
                             <Star
                               key={i}
-                              className={`w-3 h-3 ${i < 4 ? "fill-yellow-400 text-yellow-400" : "text-gray-300 fill-gray-300"}`}
+                              className={`w-3 h-3 ${
+                                i < 4
+                                  ? "fill-yellow-400 text-yellow-400"
+                                  : "text-gray-300 fill-gray-300"
+                              }`}
                             />
                           ))}
                         </div>
@@ -1477,7 +1499,7 @@ const TractorDetails = () => {
                         {product.name}
                       </h4>
                       <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-                        <MapPin className="h-3 w-3 flex-shrink-0" />
+                        <MapPin className="h-3 w-3 shrink-0" />
                         <span>
                           {product.location || "Location not specified"}
                         </span>
@@ -1527,20 +1549,20 @@ const TractorDetails = () => {
               <div className="flex gap-4 sm:gap-5 transition-transform duration-500 ease-in-out">
                 {getVisibleRelated()
                   .filter(Boolean)
-               .map((product, idx) => (
+                  .map((product, idx) => (
                     <Link
                       key={`${product.id}-${relatedIndex}-${idx}`}
                       to={`/tractor/${product.id}`}
-                      className="flex-shrink-0 group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-green-300 transition-all duration-300 w-full sm:w-[calc(50%-6px)] lg:w-[calc(25%-12px)]"
+                      className="shrink-0 group bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden hover:shadow-xl hover:border-green-300 transition-all duration-300 w-full sm:w-[calc(50%-6px)] lg:w-[calc(25%-12px)]"
                     >
-                      <div className="relative bg-gradient-to-br from-gray-100 to-gray-200 h-48 overflow-hidden">
+                      <div className="relative bg-linear-to-br from-gray-100 to-gray-200 h-48 overflow-hidden">
                         <img
                           src={product.image || "/mah.png"}
                           alt={product.name}
                           className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
                         />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent"></div>
-                        <span className="absolute top-3 left-3 bg-gradient-to-r from-green-600 to-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
+                        <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent"></div>
+                        <span className="absolute top-3 left-3 bg-linear-to-r from-green-600 to-green-500 text-white text-[10px] font-bold px-3 py-1 rounded-full shadow-md flex items-center gap-1">
                           <Award className="w-3 h-3" />
                           Featured
                         </span>
@@ -1561,7 +1583,11 @@ const TractorDetails = () => {
                               {[...Array(5)].map((_, i) => (
                                 <Star
                                   key={i}
-                                  className={`w-3.5 h-3.5 ${i < 4 ? "fill-yellow-400 text-yellow-400" : "text-gray-300 fill-gray-300"}`}
+                                  className={`w-3.5 h-3.5 ${
+                                    i < 4
+                                      ? "fill-yellow-400 text-yellow-400"
+                                      : "text-gray-300 fill-gray-300"
+                                  }`}
                                 />
                               ))}
                             </div>
@@ -1574,7 +1600,7 @@ const TractorDetails = () => {
                           {product.name}
                         </h4>
                         <div className="flex items-center gap-1 text-xs text-gray-500 mb-2">
-                          <MapPin className="h-3 w-3 flex-shrink-0" />
+                          <MapPin className="h-3 w-3 shrink-0" />
                           <span>
                             {product.location || "Location not specified"}
                           </span>
@@ -1616,7 +1642,7 @@ const TractorDetails = () => {
           <div className="text-center mt-10">
             <Link
               to="/tractors"
-              className="inline-flex items-center gap-2 bg-gradient-to-r from-green-600 to-green-700 text-white px-8 py-3.5 rounded-xl font-semibold hover:shadow-xl hover:scale-105 transition-all duration-300"
+              className="inline-flex items-center gap-2 bg-linear-to-r from-green-600 to-green-700 text-white px-8 py-3.5 rounded-xl font-semibold hover:shadow-xl hover:scale-105 transition-all duration-300"
             >
               <Eye className="w-4 h-4" />
               View All Products
@@ -1651,7 +1677,7 @@ const DescriptionTab = ({ tractor, keyHighlights }) => (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           {keyHighlights.map((highlight, index) => (
             <div key={index} className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+              <CheckCircle className="h-4 w-4 text-green-600 shrink-0" />
               <span className="text-gray-700 text-sm">{highlight}</span>
             </div>
           ))}
@@ -1865,7 +1891,7 @@ const DealerTab = ({ tractor }) => (
               key={i}
               className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl"
             >
-              <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center flex-shrink-0">
+              <div className="w-9 h-9 rounded-full bg-green-100 flex items-center justify-center shrink-0">
                 <MapPin size={16} className="text-green-600" />
               </div>
               <div>

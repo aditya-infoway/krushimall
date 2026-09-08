@@ -83,7 +83,7 @@ const NearbyServices = () => {
           </div>
 
           {/* RIGHT */}
-          <div className="bg-white rounded-2xl p-6 w-full lg:w-[380px] shadow-sm border border-gray-100">
+          <div className="bg-white rounded-2xl p-6 w-full lg:w-95 shadow-sm border border-gray-100">
 
             <div className="flex items-center gap-4 mb-6">
               <div className="w-14 h-14 rounded-xl bg-green-600 flex items-center justify-center">

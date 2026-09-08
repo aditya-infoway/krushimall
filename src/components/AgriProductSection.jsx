@@ -114,16 +114,16 @@ const AgriProductSection = () => {
   };
 
   return (
-    <section className="bg-gradient-to-b from-gray-50 to-white w-full">
+    <section className="bg-linear-to-b from-gray-50 to-white w-full">
       {/* STANDARDIZED: Same spacing pattern as all other components */}
       <div className="px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
         {/* Inner container with bottom padding to match top spacing */}
-        <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto ">
+        <div className="w-full max-w-360 xl:max-w-400 2xl:max-w-430 mx-auto ">
           {/* Section Header - Left Aligned */}
           <div className="mb-10 md:mb-14">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
               Advanced{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-700">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-green-700">
                 Agricultural Products
               </span>
             </h2>
@@ -140,7 +140,7 @@ const AgriProductSection = () => {
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
-                className={`cursor-pointer px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 border whitespace-nowrap flex-shrink-0 ${
+                className={`cursor-pointer px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 border whitespace-nowrap shrink-0 ${
                   activeTab === tab
                     ? "bg-green-700 border-green-700 text-white shadow-md shadow-green-700/10"
                     : "bg-white border-green-200 text-green-800 hover:bg-green-50"
@@ -183,11 +183,11 @@ const AgriProductSection = () => {
                   {filteredProducts.map((product) => (
                     <div
                       key={product.id}
-                      className="snap-start group/card w-[310px] sm:w-[320px] bg-white border border-green-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between flex-shrink-0"
+                      className="snap-start group/card w-77.5 sm:w-[320px] bg-white border border-green-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-300 flex flex-col justify-between shrink-0"
                     >
                       <div>
                         {/* Image Aspect Box with Badges */}
-                        <div className="relative aspect-[4/3] w-full overflow-hidden bg-green-50/20 border-b border-green-100">
+                        <div className="relative aspect-4/3 w-full overflow-hidden bg-green-50/20 border-b border-green-100">
                           <img
                             src={product.image}
                             alt={product.name}

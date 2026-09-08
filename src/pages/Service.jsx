@@ -127,11 +127,11 @@ const Service = () => {
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-gray-800 flex flex-col overflow-x-hidden ">
       {/* Main Title Header Section */}
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-2 flex-shrink-0">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20 pb-2 shrink-0">
         <div className="lg:pl-[calc(33.333%+1.5rem)]">
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight">
             Find a{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-700"> 
+            <span className="text-transparent bg-clip-text bbg-linear-to-r from-green-600 to-green-700"> 
               Service Center Near You
             </span>
           </h1>
@@ -139,12 +139,12 @@ const Service = () => {
       </div>
 
       {/* Main Interactive Map Block Wrapper */}
-      <main className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pb-6 lg:pb-10 flex-1 flex flex-col min-h-0">
+      <main className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pb-6 lg:pb-10 flex-1 flex flex-col min-h-0">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 h-auto lg:h-[calc(100vh-11rem)] flex-1 min-h-0 pb-6 lg:pb-10">
           {/* LEFT SIDE PANEL */}
-          <section className="lg:col-span-4 flex flex-col bg-white border border-gray-200 shadow-sm rounded-2xl h-[550px] lg:h-full min-h-0 overflow-hidden lg:-mt-12 ">
+          <section className="lg:col-span-4 flex flex-col bg-white border border-gray-200 shadow-sm rounded-2xl h-137.5 lg:h-full min-h-0 overflow-hidden lg:-mt-12 ">
             {/* Search and Filter Form */}
-            <div className="p-4 border-b border-gray-200 bg-white flex-shrink-0 space-y-3">
+            <div className="p-4 border-b border-gray-200 bg-white shrink-0 space-y-3">
               <div>
                 <label className="text-xs font-bold text-gray-500 uppercase tracking-wider block mb-1">
                   Search by
@@ -376,7 +376,7 @@ const Service = () => {
             </div>
 
             {/* Results count */}
-            <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between text-xs flex-shrink-0">
+            <div className="px-4 py-2 bg-gray-50 border-b border-gray-200 flex items-center justify-between text-xs shrink-0">
               <span className="font-bold text-gray-700">
                 {filteredCenters.length}{" "}
                 {filteredCenters.length === 1 ? "center" : "centers"} found
@@ -439,20 +439,20 @@ const Service = () => {
 
                     <div className="mt-2 space-y-1 text-xs text-gray-600 font-medium border-t border-gray-100 pt-2">
                       <div className="flex items-start gap-1">
-                        <MapPin className="h-3 w-3 text-green-600 mt-0.5 flex-shrink-0" />
+                        <MapPin className="h-3 w-3 text-green-600 mt-0.5 shrink-0" />
                         <span className="leading-tight text-gray-500 text-xs line-clamp-2">
                           {center.address}
                         </span>
                       </div>
                       <div className="flex items-center gap-1">
-                        <Phone className="h-3 w-3 text-green-600 flex-shrink-0" />
+                        <Phone className="h-3 w-3 text-green-600 shrink-0" />
                         <span className="text-gray-700 text-xs">
                           {center.phone}
                         </span>
                       </div>
                       {center.email && (
                         <div className="flex items-center gap-1">
-                          <Mail className="h-3 w-3 text-green-600 flex-shrink-0" />
+                          <Mail className="h-3 w-3 text-green-600 shrink-0" />
                           <span className="text-gray-500 underline truncate text-xs">
                             {center.email}
                           </span>
@@ -460,7 +460,7 @@ const Service = () => {
                       )}
                       {center.website && (
                         <div className="flex items-center gap-1">
-                          <Globe className="h-3 w-3 text-green-600 flex-shrink-0" />
+                          <Globe className="h-3 w-3 text-green-600 shrink-0" />
                           <span className="text-green-700 hover:underline text-xs">
                             {center.website}
                           </span>
@@ -474,7 +474,7 @@ const Service = () => {
           </section>
 
           {/* RIGHT SIDE PANEL: Map Display */}
-          <section className="lg:col-span-8 bg-gray-100 relative h-[400px]  lg:h-full min-h-0 overflow-hidden border border-gray-200 shadow-sm  rounded-2xl mb-4 lg:mb-0">
+          <section className="lg:col-span-8 bg-gray-100 relative h-100  lg:h-full min-h-0 overflow-hidden border border-gray-200 shadow-sm  rounded-2xl mb-4 lg:mb-0">
             <iframe
               src={getMapUrl()}
               width="100%"

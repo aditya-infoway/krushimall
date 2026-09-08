@@ -1902,7 +1902,7 @@ const UsedTractors = () => {
                 >
                   <div className="flex items-center gap-3">
                     <div
-                      className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 transition-colors ${
+                      className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 transition-colors ${
                         openIndex === index ? "bg-green-100" : "bg-gray-100"
                       }`}
                     >
@@ -1923,7 +1923,7 @@ const UsedTractors = () => {
                     </span>
                   </div>
                   <ChevronDown
-                    className={`h-4 w-4 text-gray-400 flex-shrink-0 transition-transform duration-300 ${
+                    className={`h-4 w-4 text-gray-400 shrink-0 transition-transform duration-300 ${
                       openIndex === index ? "rotate-180 text-green-600" : ""
                     }`}
                   />

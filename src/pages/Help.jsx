@@ -97,7 +97,7 @@ const Help = () => {
 
       {/* Categories */}
       <section className="pt-12 md:pt-16 lg:pt-20">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {categories.map((cat, i) => (
               <div

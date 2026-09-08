@@ -285,7 +285,7 @@ const handleWishlistClick = (tractor, e) => {
       className={`group bg-white rounded-2xl border-2 border-gray-200 hover:border-green-400 shadow-sm hover:shadow-2xl hover:shadow-green-100/50 transition-all duration-500 flex flex-col flex-shrink-0 hover:-translate-y-2 cursor-pointer h-full ${className}`}
     >
       {/* Image Section - Fixed height */}
-      <div className="relative h-36 sm:h-44 overflow-hidden bg-gradient-to-br from-green-50 to-white flex-shrink-0 rounded-t-2xl">
+      <div className="relative h-36 sm:h-44 overflow-hidden bg-linear-to-br from-green-50 to-white shrink-0 rounded-t-2xl">
         <img
           src={tractor.image || "/mah.png"}
           alt={tractor.name}
@@ -297,12 +297,12 @@ const handleWishlistClick = (tractor, e) => {
         />
 
         {/* Gradient Overlay on Hover */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-linear-to-t from-black/40 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
         {/* Top Badges */}
         <div className="absolute top-2 left-2 sm:top-3 sm:left-3 flex flex-col gap-1">
           {tractor.badge && (
-            <span className="bg-gradient-to-r from-green-600 to-green-700 text-white text-[9px] sm:text-[10px] font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-lg shadow-green-600/30 flex items-center gap-1">
+            <span className="bg-linear-to-r from-green-600 to-green-700 text-white text-[9px] sm:text-[10px] font-bold px-2 sm:px-3 py-0.5 sm:py-1 rounded-full shadow-lg shadow-green-600/30 flex items-center gap-1">
               {/* <Award className="h-2.5 w-2.5 sm:h-3 sm:w-3" />
               {tractor.badge} */}
             </span>
@@ -340,7 +340,7 @@ const handleWishlistClick = (tractor, e) => {
           </span>
           <span className="text-gray-300 text-[10px]">•</span>
           <div className="flex items-center gap-0.5 text-[10px] sm:text-xs text-gray-500 min-w-0">
-            <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-600 flex-shrink-0" />
+            <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-green-600 shrink-0" />
             <span className="truncate">{tractor.location}</span>
           </div>
         </div>
@@ -352,7 +352,7 @@ const handleWishlistClick = (tractor, e) => {
           </h3>
           {isUsed ? (
             <span
-              className={`flex-shrink-0 inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-full ${tractor.condition === "Excellent" ||
+              className={`shrink-0 inline-flex items-center gap-1 text-[8px] sm:text-[10px] font-semibold px-1.5 sm:px-2 py-0.5 rounded-full ${tractor.condition === "Excellent" ||
                   tractor.condition === "Like New"
                   ? "bg-green-100 text-green-700 border border-green-200"
                   : tractor.condition === "Good"
@@ -372,7 +372,7 @@ const handleWishlistClick = (tractor, e) => {
               {tractor.condition}
             </span>
           ) : (
-            <div className="flex items-center gap-0.5 sm:gap-1 flex-shrink-0">
+            <div className="flex items-center gap-0.5 sm:gap-1 shrink-0">
               {/* <Star className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-yellow-500 fill-yellow-500" />
               <span className="text-[10px] sm:text-xs font-bold text-gray-900">
                 {tractor.rating}
@@ -395,7 +395,7 @@ const handleWishlistClick = (tractor, e) => {
               )}
             </div>
             {/* Mobile: Icon only, Desktop: Full text */}
-            <span className="sm:hidden bg-green-600 text-white p-1.5 rounded-lg transition-all shadow-md shadow-green-600/20 group-hover:shadow-lg group-hover:shadow-green-600/30 flex items-center justify-center flex-shrink-0">
+            <span className="sm:hidden bg-green-600 text-white p-1.5 rounded-lg transition-all shadow-md shadow-green-600/20 group-hover:shadow-lg group-hover:shadow-green-600/30 flex items-center justify-center shrink-0">
               <ShoppingCart className="h-3.5 w-3.5" />
             </span>
             <span className="hidden sm:inline-flex bg-green-600 text-white text-xs font-bold px-3 lg:px-4 py-2 rounded-xl transition-all shadow-md shadow-green-600/20 group-hover:shadow-lg group-hover:shadow-green-600/30 items-center gap-1.5 whitespace-nowrap">
@@ -462,7 +462,7 @@ const handleWishlistClick = (tractor, e) => {
         <div className="flex items-center justify-between mb-5 px-4 sm:px-10">
           <h3 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight flex items-center gap-2">
             <span
-              className={`w-9 h-9 rounded-lg bg-gradient-to-r ${iconGradient} flex items-center justify-center`}
+              className={`w-9 h-9 rounded-lg bg-linear-to-r ${iconGradient} flex items-center justify-center`}
             >
               <Icon className="h-4 w-4 text-white" />
             </span>
@@ -498,7 +498,7 @@ const handleWishlistClick = (tractor, e) => {
             {tractors.map((tractor) => (
               <div
                 key={tractor.id}
-                className="snap-start w-[75vw] flex-shrink-0"
+                className="snap-start w-[75vw] shrink-0"
               >
                 <TractorCard tractor={tractor} isUsed={isUsed} />
               </div>
@@ -565,12 +565,12 @@ const handleWishlistClick = (tractor, e) => {
       {/* STANDARDIZED: Same spacing pattern as FeaturesBar & BrandsMakers */}
       <div className="px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
         {/* Inner container with bottom padding to match top spacing */}
-        <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto">
+        <div className="w-full max-w-360 xl:max-w-400 2xl:max-w-430 mx-auto">
           {/* UPDATED: Left-aligned main title with description below */}
           <div className="mb-10 md:mb-14">
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
               Find Your Perfect{" "}
-              <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-700">
+              <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-green-700">
                 Tractor
               </span>
             </h2>
@@ -622,12 +622,12 @@ const handleWishlistClick = (tractor, e) => {
       {/* --- POPULAR COMPARISON HANDPICKS --- */}
       <div className=" border-gray-200 w-full">
         <div className="px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 pt-12 md:pt-16 lg:pt-20">
-          <div className="w-full max-w-[1440px] xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto">
+          <div className="w-full max-w-360 xl:max-w-400 2xl:max-w-430 mx-auto">
             {/* Comparison Header */}
             <div className="mb-8">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 tracking-tight mb-3">
                 Compare to buy{" "}
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-green-600 to-green-700">
+                <span className="text-transparent bg-clip-text bg-linear-to-r from-green-600 to-green-700">
                   the right tractor
                 </span>
               </h2>

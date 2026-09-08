@@ -77,7 +77,7 @@ const Wishlist = () => {
     <div className="min-h-screen bg-gray-50 mt-4">
       {/* Header */}
       <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
-        <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
+        <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46">
           <div className="flex items-center justify-between py-4 md:py-5">
             <div className="flex items-center gap-3">
               <div className="bg-green-50 p-2 rounded-lg">
@@ -107,7 +107,7 @@ const Wishlist = () => {
       </div>
 
       {/* Wishlist Items */}
-      <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-6 md:py-8">
+      <div className="w-full xl:max-w-400 2xl:max-w-430 mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46 py-6 md:py-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-5">
           {wishlistItems.map((product) => (
             <div
