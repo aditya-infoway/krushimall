@@ -36,6 +36,13 @@ import {
   X,
 } from "lucide-react";
 import apiHelper from "../utils/apiHelper";
+import { useWishlist } from "../context/WishlistContext";
+import { useAuth } from "../context/AuthContext";
+import {
+  showWishlistAddedToast,
+  showWishlistRemovedToast,
+  showLoginRequiredToast,
+} from "../utils/toast.jsx";
 
 const FilterCombobox = ({
   value,
@@ -151,6 +158,8 @@ const UsedTractors = () => {
   const [sortBy, setSortBy] = useState("popular");
   const [openIndex, setOpenIndex] = useState(null);
   const navigate = useNavigate();
+  const { isInWishlist, toggleWishlist } = useWishlist();   
+const { isAuthenticated } = useAuth(); 
   const location = useLocation();
   const activeTab = location.pathname.includes("old") ? "used" : "new";
   const [brandOptions, setBrandOptions] = useState(["All Brands"]);
@@ -667,9 +676,20 @@ const UsedTractors = () => {
     setIndex((prev) => (prev - 1 + length) % length);
   };
 
-  const TractorCard = ({ tractor }) => (
+const TractorCard = ({ tractor }) => {
+  const wishlisted = isInWishlist(tractor.id, "usedVariant");
+
+  // ✅ normalized object banao jaisa TractorShowcase/TractorDetails mein hota hai
+  const wishlistPayload = {
+    id: tractor.id,
+    name: tractor.productName,
+    brand: tractor.brandRef?.brandName || "Unknown",
+    price: Number(tractor.expectedPrice) || 0,
+    image: apiHelper.image(tractor.frontView),
+  };
+
+  return (
     <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col shrink-0 w-full sm:w-[calc(50%-8px)] lg:w-[calc(25%-12px)]">
-      {/* Clickable Image */}
       <Link
         to={`/used-tractor/${tractor.id}`}
         className="relative h-40 sm:h-44 overflow-hidden bg-gray-100 block"
@@ -688,17 +708,33 @@ const UsedTractors = () => {
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
-            // Add wishlist logic here
+            if (!isAuthenticated) {
+              showLoginRequiredToast();
+              navigate(`/login?redirect=${location.pathname}`);
+              return;
+            }
+            const alreadyInWishlist = isInWishlist(tractor.id, "usedVariant");
+            toggleWishlist(wishlistPayload, "usedVariant");   // ✅ normalized payload
+            if (alreadyInWishlist) {
+              showWishlistRemovedToast(tractor.productName);
+            } else {
+              showWishlistAddedToast(tractor.productName);
+            }
           }}
           className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow hover:bg-gray-100 cursor-pointer"
         >
-          <Heart className="h-3.5 w-3.5 text-gray-500 hover:text-green-600" />
+          <Heart
+            className={`h-3.5 w-3.5 transition-colors ${
+              wishlisted
+                ? "text-green-600 fill-green-600"
+                : "text-gray-500 hover:text-green-600"
+            }`}
+          />
         </button>
       </Link>
 
       <div className="p-3 flex flex-col flex-1">
         <div className="flex items-center justify-between mb-1">
-          {/* Clickable Brand Name */}
           <Link
             to={`/used-tractor/${tractor.id}`}
             className="text-xs font-semibold text-green-600 hover:text-green-700 transition-colors"
@@ -713,7 +749,6 @@ const UsedTractors = () => {
           </div>
         </div>
         <div className="flex items-center justify-between mb-1">
-          {/* Clickable Product Name */}
           <Link
             to={`/used-tractor/${tractor.id}`}
             className="text-sm font-bold text-gray-900 mb-2 line-clamp-1 hover:text-green-600 transition-colors"
@@ -744,6 +779,7 @@ const UsedTractors = () => {
       </div>
     </div>
   );
+};
   const SliderSection = ({
     title,
     subtitle,

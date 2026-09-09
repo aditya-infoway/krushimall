@@ -403,7 +403,7 @@ export default function PreviewSubmit({
                   </div>
                 </div>
 
-                {/* <div className="lg:col-span-3">
+                <div className="lg:col-span-3">
                   <div className="rounded-xl border border-gray-100 bg-gray-50 p-4">
                     <h4 className="mb-3 text-sm font-semibold text-gray-700 flex items-center gap-2">
                       <Tag className="h-4 w-4 text-green-600" />
@@ -431,7 +431,7 @@ export default function PreviewSubmit({
                       )}
                     </ul>
                   </div>
-                </div> */}
+                </div>
               </div>
             </div>
 

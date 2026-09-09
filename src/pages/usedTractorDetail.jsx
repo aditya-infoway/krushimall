@@ -44,7 +44,11 @@ import EnquiryModal from "../components/EnquiryModal";
 import apiHelper from "../utils/apiHelper";
 import { useWishlist } from "../context/WishlistContext";
 import { useAuth } from "../context/AuthContext";
-
+import {
+  showWishlistAddedToast,
+  showWishlistRemovedToast,
+  showLoginRequiredToast,
+} from "../utils/toast.jsx";
 // ─── Helper Functions ──────────────────────────────────────────────────────
 const hasValidValue = (value) => {
   return (
@@ -922,14 +926,20 @@ const UsedTractorDetails = () => {
     image: tractor.images[0],
   };
 
-  const handleWishlistClick = () => {
-    if (!isAuthenticated) {
-      navigate(`/login?redirect=/tractor/${id}`);
-      return;
-    }
-    toggleWishlist(wishlistProduct, "usedVariant");
-  };
-
+ const handleWishlistClick = () => {
+  if (!isAuthenticated) {
+    showLoginRequiredToast();
+    navigate(`/login?redirect=/tractor/${id}`);
+    return;
+  }
+  const alreadyInWishlist = isInWishlist(Number(id), "usedVariant");   // ✅ check pehle
+  toggleWishlist(wishlistProduct, "usedVariant");
+  if (alreadyInWishlist) {
+    showWishlistRemovedToast(tractor.name);
+  } else {
+    showWishlistAddedToast(tractor.name);
+  }
+};
   // ─── Auto Slider ──────────────────────────────────────────────────────────
  useEffect(() => {
   if (!tractor.relatedProducts?.length) return;

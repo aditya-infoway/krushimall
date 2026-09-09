@@ -435,7 +435,7 @@ const Products = () => {
                   Products{" "}
                 </span>
               </h1>
-              <button
+              {/* <button
                 onClick={() => setShowVehicleSearch(!showVehicleSearch)}
                 className="flex items-center cursor-pointer gap-2 bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
               >
@@ -446,7 +446,7 @@ const Products = () => {
                     showVehicleSearch ? "rotate-180" : ""
                   }`}
                 />
-              </button>
+              </button> */}
             </div>
 
             <div className="flex items-center gap-3">
@@ -1060,22 +1060,22 @@ const Products = () => {
                             {product.name}
                           </h3>
 
-                          {/* ROW 2: Price and Stock Status aligned side-by-side */}
-                          <div className="flex items-baseline justify-between gap-2 mb-2.5 pt-1 border-t border-gray-50">
-                            <div className="flex items-baseline gap-1">
-                              <span className="text-sm font-bold text-gray-900">
-                                {formatPrice(product.price)}
-                              </span>
-                              {product.oldPrice > product.price && (
-                                <span className="text-[10px] text-gray-400 line-through">
-                                  {formatPrice(product.oldPrice)}
+                    
+                          {/* ROW 2: Price + Stock, and Cart action all in one row */}
+                          <div className="flex items-center justify-between gap-2 mb-1 pt-1 border-t border-gray-50">
+                            <div className="flex flex-col">
+                              <div className="flex items-baseline gap-1">
+                                <span className="text-sm font-bold text-gray-900">
+                                  {formatPrice(product.price)}
                                 </span>
-                              )}
-                            </div>
-
-                            <div className="text-[10px] shrink-0">
+                                {product.oldPrice > product.price && (
+                                  <span className="text-[10px] text-gray-400 line-through">
+                                    {formatPrice(product.oldPrice)}
+                                  </span>
+                                )}
+                              </div>
                               <span
-                                className={`font-semibold ${
+                                className={`text-[10px] font-semibold ${
                                   product.inStock
                                     ? "text-green-600"
                                     : "text-red-500"
@@ -1084,45 +1084,47 @@ const Products = () => {
                                 {product.inStock ? "In Stock" : "Out of Stock"}
                               </span>
                             </div>
-                          </div>
 
-                          {/* Grid Add to Cart / Quantity Switch */}
-                          {quantity > 0 ? (
-                            <div className="flex items-center justify-between border border-green-600 rounded-md overflow-hidden bg-white py-1 px-2 h-8">
+                            {/* Grid Add to Cart / Quantity Switch — now auto-width, right aligned */}
+                            {quantity > 0 ? (
+                              <div className="flex items-center justify-between gap-1.5 border border-green-600 rounded-md overflow-hidden bg-white py-1 px-1.5 h-8 shrink-0">
+                                <button
+                                  onClick={(e) =>
+                                    handleDecreaseQuantity(e, product)
+                                  }
+                                  className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors cursor-pointer"
+                                >
+                                  <Minus className="h-3.5 w-3.5" />
+                                </button>
+                                <span className="text-xs font-bold text-gray-900 w-4 text-center">
+                                  {quantity}
+                                </span>
+                                <button
+                                  onClick={(e) =>
+                                    handleIncreaseQuantity(e, product)
+                                  }
+                                  className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors cursor-pointer"
+                                >
+                                  <Plus className="h-3.5 w-3.5" />
+                                </button>
+                              </div>
+                            ) : (
                               <button
-                                onClick={(e) =>
-                                  handleDecreaseQuantity(e, product)
-                                }
-                                className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors cursor-pointer"
+                                disabled={!product.inStock}
+                                onClick={(e) => handleAddToCart(e, product)}
+                                className={`shrink-0 flex items-center justify-center gap-1.5 font-medium py-1.5 px-3 rounded-md transition-colors text-xs h-8 cursor-pointer ${
+                                  product.inStock
+                                    ? "bg-green-600 hover:bg-green-700 text-white"
+                                    : "bg-gray-200 text-gray-400 cursor-not-allowed"
+                                }`}
                               >
-                                <Minus className="h-3.5 w-3.5" />
+                                <ShoppingCart className="h-3.5 w-3.5" />
+                                <span className="hidden xl:inline">
+                                  Add to Cart
+                                </span>
                               </button>
-                              <span className="text-xs font-bold text-gray-900">
-                                {quantity}
-                              </span>
-                              <button
-                                onClick={(e) =>
-                                  handleIncreaseQuantity(e, product)
-                                }
-                                className="p-1 text-green-600 hover:bg-green-50 rounded transition-colors cursor-pointer"
-                              >
-                                <Plus className="h-3.5 w-3.5" />
-                              </button>
-                            </div>
-                          ) : (
-                            <button
-                              disabled={!product.inStock}
-                              onClick={(e) => handleAddToCart(e, product)}
-                              className={`w-full flex items-center justify-center gap-1.5 font-medium py-1.5 rounded-md transition-colors text-xs h-8 cursor-pointer ${
-                                product.inStock
-                                  ? "bg-green-600 hover:bg-green-700 text-white"
-                                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
-                              }`}
-                            >
-                              <ShoppingCart className="h-3.5 w-3.5" />
-                              <span>Add to Cart</span>
-                            </button>
-                          )}
+                            )}
+                          </div>
                         </div>
                       </Link>
                     ) : (
