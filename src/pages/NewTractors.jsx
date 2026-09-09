@@ -38,6 +38,11 @@ import apiHelper from "../utils/apiHelper";
 import TractorCategory from "../components/TractorCategory";
 import { useWishlist } from "../context/WishlistContext";
 import { useAuth } from "../context/AuthContext";
+import {
+  showWishlistAddedToast,
+  showWishlistRemovedToast,
+  showLoginRequiredToast,
+} from "../utils/toast.jsx";
 const FilterCombobox = ({ value, onChange, options, placeholder }) => {
   const [query, setQuery] = useState("");
   const buttonRef = useRef(null);
@@ -720,18 +725,25 @@ const NewTractors = () => {
               {tractor.isUpcoming ? "Upcoming" : "New"}
             </span>
           </div>
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              if (!isAuthenticated) {
-                navigate(`/login?redirect=${location.pathname}`);
-                return;
-              }
-            toggleWishlist(tractor, "variant");  
-            }}
-            className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow hover:bg-gray-100 cursor-pointer"
-          >
+         <button
+  onClick={(e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (!isAuthenticated) {
+      showLoginRequiredToast();
+      navigate(`/login?redirect=${location.pathname}`);
+      return;
+    }
+    const alreadyInWishlist = isInWishlist(tractor.id, "variant");   // ✅ check pehle
+    toggleWishlist(tractor, "variant");
+    if (alreadyInWishlist) {
+      showWishlistRemovedToast(tractor.name);
+    } else {
+      showWishlistAddedToast(tractor.name);
+    }
+  }}
+  className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow hover:bg-gray-100 cursor-pointer"
+>
             <Heart
               className={`h-3.5 w-3.5 transition-colors ${
                 wishlisted

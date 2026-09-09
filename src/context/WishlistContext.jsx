@@ -42,6 +42,15 @@ const mapUsedVariant = (item) => ({
   price: item.usedVariant.expectedPrice || 0,
   image: apiHelper.image(item.usedVariant.frontView),
 });
+const mapEquipment = (item) => ({
+  wishlistId: item.id,
+  id: item.equipment.id,
+  type: "equipment",
+  name: item.equipment.displayName || item.equipment.productName,
+  brand: item.equipment.brand || "Unknown",
+  price: item.equipment.expectedPrice || 0,
+  image: apiHelper.image(item.equipment.frontView),
+});
 export const WishlistProvider = ({ children }) => {
   const { isAuthenticated } = useAuth();
   const [wishlistItems, setWishlistItems] = useState([]);
@@ -70,6 +79,8 @@ export const WishlistProvider = ({ children }) => {
         .map((entry) => {
           if (entry.variant) return mapVariant(entry);
           if (entry.product) return mapProduct(entry);
+             if (entry.usedVariant) return mapUsedVariant(entry);
+                if (entry.equipment) return mapEquipment(entry);
           return null;
         })
         .filter(Boolean);
@@ -115,9 +126,10 @@ export const WishlistProvider = ({ children }) => {
     );
 
     try {
-     const payload =
+   const payload =
   type === "variant" ? { variantId: product.id }
   : type === "usedVariant" ? { usedVariantId: product.id }
+  : type === "equipment" ? { equipmentId: product.id }   
   : { productId: product.id };
       await apiHelper.post("/wishlist/toggle", payload);
     } catch (error) {
