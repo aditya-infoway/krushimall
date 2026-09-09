@@ -277,7 +277,7 @@ const loadData = async () => {
                         .filter(Boolean)
                         .map((highlight, index) => (
                           <li key={index} className="flex items-start gap-2">
-                            <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0 mt-0.5" />
+                            <CheckCircle className="h-4 w-4 text-green-600 shrink-0 mt-0.5" />
                             <span className="text-gray-700">{highlight}</span>
                           </li>
                         ))}

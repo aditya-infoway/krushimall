@@ -1,16 +1,16 @@
 import React, { Fragment, useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
-import { Listbox, RadioGroup, Combobox, Transition } from "@headlessui/react";
+import { Link,useNavigate } from "react-router-dom";
+import { Listbox,  Combobox, Transition } from "@headlessui/react";
 import { MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 import {
   Search,
   Filter,
 
   ChevronDown,
-  ChevronLeft,
-  ChevronRight,
+  // ChevronLeft,
+  // ChevronRight,
   Heart,
-  Star,
+  // Star,
   MapPin,
   Check,
   X,
@@ -25,8 +25,9 @@ import {
 import Select from "react-select";
 import { State, City } from "country-state-city";
 import apiHelper from "../utils/apiHelper";
-import { showErrorToast, showSuccessToast } from "../utils/toast";
-
+import {  showLoginRequiredToast, showWishlistAddedToast, showWishlistRemovedToast,showErrorToast, showSuccessToast } from "../utils/toast";
+import { useWishlist } from "../context/WishlistContext";
+import { useAuth } from "../context/AuthContext";
 // ===== INDIA STATES (static, computed once) =====
 const INDIA_STATES = State.getStatesOfCountry("IN").map((s) => ({
   value: s.isoCode,
@@ -155,7 +156,8 @@ const Equipments = () => {
   const [selectedHp, setSelectedHp] = useState("All HP");
   const [priceRange, setPriceRange] = useState([0, 150000]);
   const [sortBy, setSortBy] = useState("popular");
-  const [wishlist, setWishlist] = useState([]);
+ const { isInWishlist, toggleWishlist } = useWishlist();   // ✅ add karo
+const { isAuthenticated } = useAuth();
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
   const [enquiryProduct, setEnquiryProduct] = useState(null);
   const [enquiryForm, setEnquiryForm] = useState({
@@ -167,7 +169,7 @@ const Equipments = () => {
     address: "",
     pincode: "",
   });
-
+const navigate = useNavigate();
   // Filtered and sorted products
   const [equipments, setEquipments] = useState([]);
   const [filteredProducts, setFilteredProducts] = useState([]);
@@ -289,11 +291,11 @@ const Equipments = () => {
   ]);
 
   // ===== WISHLIST TOGGLE =====
-  const toggleWishlist = (id) => {
-    setWishlist((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
-  };
+  // const toggleWishlist = (id) => {
+  //   setWishlist((prev) =>
+  //     prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
+  //   );
+  // };
 
   // ===== CLEAR FILTERS =====
   const clearFilters = () => {
@@ -386,42 +388,52 @@ const submitEnquiry = async (e) => {
     : [];
 
   // ===== PRODUCT CARD COMPONENT =====
-  const EquipmentCard = ({ equipment }) => {
-    const isWishlisted = wishlist.includes(equipment.id);
+const EquipmentCard = ({ equipment }) => {
+  const isWishlisted = isInWishlist(equipment.id, "equipment");
 
-    return (
-      <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-full">
-        {/* Image */}
-        <Link
-          to={`/equipment/${equipment.id}`}
-          className="relative  h-32 sm:h-48 overflow-hidden bg-gray-100 block"
+  return (
+    <div className="group bg-white rounded-2xl border border-gray-200 shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col h-full">
+      <Link
+        to={`/equipment/${equipment.id}`}
+        className="relative h-32 sm:h-48 overflow-hidden bg-gray-100 block"
+      >
+        <img
+          src={equipment.image}
+          alt={equipment.name}
+          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+          onError={(e) => {
+            e.currentTarget.onerror = null;
+            e.currentTarget.src = "/mah.png";
+          }}
+        />
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            if (!isAuthenticated) {
+              showLoginRequiredToast();
+              navigate("/login?redirect=/equipment");
+              return;
+            }
+            const alreadyInWishlist = isInWishlist(equipment.id, "equipment");
+            toggleWishlist(equipment, "equipment");
+            if (alreadyInWishlist) {
+              showWishlistRemovedToast(equipment.name);
+            } else {
+              showWishlistAddedToast(equipment.name);
+            }
+          }}
+          className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow hover:bg-gray-100 cursor-pointer transition-transform hover:scale-110"
         >
-          <img
-            src={equipment.image}
-            alt={equipment.name}
-            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-            onError={(e) => {
-              e.currentTarget.onerror = null;
-              e.currentTarget.src = "/mah.png";
-            }}
+          <Heart
+            className={`h-4 w-4 transition-colors ${
+              isWishlisted
+                ? "text-green-500 fill-green-500"
+                : "text-gray-500 hover:text-green-500"
+            }`}
           />
-          <button
-            onClick={(e) => {
-              e.preventDefault();
-              e.stopPropagation();
-              toggleWishlist(equipment.id);
-            }}
-            className="absolute top-2 right-2 p-1.5 bg-white rounded-full shadow hover:bg-gray-100 cursor-pointer transition-transform hover:scale-110"
-          >
-            <Heart
-              className={`h-4 w-4 transition-colors ${
-                isWishlisted
-                  ? "text-red-500 fill-red-500"
-                  : "text-gray-500 hover:text-red-500"
-              }`}
-            />
-          </button>
-        </Link>
+        </button>
+      </Link>
 
         {/* Content */}
         <div className="p-3 sm:p-4  flex flex-col flex-1">

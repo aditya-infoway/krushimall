@@ -18,19 +18,378 @@ import {
   AlertCircle,
   Car,
   ChevronDown,
+  Calendar as CalendarIcon,
+  Loader2,
+  CheckCircle,
 } from "lucide-react";
 import { useCart } from "../context/CartContext";
 import { useAuth } from "../context/AuthContext";
 import { useWishlist } from "../context/WishlistContext";
 import { Listbox } from "@headlessui/react";
 import {
-  // showCartAddedToast,
   showWishlistAddedToast,
   showWishlistRemovedToast,
   showErrorToast,
-  // showLoginRequiredToast,
 } from "../utils/toast.jsx";
 import apiHelper from "../utils/apiHelper";
+
+// ─── Review Components ──────────────────────────────────────────────────────
+
+// Star Rating Component
+const StarRating = ({
+  rating,
+  onRatingChange,
+  readonly = false,
+  size = "md",
+}) => {
+  const [hoverRating, setHoverRating] = useState(0);
+  const stars = [1, 2, 3, 4, 5];
+
+  const sizeClasses = {
+    sm: "w-4 h-4",
+    md: "w-5 h-5",
+    lg: "w-8 h-8",
+  };
+
+  return (
+    <div className="flex gap-1">
+      {stars.map((star) => (
+        <button
+          key={star}
+          type="button"
+          onClick={() => !readonly && onRatingChange(star)}
+          onMouseEnter={() => !readonly && setHoverRating(star)}
+          onMouseLeave={() => !readonly && setHoverRating(0)}
+          className={`${
+            !readonly && "cursor-pointer"
+          } focus:outline-none transition-transform ${
+            !readonly && "hover:scale-110"
+          }`}
+          disabled={readonly}
+        >
+          <Star
+            className={`${sizeClasses[size]} ${
+              (hoverRating || rating) >= star
+                ? "fill-yellow-400 text-yellow-400"
+                : "text-gray-300"
+            } transition-colors`}
+          />
+        </button>
+      ))}
+    </div>
+  );
+};
+
+// Single Review Card
+const ReviewCard = ({ review }) => {
+  const formatDate = (date) => {
+    if (!date) return "Recent";
+    try {
+      const d = new Date(date);
+      return d.toLocaleDateString("en-US", {
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+      });
+    } catch {
+      return "Recent";
+    }
+  };
+
+  return (
+    <div className="border-b border-gray-100 last:border-0 py-4 first:pt-0">
+      <div className="flex items-start gap-3">
+        <div className="w-10 h-10 rounded-full bg-linear-to-br from-green-500 to-green-600 flex items-center justify-center shrink-0">
+          <span className="text-white font-semibold text-sm">
+            {review.userName?.charAt(0)?.toUpperCase() || "U"}
+          </span>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="flex flex-wrap items-center gap-2 mb-1">
+            <h4 className="font-semibold text-gray-900 text-sm">
+              {review.userName || "Anonymous User"}
+            </h4>
+            <span className="text-xs text-gray-400">•</span>
+            <span className="text-xs text-gray-400 flex items-center gap-1">
+              <CalendarIcon className="w-3 h-3" />
+              {formatDate(review.createdAt)}
+            </span>
+          </div>
+          <StarRating rating={review.rating} readonly size="sm" />
+          {review.comment && (
+            <p className="text-gray-600 text-sm mt-1.5 leading-relaxed">
+              {review.comment}
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Reviews Section Component
+const ReviewsSection = ({ productId }) => {
+  const [reviews, setReviews] = useState([]);
+  const [rating, setRating] = useState(0);
+  const [userName, setUserName] = useState("");
+  const [comment, setComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  // Fetch Reviews
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        setLoading(true);
+        // Replace with your actual API call
+        // const response = await apiHelper.get(`/reviews/product/${productId}`);
+        // setReviews(response.data);
+
+        // Sample data
+        setTimeout(() => {
+          setReviews([
+            {
+              id: 1,
+              userName: "Rajesh Kumar",
+              rating: 5,
+              comment:
+                "Excellent product! Great quality and performance. Perfect for my needs.",
+              createdAt: "2026-06-15T10:30:00",
+            },
+            {
+              id: 2,
+              userName: "Priya Singh",
+              rating: 4,
+              comment:
+                "Good value for money. Works as expected and easy to install.",
+              createdAt: "2026-06-10T14:20:00",
+            },
+            {
+              id: 3,
+              userName: "Amit Patel",
+              rating: 5,
+              comment:
+                "Best investment for my vehicle. After-sales service is excellent.",
+              createdAt: "2026-06-05T09:15:00",
+            },
+          ]);
+          setLoading(false);
+        }, 500);
+      } catch (error) {
+        console.error("Error fetching reviews:", error);
+        setError("Failed to load reviews");
+        setLoading(false);
+      }
+    };
+    fetchReviews();
+  }, [productId]);
+
+  // Submit Review
+  const handleSubmitReview = async (e) => {
+    e.preventDefault();
+
+    if (rating === 0) {
+      setError("Please select a rating");
+      return;
+    }
+    if (!comment.trim()) {
+      setError("Please write a review comment");
+      return;
+    }
+    if (comment.trim().length < 10) {
+      setError("Review must be at least 10 characters");
+      return;
+    }
+
+    setError("");
+    setIsSubmitting(true);
+
+    try {
+      // Replace with your actual API call
+      // await apiHelper.post('/reviews/product', {
+      //   productId,
+      //   userName: userName.trim() || "Anonymous",
+      //   rating,
+      //   comment: comment.trim()
+      // });
+
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      const newReview = {
+        id: Date.now(),
+        userName: userName.trim() || "Anonymous User",
+        rating,
+        comment: comment.trim(),
+        createdAt: new Date().toISOString(),
+      };
+
+      setReviews([newReview, ...reviews]);
+      setSuccessMessage("Thank you! Your review has been submitted.");
+      setRating(0);
+      setUserName("");
+      setComment("");
+
+      setTimeout(() => setSuccessMessage(""), 3000);
+    } catch (error) {
+      console.error("Error submitting review:", error);
+      setError("Failed to submit review. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Calculate Statistics
+  const totalReviews = reviews.length;
+  const averageRating =
+    totalReviews > 0
+      ? reviews.reduce((acc, r) => acc + r.rating, 0) / totalReviews
+      : 0;
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="w-8 h-8 animate-spin text-green-600" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-16 mb-8">
+      <h2 className="text-2xl font-bold text-gray-900 mb-2">
+        Customer <span className="text-green-600">Reviews</span>
+      </h2>
+      <p className="text-gray-500 text-sm mb-6">
+        What our customers say about this product
+      </p>
+
+      {/* Two-column layout: reviews on left, form on right */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+        {/* LEFT COLUMN: Summary + All Reviews */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <div className="flex items-center gap-3 pb-6 border-b border-gray-100">
+            <div className="text-4xl font-bold text-gray-900">
+              {averageRating.toFixed(1)}
+            </div>
+            <div>
+              <StarRating rating={averageRating} readonly size="md" />
+              <p className="text-sm text-gray-500 mt-1">
+                Based on {totalReviews}{" "}
+                {totalReviews === 1 ? "review" : "reviews"}
+              </p>
+            </div>
+          </div>
+
+          <div className="pt-6">
+            {reviews.length > 0 ? (
+              <div>
+                <h4 className="font-semibold text-gray-900 mb-4">
+                  All Reviews ({reviews.length})
+                </h4>
+                {reviews.map((review) => (
+                  <ReviewCard key={review.id} review={review} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8">
+                <div className="text-gray-300 mb-3">
+                  <Star className="w-12 h-12 mx-auto" />
+                </div>
+                <p className="text-gray-500">No reviews yet.</p>
+                <p className="text-gray-400 text-sm mt-1">
+                  Be the first to review this product!
+                </p>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* RIGHT COLUMN: Review Form */}
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
+          <h3 className="text-lg font-bold text-gray-900 mb-4">
+            Write a Review
+          </h3>
+
+          <form onSubmit={handleSubmitReview} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Your Rating <span className="text-red-500">*</span>
+              </label>
+              <StarRating
+                rating={rating}
+                onRatingChange={setRating}
+                size="lg"
+              />
+              {rating === 0 && error && (
+                <p className="text-red-500 text-xs mt-1">
+                  Please select a rating
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Your Name
+              </label>
+              <input
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                placeholder="Enter your name"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Your Review <span className="text-red-500">*</span>
+              </label>
+              <textarea
+                value={comment}
+                onChange={(e) => setComment(e.target.value)}
+                placeholder="Share your experience with this product..."
+                rows="4"
+                className="w-full px-4 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all resize-none"
+              />
+              {comment && comment.length < 10 && (
+                <p className="text-red-500 text-xs mt-1">
+                  Minimum 10 characters required
+                </p>
+              )}
+              {error && <p className="text-red-500 text-xs mt-1">{error}</p>}
+            </div>
+
+            {successMessage && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center gap-2">
+                <CheckCircle className="w-4 h-4 text-green-600" />
+                <p className="text-green-700 text-sm">{successMessage}</p>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 hover:shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Submitting...
+                </span>
+              ) : (
+                "Submit Review"
+              )}
+            </button>
+          </form>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ─── Main Component ────────────────────────────────────────────────────────
+
 const ProductDetail = () => {
   const { id } = useParams();
   const { addToCart, cart, updateQuantity, removeFromCart } = useCart();
@@ -140,7 +499,7 @@ const ProductDetail = () => {
     const currentCartQty = getCartQuantity(product.id);
 
     // ✅ Agar item already cart me hai, quantity waha se hi control hoti hai
-    // (+/- buttons se). Buy pe dobara local `quantity` add mat karo —
+    // (+/- buttons se). Buy pe local `quantity` add mat karo —
     // warna cart quantity galat badh jaati hai.
     if (currentCartQty > 0) {
       navigate("/cart");
@@ -190,8 +549,8 @@ const ProductDetail = () => {
 
         const mrp = Number(data.mrp) || 0;
         const sellingPrice = Number(data.sellingPrice) || 0;
-const finalPrice =
-  Number(data.finalPrice) > 0 ? Number(data.finalPrice) : sellingPrice;
+        const finalPrice =
+          Number(data.finalPrice) > 0 ? Number(data.finalPrice) : sellingPrice;
         const images = [
           data.mainImage,
           data.thumbnailImage,
@@ -641,33 +1000,33 @@ const finalPrice =
               {/* Product Details */}
               <div className="space-y-3 mb-4 pb-4 border-b border-gray-100">
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">Brand:</span>
+                  <span className="text-xs text-gray-500">Brand :</span>
                   <span className="text-xs font-semibold text-gray-900">
                     {product.brand}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">Part Number:</span>
+                  <span className="text-xs text-gray-500">Part Number :</span>
                   <span className="text-xs font-mono font-semibold text-gray-900">
                     {product.partNumber}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">OEM Number:</span>
+                  <span className="text-xs text-gray-500">OEM Number :</span>
                   <span className="text-xs font-mono font-semibold text-gray-900">
                     {product.oemNumber}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
                   <span className="text-xs text-gray-500">
-                    Country of Origin:
+                    Country of Origin :
                   </span>
                   <span className="text-xs font-semibold text-gray-900">
                     {product.countryOfOrigin}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-xs text-gray-500">Availability:</span>
+                  <span className="text-xs text-gray-500">Availability :</span>
                   <span className="text-xs text-green-600 font-semibold">
                     In Stock
                   </span>
@@ -874,7 +1233,7 @@ const finalPrice =
         </div>
 
         {/* Bottom Tab Specification Sections */}
-        <div className="mb-12">
+        <div className="mb-8">
           <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
             <div className="border-b border-gray-200 bg-gray-50/50">
               <nav className="flex">
@@ -1015,94 +1374,96 @@ const finalPrice =
           </div>
         </div>
 
-      
+        {/* ════════ CUSTOMER REVIEWS SECTION (ADDED) ════════ */}
+        <ReviewsSection productId={id} />
+
         {/* Related Products Section */}
-       {/* Related Products Section */}
-{relatedProducts.length > 0 && (
-  <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm  mb-3">
-    {/* Header */}
-    <div className="flex items-center justify-between mb-4">
-      <h2 className="text-lg font-bold text-gray-900">
-        Related Products
-      </h2>
+        {/* Related Products Section */}
+        {relatedProducts.length > 0 && (
+          <div className="bg-white border border-gray-200 rounded-xl p-5 shadow-sm  mb-3">
+            {/* Header */}
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-gray-900">
+                Related Products
+              </h2>
 
-      <div className="flex items-center gap-3">
-        <Link
-          to="/products"
-          className="text-sm font-semibold text-green-600 hover:text-green-700 cursor-pointer"
-        >
-          View All
-        </Link>
+              <div className="flex items-center gap-3">
+                <Link
+                  to="/products"
+                  className="text-sm font-semibold text-green-600 hover:text-green-700 cursor-pointer"
+                >
+                  View All
+                </Link>
 
-        <div className="flex items-center gap-1">
-          <button
-            onClick={() => scrollRelated("left")}
-            className="p-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors cursor-pointer"
-          >
-            <ChevronLeft className="h-4 w-4" />
-          </button>
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => scrollRelated("left")}
+                    className="p-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors cursor-pointer"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                  </button>
 
-          <button
-            onClick={() => scrollRelated("right")}
-            className="p-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors cursor-pointer"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
-    </div>
+                  <button
+                    onClick={() => scrollRelated("right")}
+                    className="p-1.5 border border-gray-300 rounded-lg hover:bg-gray-50 text-gray-600 transition-colors cursor-pointer"
+                  >
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            </div>
 
-    {/* Products */}
-    <div
-      ref={scrollRef}
-      className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-1"
-      style={{
-        scrollbarWidth: "none",
-        msOverflowStyle: "none",
-      }}
-    >
-      {relatedProducts.map((related) => (
-        <Link
-          key={related.id}
-          to={`/product/${related.id}`}
-          className="
-            min-w-[220px]
-            md:min-w-[220px]
-            lg:min-w-[230px]
-            bg-white
-            border border-gray-300
-            rounded-xl
-            p-3
-            hover:border-green-400
-            hover:shadow-md
-            transition-all
-            snap-start
-            cursor-pointer
-          "
-        >
-          {/* Product Image */}
-          <div className="bg-gray-50 rounded-lg h-[180px] mb-3 p-3 flex items-center justify-center overflow-hidden">
-            <img
-              src={related.image}
-              alt={related.name}
-              className="h-[160px] w-[160px] object-contain"
-            />
+            {/* Products */}
+            <div
+              ref={scrollRef}
+              className="flex gap-4 overflow-x-auto scrollbar-hide snap-x snap-mandatory pb-1"
+              style={{
+                scrollbarWidth: "none",
+                msOverflowStyle: "none",
+              }}
+            >
+              {relatedProducts.map((related) => (
+                <Link
+                  key={related.id}
+                  to={`/product/${related.id}`}
+                  className="
+                    min-w-[220px]
+                    md:min-w-[220px]
+                    lg:min-w-[230px]
+                    bg-white
+                    border border-gray-300
+                    rounded-xl
+                    p-3
+                    hover:border-green-400
+                    hover:shadow-md
+                    transition-all
+                    snap-start
+                    cursor-pointer
+                  "
+                >
+                  {/* Product Image */}
+                  <div className="bg-gray-50 rounded-lg h-[180px] mb-3 p-3 flex items-center justify-center overflow-hidden">
+                    <img
+                      src={related.image}
+                      alt={related.name}
+                      className="h-[160px] w-[160px] object-contain"
+                    />
+                  </div>
+
+                  {/* Product Name */}
+                  <h3 className="text-sm font-semibold text-gray-900 hover:text-green-600 line-clamp-2 mb-2">
+                    {related.name}
+                  </h3>
+
+                  {/* Price */}
+                  <span className="text-base font-bold text-gray-900">
+                    {formatPrice(related.price)}
+                  </span>
+                </Link>
+              ))}
+            </div>
           </div>
-
-          {/* Product Name */}
-          <h3 className="text-sm font-semibold text-gray-900 hover:text-green-600 line-clamp-2 mb-2">
-            {related.name}
-          </h3>
-
-          {/* Price */}
-          <span className="text-base font-bold text-gray-900">
-            {formatPrice(related.price)}
-          </span>
-        </Link>
-      ))}
-    </div>
-  </div>
-)}
+        )}
       </div>
     </div>
   );

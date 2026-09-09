@@ -1,4 +1,4 @@
-import React from "react";
+// import React from "react";
 import { ShieldCheck, BadgeIndianRupee, Package } from "lucide-react";
 
 const WhyChooseSection = () => {

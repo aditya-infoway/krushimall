@@ -522,6 +522,8 @@ export default function BasicInformation({
   const [country, setCountry] = useState("");
   const [stateCode, setStateCode] = useState("");
   const [districtName, setDistrictName] = useState("");
+  // Key Highlights - dynamic count, same pattern as WebsiteVariant BasicInformation
+  const [highlightCount, setHighlightCount] = useState(5);
 
   const categoryId = watch("categoryId");
   const brandId = watch("brandId");
@@ -570,6 +572,19 @@ export default function BasicInformation({
     setStateCode(productData.state || "");
     setDistrictName(productData.district || "");
 
+    // Agar saved highlights ki count default 5 se zyada hai to input boxes bhi
+    // utni hi render karo, warna reset() ke baad extra highlight values dikhengi nahi
+    const savedHighlightKeys = Object.keys(productData).filter((key) =>
+      /^highlight\d+$/.test(key),
+    );
+    const maxSavedHighlight = savedHighlightKeys.reduce((max, key) => {
+      const num = Number(key.replace("highlight", ""));
+      return productData[key] && num > max ? num : max;
+    }, 0);
+    if (maxSavedHighlight > highlightCount) {
+      setHighlightCount(maxSavedHighlight);
+    }
+
     reset({
       displayName: productData.displayName || "",
       categoryId: Number(productData.categoryId),
@@ -595,6 +610,14 @@ export default function BasicInformation({
       ownerType: productData.ownerType || "",
       ownershipProofAvailable: Boolean(productData.ownershipProofAvailable),
       usage: productData.usage || "",
+
+      highlights: {
+        highlight1: productData.highlight1 || "",
+        highlight2: productData.highlight2 || "",
+        highlight3: productData.highlight3 || "",
+        highlight4: productData.highlight4 || "",
+        highlight5: productData.highlight5 || "",
+      },
     });
   }, [
     productData,
@@ -701,6 +724,15 @@ export default function BasicInformation({
         ownershipProofAvailable: Boolean(data.ownershipProofAvailable),
 
         usage: data.usage || "",
+
+        // ==========================
+        // Key Highlights
+        // ==========================
+        highlight1: data.highlights?.highlight1 || "",
+        highlight2: data.highlights?.highlight2 || "",
+        highlight3: data.highlights?.highlight3 || "",
+        highlight4: data.highlights?.highlight4 || "",
+        highlight5: data.highlights?.highlight5 || "",
 
         // ==========================
         // Step
@@ -1001,6 +1033,39 @@ export default function BasicInformation({
                     error={errors?.color?.message}
                   />
                 </div>
+              </div>
+
+              {/* ==================== Key Highlights ==================== */}
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                  Key Highlights
+                </h3>
+                <p className="text-sm text-gray-500 mb-6">
+                  Add key highlights about this equipment
+                </p>
+
+                <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
+                  {Array.from({ length: highlightCount }, (_, index) => (
+                    <Input
+                      key={index}
+                      {...register(`highlights.highlight${index + 1}`)}
+                      label={`Highlight ${index + 1}`}
+                      placeholder="Enter highlight"
+                      error={
+                        errors?.highlights?.[`highlight${index + 1}`]?.message
+                      }
+                    />
+                  ))}
+                </div>
+
+                <Button
+                  type="button"
+                  variant="outlined"
+                  className="mt-4"
+                  onClick={() => setHighlightCount((prev) => prev + 1)}
+                >
+                  + Add Another Highlight
+                </Button>
               </div>
 
               {/* ==================== Location ==================== */}

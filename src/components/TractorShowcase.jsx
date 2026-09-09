@@ -6,26 +6,29 @@ import {
   Tractor,
   Heart,
   MapPin,
-  Calendar,
-  Fuel,
-  Gauge,
+  // Calendar,
+  // Fuel,
+  // Gauge,
   ArrowRight,
-  Star,
-  Sparkles,
-  BadgeCheck,
+  // Star,
+  // Sparkles,
+  // BadgeCheck,
   TrendingUp,
-  Clock,
-  Eye,
+  // Clock,
+  // Eye,
   ChevronLeft,
   ChevronRight,
-  Zap,
-  Award,
+  // Zap,
+  // Award,
   Shield,
   ShoppingCart,
 } from "lucide-react";
-import logo from "../assets/johnlogo.png";
+// import logo from "../assets/johnlogo.png";
 import apiHelper from "../utils/apiHelper";
-
+import {
+  showWishlistAddedToast,
+  showWishlistRemovedToast,
+} from "../utils/toast.jsx"; 
 const TractorShowcase = () => {
   const [newIndex, setNewIndex] = useState(0);
   const [usedIndex, setUsedIndex] = useState(0);
@@ -195,16 +198,25 @@ const TractorShowcase = () => {
     fetchTrendingComparisons();
   }, []);
 
-const handleWishlistClick = (tractor, e) => {
+const handleWishlistClick = (tractor, e, isUsed = false) => {
   e.preventDefault();
   e.stopPropagation();
   if (!isAuthenticated) {
     navigate("/login?redirect=/");
     return;
   }
-  toggleWishlist(tractor, "variant");
-};
 
+  const type = isUsed ? "usedVariant" : "variant";
+  const alreadyInWishlist = isInWishlist(tractor.id, type);   // ✅ toggle se PEHLE check karo
+
+  toggleWishlist(tractor, type);
+
+  if (alreadyInWishlist) {
+    showWishlistRemovedToast(tractor.name);
+  } else {
+    showWishlistAddedToast(tractor.name);
+  }
+};
   // Detect screen size for responsive cards
   useEffect(() => {
     const handleResize = () => {
@@ -282,7 +294,7 @@ const handleWishlistClick = (tractor, e) => {
           ? `/used-tractor/${tractor.id}`
           : `/tractor/${tractor.id}`
       }
-      className={`group bg-white rounded-2xl border-2 border-gray-200 hover:border-green-400 shadow-sm hover:shadow-2xl hover:shadow-green-100/50 transition-all duration-500 flex flex-col flex-shrink-0 hover:-translate-y-2 cursor-pointer h-full ${className}`}
+      className={`group bg-white rounded-2xl border-2 border-gray-200 hover:border-green-400 shadow-sm hover:shadow-2xl hover:shadow-green-100/50 transition-all duration-500 flex flex-col shrink-0 hover:-translate-y-2 cursor-pointer h-full ${className}`}
     >
       {/* Image Section - Fixed height */}
       <div className="relative h-36 sm:h-44 overflow-hidden bg-linear-to-br from-green-50 to-white shrink-0 rounded-t-2xl">
@@ -317,17 +329,18 @@ const handleWishlistClick = (tractor, e) => {
 
         {/* Wishlist */}
         <div className="absolute top-2 right-2 sm:top-3 sm:right-3">
-          <button
-            onClick={(e) => handleWishlistClick(tractor, e)}
-            className="p-1 sm:p-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white transition-all"
-          >
-            <Heart
-              className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors ${isInWishlist(tractor.id, "variant")
-                  ? "fill-green-500 text-green-500"
-                  : "text-gray-600 hover:text-green-500"
-                }`}
-            />
-          </button>
+         <button
+  onClick={(e) => handleWishlistClick(tractor, e, isUsed)}
+  className="p-1 sm:p-1.5 rounded-full bg-white/90 backdrop-blur-sm shadow-lg hover:bg-white transition-all"
+>
+  <Heart
+    className={`h-3.5 w-3.5 sm:h-4 sm:w-4 transition-colors ${
+      isInWishlist(tractor.id, isUsed ? "usedVariant" : "variant")   // ✅ yahan bhi type match karo
+        ? "fill-green-500 text-green-500"
+        : "text-gray-600 hover:text-green-500"
+    }`}
+  />
+</button>
         </div>
       </div>
 
