@@ -351,6 +351,12 @@ const handleAddToCart = async (item) => {
     showErrorToast(err.response?.data?.message || "Failed to add to cart");
   }
 };
+
+  const handleSignOut = () => {
+    if (typeof logout === "function") logout();
+    navigate("/login", { replace: true });
+  };
+
   const handleSave = async () => {
     try {
       const formData = new FormData();
@@ -735,7 +741,7 @@ const handleAddToCart = async (item) => {
             {/* Become a Vendor CTA — only shown to regular users.
                 Once they complete /become-vendor, userType flips to
                 "vendor" and this card is replaced by vendor tabs/stats. */}
-            {!isVendorLoggedIn && (
+            {/* {!isVendorLoggedIn && (
               <div className="bg-linear-to-br from-green-50 to-green-100 border border-green-200 rounded-2xl p-4 sm:p-5 text-center">
                 <div className="w-12 h-12 bg-green-600 rounded-xl flex items-center justify-center mx-auto mb-3">
                   <Store className="h-6 w-6 text-white" />
@@ -754,7 +760,7 @@ const handleAddToCart = async (item) => {
                   Become a Vendor <ChevronRight className="h-3.5 w-3.5" />
                 </Link>
               </div>
-            )}
+            )} */}
 
             {/* Navigation Tabs */}
             <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-2 lg:p-0">
@@ -774,9 +780,7 @@ const handleAddToCart = async (item) => {
                   </button>
                 ))}
                 <button
-                  onClick={() => {
-                    if (typeof logout === "function") logout();
-                  }}
+                  onClick={handleSignOut}
                   className="flex flex-col lg:flex-row items-center justify-center lg:justify-start text-center lg:text-left gap-1.5 lg:gap-3 col-span-2 lg:col-auto cursor-pointer px-2 lg:px-5 py-3 lg:py-3.5 rounded-xl lg:rounded-none text-xs lg:text-sm font-medium text-red-600 hover:bg-red-50 transition-colors border border-red-100 lg:border-0 lg:border-t lg:border-gray-100 lg:w-full"
                 >
                   <LogOut className="h-4 w-4" />

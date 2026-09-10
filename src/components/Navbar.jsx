@@ -45,8 +45,8 @@ const Navbar = () => {
   const [cartPreviewOpen, setCartPreviewOpen] = useState(false);
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const [desktopSearchOpen, setDesktopSearchOpen] = useState(false);
-const desktopSearchRef = useRef(null);
-const searchInputRef = useRef(null);
+  const desktopSearchRef = useRef(null);
+  const searchInputRef = useRef(null);
 
   // ============================================================
   // MEGA MENU ACTIVE STATES
@@ -66,33 +66,33 @@ const searchInputRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-  const handleClickOutsideSearch = (event) => {
-    if (
-      desktopSearchRef.current &&
-      !desktopSearchRef.current.contains(event.target)
-    ) {
-      setDesktopSearchOpen(false);
+    const handleClickOutsideSearch = (event) => {
+      if (
+        desktopSearchRef.current &&
+        !desktopSearchRef.current.contains(event.target)
+      ) {
+        setDesktopSearchOpen(false);
+      }
+    };
+
+    const handleEscape = (event) => {
+      if (event.key === "Escape") setDesktopSearchOpen(false);
+    };
+
+    document.addEventListener("mousedown", handleClickOutsideSearch);
+    document.addEventListener("keydown", handleEscape);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutsideSearch);
+      document.removeEventListener("keydown", handleEscape);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (desktopSearchOpen && searchInputRef.current) {
+      searchInputRef.current.focus();
     }
-  };
-
-  const handleEscape = (event) => {
-    if (event.key === "Escape") setDesktopSearchOpen(false);
-  };
-
-  document.addEventListener("mousedown", handleClickOutsideSearch);
-  document.addEventListener("keydown", handleEscape);
-
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutsideSearch);
-    document.removeEventListener("keydown", handleEscape);
-  };
-}, []);
-
-useEffect(() => {
-  if (desktopSearchOpen && searchInputRef.current) {
-    searchInputRef.current.focus();
-  }
-}, [desktopSearchOpen]);
+  }, [desktopSearchOpen]);
 
   // ============================================================
   // LOGOUT
@@ -249,14 +249,24 @@ useEffect(() => {
 
   useEffect(() => {
     const syncVendorStatus = () => {
-      setIsVendorLoggedIn(localStorage.getItem("isVendorLoggedIn") === "true");
+      const vendorLoggedIn =
+        localStorage.getItem("isVendorLoggedIn") === "true";
+
+      setIsVendorLoggedIn(vendorLoggedIn);
+
+      // Agar vendor login ho gaya aur user session pehle se active hai,
+      // to user ko auto-logout kar do — ek time pe sirf ek hi
+      // profile (Vendor) active rahega, dono ek saath nahi.
+      if (vendorLoggedIn && isAuthenticated) {
+        logout();
+      }
     };
 
     window.addEventListener("vendorAuthChanged", syncVendorStatus);
 
     return () =>
       window.removeEventListener("vendorAuthChanged", syncVendorStatus);
-  }, []);
+  }, [isAuthenticated, logout]);
 
   // ============================================================
   // MENU ITEMS
@@ -720,24 +730,6 @@ useEffect(() => {
                                           to={`/products?subSubCategoryId=${child.id}`}
                                           className="group flex items-center gap-3 border border-gray-200 rounded-lg px-3 py-3 bg-white hover:border-green-500 hover:bg-green-50 transition-all"
                                         >
-                                          {/* Child Image */}
-
-                                          {/* <div className="w-9 h-9 rounded-md overflow-hidden bg-gray-100 border border-gray-100 shrink-0 flex items-center justify-center">
-                                              {child.image ? (
-                                                <img
-                                                  src={apiHelper.image(
-                                                    child.image,
-                                                  )}
-                                                  alt={childName}
-                                                  className="w-full h-full object-cover"
-                                                />
-                                              ) : (
-                                                <span className="text-xs font-bold text-green-600">
-                                                  {childName?.charAt(0)}
-                                                </span>
-                                              )}
-                                            </div> */}
-
                                           {/* Child Name */}
 
                                           <span className="text-sm font-semibold text-gray-700 group-hover:text-green-700 truncate flex-1 text-left">
@@ -942,8 +934,6 @@ useEffect(() => {
             </div>
           </div>
 
-         
-
           {/* ====================================================== */}
           {/* RIGHT ICONS */}
           {/* ====================================================== */}
@@ -958,7 +948,7 @@ useEffect(() => {
               <Search className="h-5 w-5" />
             </button>
 
-              {/* ================================================== */}
+            {/* ================================================== */}
             {/* DESKTOP EXPANDABLE SEARCH */}
             {/* ================================================== */}
 
@@ -1033,26 +1023,6 @@ useEffect(() => {
                           <User className="h-4 w-4" />
                           My Profile
                         </Link>
-
-                        {!isVendorLoggedIn ? (
-                          <Link
-                            to="/vendor-login"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-                          >
-                            <Store className="h-4 w-4" />
-                            Vendor Login
-                          </Link>
-                        ) : (
-                          <Link
-                            to="/vendor-profile"
-                            onClick={() => setUserMenuOpen(false)}
-                            className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-                          >
-                            <Store className="h-4 w-4" />
-                            Vendor Profile
-                          </Link>
-                        )}
 
                         <Link
                           to="/orders"
@@ -1130,15 +1100,6 @@ useEffect(() => {
                         >
                           <Store className="h-4 w-4" />
                           My Profile
-                        </Link>
-
-                        <Link
-                          to="/login"
-                          onClick={() => setUserMenuOpen(false)}
-                          className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-700 hover:bg-green-50 hover:text-green-600 transition-colors"
-                        >
-                          <LogIn className="h-4 w-4" />
-                          User Login
                         </Link>
                       </div>
 
@@ -1223,7 +1184,7 @@ useEffect(() => {
                         className="flex gap-3 p-4 border-b border-gray-50 hover:bg-gray-50 transition-colors"
                       >
                         <img
-                   src={apiHelper.getImageUrl(item.image)}
+                          src={apiHelper.getImageUrl(item.image)}
                           alt={item.name}
                           className="w-16 h-16 rounded-lg object-cover bg-gray-100 shrink-0"
                         />
@@ -1503,10 +1464,6 @@ useEffect(() => {
             {/* PROFILE MENU */}
             {/* ================================================== */}
 
-                    {/* ================================================== */}
-            {/* PROFILE MENU */}
-            {/* ================================================== */}
-
             {isAuthenticated && (
               <div className="border-t-2 border-dashed border-gray-200 pt-4">
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3 px-2">
@@ -1524,32 +1481,6 @@ useEffect(() => {
 
                   <span className="font-semibold flex-1">My Profile</span>
                 </Link>
-
-                {!isVendorLoggedIn ? (
-                  <Link
-                    to="/vendor-login"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group hover:bg-green-700 hover:text-white hover:shadow-xl hover:shadow-green-700/20 hover:scale-[1.02] transform mb-1"
-                  >
-                    <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors duration-300">
-                      <Store className="h-5 w-5 text-green-600 group-hover:text-white" />
-                    </div>
-
-                    <span className="font-semibold flex-1">Vendor Login</span>
-                  </Link>
-                ) : (
-                  <Link
-                    to="/vendor-profile"
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group hover:bg-green-700 hover:text-white hover:shadow-xl hover:shadow-green-700/20 hover:scale-[1.02] transform mb-1"
-                  >
-                    <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors duration-300">
-                      <Store className="h-5 w-5 text-green-600 group-hover:text-white" />
-                    </div>
-
-                    <span className="font-semibold flex-1">Vendor Profile</span>
-                  </Link>
-                )}
 
                 <Link
                   to="/orders"
@@ -1603,18 +1534,7 @@ useEffect(() => {
                   <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors duration-300">
                     <Store className="h-5 w-5 text-green-600 group-hover:text-white" />
                   </div>
-                  <span className="font-semibold flex-1">Vendor Profile</span>
-                </Link>
-
-                <Link
-                  to="/login"
-                  onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group hover:bg-green-700 hover:text-white hover:shadow-xl hover:shadow-green-700/20 hover:scale-[1.02] transform mb-1"
-                >
-                  <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors duration-300">
-                    <LogIn className="h-5 w-5 text-green-600 group-hover:text-white" />
-                  </div>
-                  <span className="font-semibold flex-1">User Login</span>
+                  <span className="font-semibold flex-1">My Profile</span>
                 </Link>
               </div>
             )}
@@ -1627,19 +1547,21 @@ useEffect(() => {
                 Quick Links
               </p>
 
-              <Link
-                to="Orders"
-                onClick={() => setMobileMenuOpen(false)}
-                className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group hover:bg-green-700 hover:text-white hover:shadow-xl hover:shadow-green-700/20 hover:scale-[1.02] transform"
-              >
-                <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors duration-300">
-                  <MapPin className="h-5 w-5 text-green-600 group-hover:text-white" />
-                </div>
+              {isAuthenticated && (
+                <Link
+                  to="Orders"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-300 group hover:bg-green-700 hover:text-white hover:shadow-xl hover:shadow-green-700/20 hover:scale-[1.02] transform"
+                >
+                  <div className="p-1.5 rounded-lg bg-gray-100 group-hover:bg-white/20 transition-colors duration-300">
+                    <MapPin className="h-5 w-5 text-green-600 group-hover:text-white" />
+                  </div>
 
-                <span className="font-semibold flex-1">Track Order</span>
+                  <span className="font-semibold flex-1">Track Order</span>
 
-                <ChevronRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
-              </Link>
+                  <ChevronRight className="h-4 w-4 opacity-0 -translate-x-2 group-hover:opacity-100 group-hover:translate-x-0 transition-all duration-300" />
+                </Link>
+              )}
 
               <Link
                 to="/help"
@@ -1697,7 +1619,7 @@ useEffect(() => {
           {/* MOBILE LOGOUT */}
           {/* ================================================== */}
 
-                  {(isAuthenticated || isVendorLoggedIn) && (
+          {(isAuthenticated || isVendorLoggedIn) && (
             <div className="shrink-0 border-t border-gray-200 bg-white px-4 py-4">
               <button
                 onClick={handleFullLogout}
