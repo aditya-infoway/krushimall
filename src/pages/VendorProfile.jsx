@@ -560,24 +560,48 @@ const VendorProfile = () => {
   ];
 
   // Tabs for vendor
-  const tabs = [
-    { id: "profile", label: "Profile", icon: User },
+// Spare Parts vendors manage listings on a separate panel app.
+// Local dev vs live server URL differ, so pick based on hostname.
+// Spare Parts vendors manage listings on a separate panel app.
+// Local dev vs live server URL differ, so pick based on hostname.
+const SPARE_PARTS_PANEL_URL =
+  window.location.hostname === "localhost" ||
+  window.location.hostname === "127.0.0.1"
+    ? "http://localhost:5174/krushimall-vendor/"
+    : "http://31.97.237.210/krushimall-vendor";
 
-    ...(vendorData.vendorType === "vehicle" && vendorData.vehicleType === "new"
-      ? [{ id: "products", label: "New Vehicle", icon: Package }]
-      : []),
+// Normalize helper — backend se vendorType kabhi "spare-parts",
+// kabhi "Spare Parts", kabhi "spare_parts" aa sakta hai; sabko
+// ek jaisa bana kar compare karte hain.
+const normalizedVendorType = (vendorData.vendorType || "")
+  .toLowerCase()
+  .replace(/[\s_-]/g, "");
 
-    ...(vendorData.vendorType === "vehicle" && vendorData.vehicleType === "used"
-      ? [{ id: "usedProducts", label: "Used Vehicle", icon: Truck }]
-      : []),
+const isSpareParts = normalizedVendorType === "spareparts";
 
-    ...(vendorData.vendorType === "equipment"
-      ? [{ id: "equipmentProducts", label: "Equipment", icon: Wrench }]
-      : []),
+// Tabs for vendor
+const tabs = [
+  { id: "profile", label: "Profile", icon: User },
 
-    { id: "enquiries", label: "Enquiry Register", icon: MessageSquare },
-    { id: "todayFollowup", label: "Today Follow up", icon: Clock },
-  ];
+  ...(isSpareParts
+    ? [{ id: "spareDashboard", label: "Dashboard", icon: Store }]
+    : []),
+
+  ...(vendorData.vendorType === "vehicle" && vendorData.vehicleType === "new"
+    ? [{ id: "products", label: "New Vehicle", icon: Package }]
+    : []),
+
+  ...(vendorData.vendorType === "vehicle" && vendorData.vehicleType === "used"
+    ? [{ id: "usedProducts", label: "Used Vehicle", icon: Truck }]
+    : []),
+
+  ...(vendorData.vendorType === "equipment"
+    ? [{ id: "equipmentProducts", label: "Equipment", icon: Wrench }]
+    : []),
+
+  { id: "enquiries", label: "Enquiry Register", icon: MessageSquare },
+  { id: "todayFollowup", label: "Today Follow up", icon: Clock },
+];
 
   const fetchEnquiries = async () => {
     try {
@@ -716,7 +740,7 @@ const VendorProfile = () => {
     localStorage.removeItem("isVendorLoggedIn");
     window.dispatchEvent(new Event("vendorAuthChanged")); // add this
 
-    navigate("/vendor-login", { replace: true });
+    navigate("/login", { replace: true });
   };
 
   const handleCancel = () => {
@@ -2298,7 +2322,7 @@ const VendorProfile = () => {
               </div>
             )}
 
-            {/* Orders Tab */}
+          
             {activeTab === "orders" && (
               <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4 sm:p-6 lg:p-8">
                 <div className="flex items-center justify-between mb-6">
@@ -2323,7 +2347,33 @@ const VendorProfile = () => {
                 </div>
               </div>
             )}
+{/* Spare Parts Dashboard Redirect Tab */}
+{activeTab === "spareDashboard" && (
+  <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-10 text-center">
+    <div className="w-16 h-16 bg-green-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
+      <Store className="h-8 w-8 text-green-600" />
+    </div>
 
+    <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">
+      Spare Parts Vendor Dashboard
+    </h2>
+
+    <p className="text-sm text-gray-500 mb-6 max-w-md mx-auto">
+      Manage your spare parts listings, orders and inventory from the
+      dedicated vendor panel. Click the link below to continue.
+    </p>
+
+    <a
+      href={SPARE_PARTS_PANEL_URL}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center justify-center gap-2 bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-3 rounded-xl transition-all shadow-md"
+    >
+      Go to Dashboard
+      <ChevronRight className="h-4 w-4" />
+    </a>
+  </div>
+)}
             {/* Settings Tab */}
             {activeTab === "settings" && (
               <div className="space-y-6">

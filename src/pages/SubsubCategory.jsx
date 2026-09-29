@@ -194,14 +194,14 @@ const filteredSubSubCategories = subSubCategories.filter((item) => {
       </div>
 
       <div className="w-full xl:max-w-[1600px] 2xl:max-w-[1720px] mx-auto px-4 sm:px-6 lg:px-20 xl:px-24 2xl:px-46  pb-6">
-         <div className=" flex items-center justify-between mb-3">
-        <Link
+         <div className=" flex items-center justify-end ">
+        {/* <Link
           to={backTo}
           className="inline-flex items-center gap-1.5 text-sm text-gray-500 hover:text-green-600 "
         >
           <ArrowLeft className="h-4 w-4" />
           Back to {backLabel}
-        </Link>
+        </Link> */}
   <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 px-4 py-2 cursor-pointer bg-white border border-gray-200 rounded-lg hover:border-green-400 hover:bg-green-50 hover:shadow-md transition-all duration-300 group shrink-0"

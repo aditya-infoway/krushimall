@@ -31,22 +31,30 @@ const Wishlist = () => {
       maximumFractionDigits: 0,
     }).format(price);
   };
-
-  const handleAddToCart = (product) => {
-    if (!isAuthenticated) {
-      navigate("/login?redirect=/wishlist");
-      return;
+ const getDetailLink = (item) => {
+    switch (item.type) {
+      case "variant":
+        return `/tractor/${item.id}`;
+      case "usedVariant":
+        return `/used-tractor/${item.id}`;
+      case "equipment":
+        return `/equipment/${item.id}`;
+      default:
+        return `/product/${item.id}`;
     }
-
-    if (product.type === "variant") {
-      // Tractor/variant items cart me nahi jaate — enquiry-based flow hai
-      return;
-    }
-
-    addToCart(product, 1);
-    removeFromWishlist(product.id, product.type); // ✅ type add kiya
-    showCartAddedToast(product.name);
   };
+const handleAddToCart = (product) => {
+  if (!isAuthenticated) {
+    navigate("/login?redirect=/wishlist");
+    return;
+  }
+
+  if (product.type !== "product") return;
+
+  addToCart(product, 1);
+  removeFromWishlist(product.id, product.type);
+  showCartAddedToast(product.name);
+};
 
   if (wishlistItems.length === 0) {
     return (
@@ -116,7 +124,7 @@ const Wishlist = () => {
             >
               {/* Image */}
               <Link
-                to={`/product/${product.id}`}
+             to={getDetailLink(product)}
                 className="block relative bg-gray-50"
               >
                 <div className="aspect-square overflow-hidden">
@@ -164,7 +172,7 @@ const Wishlist = () => {
                     <div className="text-xs text-gray-400 uppercase tracking-wider mb-0.5">
                       {product.brand}
                     </div>
-                    <Link to={`/product/${product.id}`}>
+                <Link to={getDetailLink(product)}>
                       <h3 className="font-medium text-gray-800 hover:text-green-600 transition-colors text-sm line-clamp-2 leading-snug">
                         {product.name}
                       </h3>
