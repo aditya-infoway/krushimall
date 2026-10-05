@@ -1510,24 +1510,29 @@ const tabs = [
                               </td>
                               <td className="px-4 py-3">{item.status}</td>
                               <td className="px-4 py-3">
-                                <div className="flex justify-center gap-2">
-                                  <button
-                                    onClick={() =>
-                                      navigate(
-                                        `/vendor/edit-product/${item.id}`,
-                                      )
-                                    }
-                                    className="px-3 py-1 bg-blue-500 text-white rounded-lg cursor-pointer"
-                                  >
-                                    Edit
-                                  </button>
-                                  <button
-                                    onClick={() => handleDelete(item.id)}
-                                    className="px-3 py-1 bg-red-500 text-white rounded-lg cursor-pointer"
-                                  >
-                                    Delete
-                                  </button>
-                                </div>
+                               <div className="flex justify-center items-center gap-2">
+  {/* Edit */}
+  <button
+    type="button"
+    onClick={() => navigate(`/vendor/edit-product/${item.id}`)}
+    title="Edit Product"
+    aria-label="Edit Product"
+    className="w-9 h-9 flex items-center justify-center rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 transition-colors cursor-pointer"
+  >
+    <Edit3 className="w-4 h-4" />
+  </button>
+
+  {/* Delete */}
+  <button
+    type="button"
+    onClick={() => handleDelete(item.id)}
+    title="Delete Product"
+    aria-label="Delete Product"
+    className="w-9 h-9 flex items-center justify-center rounded-lg bg-red-50 text-red-600 hover:bg-red-100 hover:text-red-700 transition-colors cursor-pointer"
+  >
+    <Trash2 className="w-4 h-4" />
+  </button>
+</div>
                               </td>
                             </tr>
                           ))}

@@ -46,7 +46,7 @@ const TractorShowcase = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await apiHelper.get(  "/website-variants?status=ACTIVE&isUpcoming=false");
+        const response = await apiHelper.get(  "/website-variants?status=ACTIVE&isUpcoming=false&publicOnly=true");
 
         const tractorList = response.data || [];
 

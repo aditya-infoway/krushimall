@@ -73,18 +73,29 @@ export default function PreviewSubmit({
 
 const loadData = async () => {
   try {
-    const id = isEdit
-      ? productData?.id
-      : localStorage.getItem("vendorProductId");
+    const id = productData?.id || localStorage.getItem("vendorProductId");
 
-    if (!id) return;
+    // Auto mode, abhi save nahi hua: source data hi preview me dikhao
+    if (!id) {
+      if (productData) setTractorData(productData);
+      return;
+    }
 
-    const res = await apiHelper.get(`/vendor-web/website-variant/${id}`);
+    let res;
+    try {
+      res = await apiHelper.get(`/vendor-website-variant/${id}`);
+    } catch (err) {
+      // Stale/deleted id: productData pe fallback
+      if (err?.response?.status === 404 && productData) {
+        setTractorData(productData);
+        return;
+      }
+      throw err;
+    }
+
     setTractorData(res.data);
 
-    // ✅ Edit mode: agar record pehle se agreed/submitted tha,
-    // to checkbox ko automatically checked kar do — dobara manually
-    // check karwane ki zaroorat nahi
+    // Edit mode: pehle se agreed tha to checkbox checked rakho
     const variant = res.data?.data ?? res.data;
     if (isEdit && variant?.agreed) {
       setAgreed(true);
