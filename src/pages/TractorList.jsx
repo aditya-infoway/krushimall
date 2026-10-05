@@ -76,15 +76,17 @@ const TractorList = () => {
   useEffect(() => {
     const fetchNewTractors = async () => {
       try {
-        let endpoint = "/website-variants?status=ACTIVE&isUpcoming=false";
+      let endpoint =
+  "/website-variants?status=ACTIVE&isUpcoming=false&publicOnly=true";
 
-        if (section === "upcoming") {
-          endpoint = "/website-variants?status=ACTIVE&isUpcoming=true";
-        } else if (section === "latest") {
-          endpoint = "/website-variants/latest";
-        } else if (section === "popular") {
-          endpoint = "/website-variants/popular";
-        }
+if (section === "upcoming") {
+  endpoint =
+    "/website-variants?status=ACTIVE&isUpcoming=true&publicOnly=true";
+} else if (section === "latest") {
+  endpoint = "/website-variants/latest";
+} else if (section === "popular") {
+  endpoint = "/website-variants/popular";
+}
 
         const response = await apiHelper.get(endpoint);
         const tractorList = response.data || [];
