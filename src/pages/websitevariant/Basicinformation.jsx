@@ -3,7 +3,7 @@ import { Controller, useForm } from "react-hook-form";
 import Select from "react-select";
 import { Country, State, City } from "country-state-city";
 import toast from "react-hot-toast";
-import { Listbox, Transition } from "@headlessui/react";
+import {  Transition } from "@headlessui/react";
 import { MagnifyingGlassIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
@@ -13,7 +13,6 @@ import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { BasicInformationSchema } from "./schema";
 import apiHelper from "../../utils/apiHelper";
 import { Combobox } from "@headlessui/react";
-
 
 const tractorStatusOptions = [
   { label: "Available", value: "available" },
@@ -71,8 +70,8 @@ const selectStyles = {
     backgroundColor: state.isSelected
       ? "#16a34a"
       : state.isFocused
-        ? "#f0fdf4"
-        : "white",
+      ? "#f0fdf4"
+      : "white",
     color: state.isSelected ? "white" : "#111827",
     cursor: "pointer",
     "&:active": {
@@ -121,7 +120,9 @@ const Input = ({
         )}
         <input
           {...props}
-          className={`w-full ${Icon ? "pl-10" : "px-4"} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+          className={`w-full ${
+            Icon ? "pl-10" : "px-4"
+          } pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
             error ? "border-red-300 bg-red-50" : "border-gray-200"
           } ${props.disabled ? "bg-gray-50 cursor-not-allowed" : ""}`}
         />
@@ -156,7 +157,9 @@ const Textarea = ({
         )}
         <textarea
           {...props}
-          className={`w-full ${Icon ? "pl-10" : "px-4"} pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
+          className={`w-full ${
+            Icon ? "pl-10" : "px-4"
+          } pr-4 py-3 text-sm border rounded-xl bg-white outline-none transition-all focus:ring-2 focus:ring-green-600 focus:border-green-600 ${
             error ? "border-red-300 bg-red-50" : "border-gray-200"
           } ${props.disabled ? "bg-gray-50 cursor-not-allowed" : ""}`}
         />
@@ -187,14 +190,15 @@ const Button = ({
   return (
     <button
       type={type}
-      className={`${baseStyles} ${variants[variant] || variants.primary} ${className}`}
+      className={`${baseStyles} ${
+        variants[variant] || variants.primary
+      } ${className}`}
       {...props}
     >
       {children}
     </button>
   );
 };
-
 
 const CustomListbox = ({
   data,
@@ -207,7 +211,7 @@ const CustomListbox = ({
 }) => {
   const [query, setQuery] = useState("");
   const buttonRef = useRef(null);
- 
+
   const filteredData =
     query === ""
       ? data
@@ -216,7 +220,7 @@ const CustomListbox = ({
             .toLowerCase()
             .includes(query.toLowerCase()),
         );
- 
+
   return (
     <div>
       {label && (
@@ -252,7 +256,7 @@ const CustomListbox = ({
               />
             </Combobox.Button>
           </div>
- 
+
           <Transition
             as={Fragment}
             leave="transition ease-in duration-100"
@@ -303,8 +307,6 @@ const CustomListbox = ({
     </div>
   );
 };
- 
- 
 
 // Custom DatePicker Component - matches vendor profile theme
 
@@ -447,8 +449,8 @@ const DatePicker = ({
                       !d
                         ? "invisible"
                         : selected
-                          ? "bg-green-600 text-white font-medium"
-                          : "text-gray-700 hover:bg-green-50 hover:text-green-700"
+                        ? "bg-green-600 text-white font-medium"
+                        : "text-gray-700 hover:bg-green-50 hover:text-green-700"
                     }`}
                   >
                     {d}
@@ -483,6 +485,7 @@ export default function BasicInformation({
   onProductSaved,
   productData,
   isEdit,
+  // onAutoFill,
 }) {
   const navigate = useNavigate();
   const {
@@ -512,7 +515,9 @@ export default function BasicInformation({
   const modelId = watch("modelId");
   const modelYearId = watch("modelYearId");
   const selectedStates = watch("availableStates") || [];
-
+  const [mode] = useState("manual"); // "manual" | "auto"
+  const [selectableVariants, setSelectableVariants] = useState([]);
+  const [selectedSourceId] = useState(null);
   const filteredBrands = brands.filter(
     (item) => Number(item.categoryId) === Number(categoryId),
   );
@@ -529,7 +534,22 @@ export default function BasicInformation({
   useEffect(() => {
     loadMasters();
   }, []);
+  useEffect(() => {
+    if (mode !== "auto" || selectableVariants.length) return;
+    (async () => {
+      try {
+        const res = await apiHelper.get(
+          "/vendor-web/website-variant/selectable",
+        );
+        setSelectableVariants(res?.data?.data || res?.data || res || []);
+      } catch (error) {
+        console.error(error);
+        toast.error("Failed to load your website variants");
+      }
+    })();
+  }, [mode]);
 
+ 
   const loadMasters = async () => {
     try {
       const [categoryRes, brandRes, modelRes, modelYearRes, variantRes] =
@@ -689,52 +709,72 @@ export default function BasicInformation({
         currentStep: 0,
       };
 
-     let res;
-    const existingProductId = productData?.id
-      ? productData.id
-      : localStorage.getItem("vendorProductId");
-
-    if (existingProductId) {
-      try {
-        res = await apiHelper.put(
-          `/vendor-web/website-variant/${existingProductId}`,
-          payload,
+      // Create ke time: Auto me source ka poora data + entryMode + clonedFromId
+      const buildCreatePayload = () => {
+        const base = {
+          ...(mode === "auto" ? productData : {}),
+          ...payload,
+          entryMode: mode === "auto" ? "AUTO" : "MANUAL",
+          clonedFromId: mode === "auto" ? selectedSourceId : null,
+        };
+        ["id", "category", "brand", "model", "variant", "modelYear"].forEach(
+          (k) => delete base[k],
         );
-      } catch (err) {
-        // Stale/deleted record — fall back to creating a fresh one
-        if (err?.response?.status === 404) {
-          res = await apiHelper.post("/vendor-web/website-variant", payload);
-          localStorage.setItem("vendorProductId", res.data.id.toString());
-        } else {
-          throw err;
+        return base;
+      };
+
+      let res;
+      // Auto me stale localStorage id use nahi karna
+      const existingProductId =
+        productData?.id ||
+        (mode === "manual" ? localStorage.getItem("vendorProductId") : null);
+
+      if (existingProductId) {
+        try {
+          res = await apiHelper.put(
+            `/vendor-web/website-variant/${existingProductId}`,
+            payload,
+          );
+        } catch (err) {
+          // Stale/deleted record: fresh create
+          if (err?.response?.status === 404) {
+            res = await apiHelper.post(
+              "/vendor-web/website-variant",
+              buildCreatePayload(),
+            );
+            localStorage.setItem("vendorProductId", res.data.id.toString());
+          } else {
+            throw err;
+          }
         }
+      } else {
+        res = await apiHelper.post(
+          "/vendor-web/website-variant",
+          buildCreatePayload(),
+        );
+        localStorage.setItem("vendorProductId", res.data.id.toString());
       }
-    } else {
-      res = await apiHelper.post("/vendor-web/website-variant", payload);
-      localStorage.setItem("vendorProductId", res.data.id.toString());
+
+      toast.success("Basic information saved!");
+
+      onProductSaved?.({
+        ...payload,
+        id: res?.data?.id || existingProductId,
+      });
+
+      if (onComplete) {
+        onComplete(step);
+      }
+
+      setCurrentStep(step + 1);
+    } catch (error) {
+      console.error(error);
+      toast.error(
+        error.response?.data?.message ||
+          "Failed to save basic information. Please try again.",
+      );
     }
-
-    toast.success("Basic information saved!");
-
-    onProductSaved?.({
-      ...payload,
-      id: res?.data?.id || existingProductId,
-    });
-
-    if (onComplete) {
-      onComplete(step);
-    }
-
-    setCurrentStep(step + 1);
-  } catch (error) {
-    console.error(error);
-    toast.error(
-      error.response?.data?.message ||
-        "Failed to save basic information. Please try again.",
-    );
-  }
-};
-
+  };
   return (
     <div className="min-h-screen bg-gray-50 py-8 md:py-12 lg:py-16">
       <div className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -755,6 +795,7 @@ export default function BasicInformation({
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">
                   Product Classification
                 </h2>
+               
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
                   <div className="flex items-center gap-3 mt-2">
                     <input

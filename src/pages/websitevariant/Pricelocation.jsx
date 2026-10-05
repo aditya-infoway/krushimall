@@ -305,17 +305,27 @@ export default function PriceLocation({
   useEffect(() => {
     const fetchPriceLocation = async () => {
       try {
-        const productId = isEdit
-          ? productData?.id
-          : localStorage.getItem("vendorProductId");
+      const productId = productData?.id || localStorage.getItem("vendorProductId");
 
-        if (!productId) return;
+let data;
 
-        const res = await apiHelper.get(
-          `/vendor-web/website-variant/${productId}`,
-        );
-
-        const data = res.data.data || res.data;
+if (productId) {
+  try {
+    const res = await apiHelper.get(`/vendor-web/website-variant/${productId}`);
+    data = res.data.data || res.data;
+  } catch (err) {
+    // Stale/deleted id: Auto mode me source ka data use karo
+    if (err?.response?.status === 404 && productData) {
+      data = productData;
+    } else {
+      throw err;
+    }
+  }
+} else if (productData) {
+  data = productData;
+} else {
+  return;
+}
 
         reset({
           exShowroomPrice: data.exShowroomPrice || "",

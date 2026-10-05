@@ -16,13 +16,14 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 const STEPS = [
-  { id: 0, title: 'Basic Info', icon: Package },
-  { id: 1, title: 'Engine Details', icon: Settings },
-  { id: 2, title: 'Transmission', icon: Truck },
-  { id: 3, title: 'Hydraulic Tyers', icon: Image },
-  { id: 4, title: 'Pricing', icon: DollarSign },
-  { id: 5, title: 'Documentation', icon: FileText },
-  { id: 6, title: 'Preview', icon: Shield },
+ { id: 0, title: 'Entry type', icon: Package },
+  { id: 1, title: 'Basic Info', icon: Package },
+  { id: 2, title: 'Engine Details', icon: Settings },
+  { id: 3, title: 'Transmission', icon: Truck },
+  { id: 4, title: 'Hydraulic Tyers', icon: Image },
+  { id: 5, title: 'Pricing', icon: DollarSign },
+  { id: 6, title: 'Documentation', icon: FileText },
+  { id: 7, title: 'Preview', icon: Shield },
 ];
 
 // Route to navigate back to when the back button is clicked
