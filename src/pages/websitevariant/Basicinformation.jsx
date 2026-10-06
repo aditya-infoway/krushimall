@@ -3,7 +3,7 @@ import { Controller, useForm } from "react-hook-form";
 import Select from "react-select";
 import { Country, State, City } from "country-state-city";
 import toast from "react-hot-toast";
-import {  Transition } from "@headlessui/react";
+import { Transition } from "@headlessui/react";
 import { MagnifyingGlassIcon, CheckIcon } from "@heroicons/react/24/outline";
 import { Fragment } from "react";
 import { useNavigate } from "react-router-dom";
@@ -485,7 +485,7 @@ export default function BasicInformation({
   onProductSaved,
   productData,
   isEdit,
-  // onAutoFill,
+  entry, // ✅ { mode: "manual" | "auto", sourceId } — parent (WebsiteVariant) se aata hai
 }) {
   const navigate = useNavigate();
   const {
@@ -515,9 +515,14 @@ export default function BasicInformation({
   const modelId = watch("modelId");
   const modelYearId = watch("modelYearId");
   const selectedStates = watch("availableStates") || [];
-  const [mode] = useState("manual"); // "manual" | "auto"
-  const [selectableVariants, setSelectableVariants] = useState([]);
-  const [selectedSourceId] = useState(null);
+
+  // ✅ FIX: pehle yahan `useState("manual")` hardcoded tha, isliye Auto select
+  // karne par bhi source ka data server par copy nahi hota tha (sirf basic info
+  // wala blank record banta tha). Ab Entry Type step ka selection use hota hai.
+  // Edit mode me hamesha manual (update flow) maano.
+  const mode = isEdit ? "manual" : entry?.mode || "manual"; // "manual" | "auto"
+  const selectedSourceId = isEdit ? null : entry?.sourceId ?? null;
+
   const filteredBrands = brands.filter(
     (item) => Number(item.categoryId) === Number(categoryId),
   );
@@ -534,22 +539,7 @@ export default function BasicInformation({
   useEffect(() => {
     loadMasters();
   }, []);
-  useEffect(() => {
-    if (mode !== "auto" || selectableVariants.length) return;
-    (async () => {
-      try {
-        const res = await apiHelper.get(
-          "/vendor-web/website-variant/selectable",
-        );
-        setSelectableVariants(res?.data?.data || res?.data || res || []);
-      } catch (error) {
-        console.error(error);
-        toast.error("Failed to load your website variants");
-      }
-    })();
-  }, [mode]);
 
- 
   const loadMasters = async () => {
     try {
       const [categoryRes, brandRes, modelRes, modelYearRes, variantRes] =
@@ -571,11 +561,8 @@ export default function BasicInformation({
     }
   };
 
-  // ✅ Fix: pehle ye sirf `isEdit` mode me chalta tha (`if (!isEdit || !productData) return;`).
-  // Ab sirf `productData` ki presence check karte hain — parent (WebsiteVariant) ab
-  // create-flow me bhi step 0 save hone ke baad apna `productData` state update karta
-  // hai (onProductSaved callback se), isliye "Previous" dabake wapas is step par aane
-  // par bhi form yahi se refill ho jayega, koi extra fetch call ki zaroorat nahi.
+  // productData ki presence par form refill hota hai (edit, auto-fill, ya
+  // create-flow me Previous dabake wapas aane par).
   useEffect(() => {
     if (!productData) return;
 
@@ -710,6 +697,7 @@ export default function BasicInformation({
       };
 
       // Create ke time: Auto me source ka poora data + entryMode + clonedFromId
+      // (productData = handleAutoFill se aaya source copy, id etc. already hata hua)
       const buildCreatePayload = () => {
         const base = {
           ...(mode === "auto" ? productData : {}),
@@ -795,7 +783,7 @@ export default function BasicInformation({
                 <h2 className="text-lg font-semibold text-gray-900 mb-6">
                   Product Classification
                 </h2>
-               
+
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-5">
                   <div className="flex items-center gap-3 mt-2">
                     <input
