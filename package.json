@@ -21,6 +21,7 @@
     "axios": "^1.18.0",
     "country-state-city": "^3.2.1",
     "dayjs": "^1.11.21",
+    "exceljs": "^4.4.0",
     "firebase": "^12.16.0",
     "framer-motion": "^12.42.2",
     "leaflet": "^1.9.4",
@@ -35,6 +36,7 @@
     "react-select": "^5.10.2",
     "react-sticky-box": "^2.0.5",
     "tailwindcss": "^4.3.0",
+    "xlsx": "^0.18.5",
     "yup": "^1.7.1"
   },
   "devDependencies": {

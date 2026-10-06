@@ -15,6 +15,9 @@ import apiHelper from "../../utils/apiHelper";
 // Pricing, Documentation, Preview
 const TOTAL_STEPS = 8;
 
+// Edit mode me Entry Type (step 0) skip hota hai, Basic Info (step 1) se start
+const FIRST_EDIT_STEP = 1;
+
 // Auto mode: in fields ko copy nahi karna
 const AUTOFILL_EXCLUDED_KEYS = [
   "id",
@@ -31,15 +34,14 @@ const AUTOFILL_EXCLUDED_KEYS = [
   "enquiryCount",
   "entryMode",
   "clonedFromId",
-  
 ];
 
 const WebsiteVariant = () => {
   const { id } = useParams();
   const isEdit = !!id;
 
-  // Edit me Entry Type (step 0) skip
-const [step, setStep] = useState(0);
+  // ✅ Edit me Entry Type (step 0) skip -> seedha Basic Info se start
+  const [step, setStep] = useState(isEdit ? FIRST_EDIT_STEP : 0);
 
   const [completedSteps, setCompletedSteps] = useState(
     isEdit ? Array.from({ length: TOTAL_STEPS }, (_, i) => i) : [],
@@ -63,18 +65,26 @@ const [step, setStep] = useState(0);
     loadProduct();
   }, [id]);
 
-   const handleStepChange = (newStep) => {
+  const handleStepChange = (newStep) => {
+    // ✅ Edit mode me step 0 (Entry Type) par kabhi wapas nahi jaana
+    if (isEdit && newStep < FIRST_EDIT_STEP) return;
+
     // Always allow going backwards
     if (newStep > step && !isEdit && !productData?.id && newStep !== step + 1) {
-    return;
-  }
-
+      return;
+    }
 
     // Sirf agla step
     if (newStep === step + 1) {
       setCompletedSteps((prev) =>
         prev.includes(step) ? prev : [...prev, step],
       );
+      setStep(newStep);
+      return;
+    }
+
+    // ✅ Edit mode: koi bhi step directly clickable
+    if (isEdit) {
       setStep(newStep);
       return;
     }
@@ -137,7 +147,7 @@ const [step, setStep] = useState(0);
       completedSteps={completedSteps}
       isEdit={isEdit}
     >
-     {step === 0 && <EntryType {...commonProps} />}
+      {step === 0 && !isEdit && <EntryType {...commonProps} />}
       {step === 1 && <BasicInformation {...commonProps} />}
       {step === 2 && <EngineDetails {...commonProps} />}
       {step === 3 && <Transmission {...commonProps} />}

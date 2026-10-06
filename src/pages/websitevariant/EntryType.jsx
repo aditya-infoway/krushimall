@@ -1,13 +1,12 @@
-import { useEffect, useState,useRef } from "react";
+import { useEffect, useState, useRef, Fragment } from "react";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
-import apiHelper from "../../utils/apiHelper";
-// CustomListbox ko ek shared file me nikaal lo (ya yahan copy kar do)
-// import { CustomListbox } from "./CustomListbox";
+import { Combobox, Transition } from "@headlessui/react";
 import { MagnifyingGlassIcon, CheckIcon } from "@heroicons/react/24/outline";
-import { Combobox } from "@headlessui/react";
-import { Fragment } from "react";
-import { Listbox, Transition } from "@headlessui/react";
+import { PencilLine, Copy, ArrowRight, CheckCircle2 } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import apiHelper from "../../utils/apiHelper";
+
 const CustomListbox = ({
   data,
   value,
@@ -19,7 +18,7 @@ const CustomListbox = ({
 }) => {
   const [query, setQuery] = useState("");
   const buttonRef = useRef(null);
- 
+
   const filteredData =
     query === ""
       ? data
@@ -28,7 +27,7 @@ const CustomListbox = ({
             .toLowerCase()
             .includes(query.toLowerCase()),
         );
- 
+
   return (
     <div>
       {label && (
@@ -64,7 +63,7 @@ const CustomListbox = ({
               />
             </Combobox.Button>
           </div>
- 
+
           <Transition
             as={Fragment}
             leave="transition ease-in duration-100"
@@ -115,13 +114,28 @@ const CustomListbox = ({
     </div>
   );
 };
- 
+
+const ENTRY_MODES = [
+  {
+    value: "manual",
+    title: "Manual",
+    desc: "Fill in all product details yourself, starting from scratch.",
+    icon: PencilLine,
+  },
+  {
+    value: "auto",
+    title: "Auto",
+    desc: "Copy details from an existing website variant and edit them.",
+    icon: Copy,
+  },
+];
+
 export default function EntryType({
   step,
   setCurrentStep,
   onComplete,
   onAutoFill,
-  entry,        // { mode, sourceId } parent se
+  entry, // { mode, sourceId } parent se
   setEntry,
 }) {
   const navigate = useNavigate();
@@ -132,7 +146,9 @@ export default function EntryType({
     if (mode !== "auto" || selectable.length) return;
     (async () => {
       try {
-        const res = await apiHelper.get("/vendor-web/website-variant/selectable");
+        const res = await apiHelper.get(
+          "/vendor-web/website-variant/selectable",
+        );
         setSelectable(res?.data?.data || res?.data || res || []);
       } catch (e) {
         console.error(e);
@@ -146,6 +162,8 @@ export default function EntryType({
     label: `${v.productName || "Untitled"} (${v.variantCode || "-"})`,
     raw: v,
   }));
+
+  const selectedOption = options.find((o) => o.id === sourceId) || null;
 
   const changeMode = (m) => {
     setEntry({ mode: m, sourceId: null });
@@ -170,68 +188,132 @@ export default function EntryType({
   return (
     <div className="min-h-screen bg-gray-50 py-8 md:py-12 lg:py-16">
       <div className="w-full max-w-3xl mx-auto px-4">
-        <h1 className="text-2xl font-bold text-gray-900">Entry Type</h1>
-        <p className="text-sm text-gray-500 mt-1 mb-8">
-          Product kaise add karna hai?
-        </p>
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-gray-900">Entry Type</h1>
+          <p className="text-sm text-gray-500 mt-1">
+            Choose how you want to add this product
+          </p>
+        </div>
 
+        {/* Card (overflow-hidden nahi lagaya, warna dropdown cut ho jayega) */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 md:p-8 space-y-6">
           <div className="grid gap-4 sm:grid-cols-2">
-            {[
-              { value: "manual", title: "Manual", desc: "Shuru se saari details khud bharo" },
-              { value: "auto", title: "Auto", desc: "Vendor admin ke variant se details copy karo" },
-            ].map((o) => (
-              <label
-                key={o.value}
-                className={`cursor-pointer rounded-xl border p-4 transition-all ${
-                  mode === o.value
-                    ? "border-green-600 bg-green-50 ring-2 ring-green-600/20"
-                    : "border-gray-200 hover:border-green-300"
-                }`}
-              >
-                <div className="flex items-center gap-2">
+            {ENTRY_MODES.map((o) => {
+              const Icon = o.icon;
+              const active = mode === o.value;
+
+              return (
+                <label
+                  key={o.value}
+                  className={`group relative cursor-pointer rounded-2xl border-2 p-5 transition-all duration-200 ${
+                    active
+                      ? "border-green-600 bg-green-50 shadow-md shadow-green-100"
+                      : "border-gray-200 bg-white hover:border-green-300 hover:shadow-sm"
+                  }`}
+                >
+                  {/* Radio visually hidden, but accessible */}
                   <input
                     type="radio"
                     name="entryMode"
-                    checked={mode === o.value}
+                    checked={active}
                     onChange={() => changeMode(o.value)}
-                    className="h-4 w-4 text-green-600"
+                    className="sr-only"
                   />
-                  <span className="text-sm font-semibold text-gray-900">{o.title}</span>
-                </div>
-                <p className="mt-1 ml-6 text-xs text-gray-500">{o.desc}</p>
-              </label>
-            ))}
+
+                  {/* Selected check badge */}
+                  <AnimatePresence>
+                    {active && (
+                      <motion.span
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={{ scale: 1, opacity: 1 }}
+                        exit={{ scale: 0, opacity: 0 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute right-3 top-3 text-green-600"
+                      >
+                        <CheckCircle2 className="h-5 w-5" />
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+
+                  <div
+                    className={`flex h-11 w-11 items-center justify-center rounded-xl transition-colors ${
+                      active
+                        ? "bg-green-600 text-white"
+                        : "bg-gray-100 text-gray-500 group-hover:bg-green-100 group-hover:text-green-600"
+                    }`}
+                  >
+                    <Icon className="h-5 w-5" />
+                  </div>
+
+                  <p className="mt-4 text-base font-semibold text-gray-900">
+                    {o.title}
+                  </p>
+                  <p className="mt-1 text-xs leading-relaxed text-gray-500">
+                    {o.desc}
+                  </p>
+                </label>
+              );
+            })}
           </div>
 
-          {mode === "auto" && (
-            <div className="max-w-md">
-              <CustomListbox
-                data={options}
-                value={options.find((o) => o.id === sourceId) || null}
-                onChange={pickSource}
-                displayField="label"
-                placeholder="Select website variant"
-                label="Select Website Variant"
-              />
-            </div>
-          )}
+          {/* Auto mode: variant picker */}
+          <AnimatePresence initial={false}>
+            {mode === "auto" && (
+              <motion.div
+                key="auto-picker"
+                initial={{ opacity: 0, y: -8 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -8 }}
+                transition={{ duration: 0.2 }}
+                className="rounded-xl border border-gray-200 bg-gray-50 p-5"
+              >
+                <CustomListbox
+                  data={options}
+                  value={selectedOption}
+                  onChange={pickSource}
+                  displayField="label"
+                  placeholder="Select website variant"
+                  label="Select Website Variant"
+                />
+
+                {selectedOption ? (
+                  <div className="mt-3 flex items-start gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2">
+                    <CheckCircle2 className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />
+                    <p className="text-xs text-green-800">
+                      Details will be copied from{" "}
+                      <span className="font-semibold">
+                        {selectedOption.label}
+                      </span>
+                      . You can edit everything in the next steps.
+                    </p>
+                  </div>
+                ) : (
+                  <p className="mt-3 text-xs text-gray-500">
+                    Pick a variant to pre-fill all the steps.
+                  </p>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
 
-        <div className="mt-6 flex justify-between">
+        {/* Actions */}
+        <div className="mt-6 flex items-center justify-between">
           <button
             type="button"
             onClick={() => navigate(-1)}
-            className="px-6 py-3 rounded-xl text-sm font-semibold bg-white border border-gray-300 text-gray-700 hover:bg-gray-50"
+            className="cursor-pointer rounded-xl border border-gray-300 bg-white px-6 py-3 text-sm font-semibold text-gray-700 transition-all hover:bg-gray-50"
           >
             Cancel
           </button>
           <button
             type="button"
             onClick={handleNext}
-            className="px-6 py-3 rounded-xl text-sm font-semibold bg-green-600 text-white hover:bg-green-700 shadow-md"
+            className="flex cursor-pointer items-center gap-2 rounded-xl bg-green-600 px-6 py-3 text-sm font-semibold text-white shadow-md transition-all hover:bg-green-700"
           >
             Next
+            <ArrowRight className="h-4 w-4" />
           </button>
         </div>
       </div>

@@ -16,7 +16,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 
 const STEPS = [
- { id: 0, title: 'Entry type', icon: Package },
+  { id: 0, title: 'Entry type', icon: Package },
   { id: 1, title: 'Basic Info', icon: Package },
   { id: 2, title: 'Engine Details', icon: Settings },
   { id: 3, title: 'Transmission', icon: Truck },
@@ -34,6 +34,16 @@ const AddProductStepper = ({ children, currentStep, setCurrentStep, completedSte
   const stepperRef = useRef(null);
   const navigate = useNavigate();
 
+  // ✅ Edit mode me "Entry type" step hide, add mode me saare steps
+  const visibleSteps = isEdit ? STEPS.filter((s) => s.id !== 0) : STEPS;
+
+  // Mobile progress ke liye: visible list me current step ki position
+  const currentIndex = Math.max(
+    0,
+    visibleSteps.findIndex((s) => s.id === currentStep),
+  );
+  const currentStepData = visibleSteps[currentIndex];
+
   // Handle sticky behavior
   useEffect(() => {
     const handleScroll = () => {
@@ -48,18 +58,15 @@ const AddProductStepper = ({ children, currentStep, setCurrentStep, completedSte
   }, []);
 
   const handleStepClick = (stepId) => {
-    // Allow navigation only to completed steps or current step
     if (stepId === currentStep) return;
-    // ✅ Edit mode: har step directly clickable (completedSteps me sabhi already hain)
+    // ✅ Edit mode: har step directly clickable (Entry type already hidden)
     if (isEdit || completedSteps.includes(stepId) || stepId < currentStep) {
       setCurrentStep(stepId);
     }
   };
 
   const getStepStatus = (stepId) => {
-    // ✅ Current step ko hamesha priority do — warna edit mode me jab
-    // completedSteps me current step bhi included hota hai to wo
-    // "completed" (checkmark) dikhne lagta hai aur highlight kho jata hai
+    // ✅ Current step ko hamesha priority do
     if (stepId === currentStep) return 'current';
     if (completedSteps.includes(stepId)) return 'completed';
     return 'upcoming';
@@ -67,23 +74,18 @@ const AddProductStepper = ({ children, currentStep, setCurrentStep, completedSte
 
   const isStepAccessible = (stepId) => {
     if (stepId === currentStep) return true;
-    // ✅ Edit mode: sabhi steps accessible
+    // ✅ Edit mode: sabhi visible steps accessible
     if (isEdit) return true;
     if (completedSteps.includes(stepId)) return true;
     if (stepId < currentStep) return true;
     return false;
   };
 
-  // Header row: page title on left, "Back to List" button on right, same on every step
+  // Header row: "Back to List" button on right, same on every step
   const renderHeader = () => (
     <div className=" px-4 sm:px-6 lg:px-8 pt-8">
       <div className="w-full max-w-6xl mx-auto flex items-start justify-between gap-4">
-        <div>
-          {/* <h1 className="text-2xl font-bold text-gray-900">Add New Product</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Fill in the details below to list your product
-          </p> */}
-        </div>
+        <div />
         <button
           type="button"
           onClick={() => navigate(VENDOR_PRODUCTS_ROUTE)}
@@ -103,22 +105,22 @@ const AddProductStepper = ({ children, currentStep, setCurrentStep, completedSte
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-2">
             <span className="text-sm font-semibold text-gray-900">
-              Step {currentStep + 1}
+              Step {currentIndex + 1}
             </span>
             <ChevronRight className="h-4 w-4 text-gray-400" />
             <span className="text-sm text-gray-600">
-              {STEPS[currentStep].title}
+              {currentStepData?.title}
             </span>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <span className="text-xs text-gray-500">
-            {currentStep + 1} of {STEPS.length}
+            {currentIndex + 1} of {visibleSteps.length}
           </span>
           <div className="w-16 h-1 bg-gray-200 rounded-full overflow-hidden">
             <div 
               className="h-full bg-green-600 rounded-full transition-all duration-500"
-              style={{ width: `${((currentStep + 1) / STEPS.length) * 100}%` }}
+              style={{ width: `${((currentIndex + 1) / visibleSteps.length) * 100}%` }}
             />
           </div>
         </div>
@@ -142,7 +144,7 @@ const AddProductStepper = ({ children, currentStep, setCurrentStep, completedSte
                 width: `${
                   isEdit
                     ? 100
-                    : (currentStep / (STEPS.length - 1)) * 100
+                    : (currentIndex / (visibleSteps.length - 1)) * 100
                 }%` 
               }}
             />
@@ -150,7 +152,7 @@ const AddProductStepper = ({ children, currentStep, setCurrentStep, completedSte
 
           {/* Steps */}
           <div className="relative flex justify-between">
-            {STEPS.map((step, index) => {
+            {visibleSteps.map((step) => {
               const status = getStepStatus(step.id);
               const isAccessible = isStepAccessible(step.id);
               const Icon = step.icon;
